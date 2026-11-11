@@ -283,7 +283,7 @@
       margin: 1.25rem auto 0 auto;
       padding: 0 1.25rem;
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 0.6rem;
     }
 
@@ -872,11 +872,11 @@
       #step-1,
       #step-2,
       #step-3,
-      #step-4 {
+      #step-lab-container {
         display: none !important;
       }
 
-      /* Step 5 and Report Container displayed as the primary document */
+      /* Step 4 (Dashboard) and Report Container displayed as the primary document */
       .module-panel {
         display: none !important;
         padding: 0 !important;
@@ -884,6 +884,7 @@
         box-shadow: none !important;
         border: none !important;
       }
+      #step-4,
       #step-5 {
         display: block !important;
       }
@@ -1235,12 +1236,8 @@
       <span>Visual-Motor (1→ก→2→ข)</span>
     </button>
     <button type="button" class="step-tab" id="tab-4" onclick="goToStep(4)">
-      <span class="step-num">โมดูลที่ 4</span>
-      <span>ผลตรวจแล็บ (Biomarkers)</span>
-    </button>
-    <button type="button" class="step-tab" id="tab-5" onclick="goToStep(5)">
-      <span class="step-num">โมดูลที่ 5</span>
-      <span>ผลประเมินความเสี่ยง</span>
+      <span class="step-num">โมดูลที่ 4 (สรุปผล)</span>
+      <span>📊 แดชบอร์ดสรุปผลผู้ป่วย</span>
     </button>
   </nav>
 
@@ -1918,37 +1915,429 @@
 
       <div class="footer-nav">
         <button type="button" class="btn" onclick="goToStep(2)">⬅️ ย้อนกลับ (โมดูลที่ 2)</button>
-        <button type="button" class="btn btn-primary" onclick="goToStep(4)">ถัดไป: โมดูลที่ 4 (ผลตรวจแล็บ Biomarkers)
-          ➡️</button>
+        <button type="button" class="btn btn-primary" onclick="goToStep(4)">
+          📊 ดูแดชบอร์ดสรุปผลผู้ป่วยและคำแนะนำการดูแล (Dashboard) ➡️
+        </button>
       </div>
     </section>
 
     <!-- ======================================================================
-         STEP 4: Module 4 - Laboratory Biomarkers Integration
+         STEP 4: Module 4 - Comprehensive Patient Cognitive Dashboard & Care Plan
          ====================================================================== -->
     <section class="module-panel" id="step-4" aria-labelledby="step4-title">
       <div class="module-header">
         <div>
-          <h2 class="module-title" id="step4-title">โมดูลที่ 4: การผสานผลตรวจทางห้องปฏิบัติการ (Laboratory Biomarkers
-            Integration)</h2>
-          <p class="module-desc">รองรับการกรอกผลแล็บแบบแมนนวล หรือดึงข้อมูลผ่าน Mock HIS/LIS API (FHIR DiagnosticReport)
-            เพื่อคัดกรองสาเหตุที่รักษาหายได้และประเมินตัวชี้วัดจำเพาะของโรคอัลไซเมอร์</p>
+          <h2 class="module-title" id="step4-title">📊 แดชบอร์ดสรุปผลสุขภาพสมองและการดูแล (Patient Cognitive Dashboard)</h2>
+          <p class="module-desc">
+            รายงานสรุปสมรรถภาพการรู้คิด 5 มิติ ภาพวาดหน้าปัดนาฬิกา และแผนการส่งเสริมสุขภาพสมองที่มีประสิทธิภาพสูงสุดตามหลักฐานทางการแพทย์
+          </p>
         </div>
-        <button type="button" class="btn btn-tts"
-          onclick="speakThai('ส่วนบันทึกผลตรวจทางห้องปฏิบัติการ แบ่งเป็นสาเหตุเมตาบอลิกที่รักษาหายได้ ปัจจัยเสี่ยงหลอดเลือด และตัวชี้วัดจำเพาะของโรคอัลไซเมอร์ หากไม่มีผลตรวจบางรายการสามารถเว้นว่างไว้ได้', this)">
-          🔊 ฟังคำแนะนำ
-        </button>
+        <div class="no-print" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+          <button type="button" class="btn btn-tts" onclick="speakReportSummary(this)">🔊 ฟังสรุปผลและคำแนะนำ</button>
+          <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ พิมพ์ใบสรุปผล A4 (Print / PDF)</button>
+        </div>
       </div>
 
-      <!-- Patient Mode Friendly Notice -->
-      <div class="card-box patient-only" style="background:var(--status-low-surface); border-color:var(--status-low-border); color:var(--status-low-text); margin-bottom:1.5rem;">
-        <h3 style="margin-top:0; font-size:1.35rem;">🔬 ข้อมูลผลตรวจทางห้องปฏิบัติการ (สำหรับเจ้าหน้าที่หรือแพทย์)</h3>
-        <p style="margin-bottom:0.75rem; font-size:1.1rem; line-height:1.6;">
-          ในส่วนนี้เป็นข้อมูลผลตรวจเลือดโดยละเอียด หากผู้รับการประเมินกำลังทำแบบทดสอบความจำด้วยตนเองที่บ้าน สามารถกดปุ่ม <strong>"ถัดไป: โมดูลที่ 5 (ผลประเมินความเสี่ยง)"</strong> ด้านล่างเพื่อดูผลสรุปได้ทันทีค่ะ
+      <!-- Incomplete Assessment Warning Banner (Displayed when any core module is null) -->
+      <div id="incompleteAssessmentWarningCard" class="card-box" style="display:none; border-width:3px; border-color:var(--status-high-border); background:var(--status-high-surface); color:var(--status-high-text);">
+        <h3 style="margin-top:0; font-size:1.4rem;">⚠️ ข้อมูลการประเมินไม่ครบถ้วน (Incomplete Clinical Assessment Data)</h3>
+        <p style="font-weight:700; font-size:1.1rem; margin:0.4rem 0;">
+          ระบบจะไม่แสดงผลการจัดระดับความเสี่ยงหรือคำนวณคะแนน เพื่อความปลอดภัยของผู้ป่วยและป้องกันการเกิดผลลบลวง (False Negative)
         </p>
+        <div style="margin-top:0.75rem;">
+          <strong>รายการโมดูลที่ยังค้างอยู่:</strong>
+          <ul id="incompleteMissingDomainsList" style="margin:0.4rem 0 0.8rem 0; padding-left:1.5rem; font-weight:700;"></ul>
+        </div>
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" onclick="goToStep(1)">✏️ ไปทำโมดูลที่ 1 (AD8)</button>
+          <button type="button" class="btn btn-primary" onclick="goToStep(2)">✏️ ไปทำโมดูลที่ 2 (Mini-Cog)</button>
+          <button type="button" class="btn btn-primary" onclick="goToStep(3)">✏️ ไปทำโมดูลที่ 3 (Visual-Motor)</button>
+        </div>
       </div>
 
-      <!-- Mock HIS/LIS API Bar -->
+      <div id="completeAssessmentReportContainer">
+        <!-- ==================================================================
+             Formal Corporate Print Document Header (Visible only in Print Layout)
+             ================================================================== -->
+        <div class="print-only-header" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1.5rem;">
+            <div style="display:flex; align-items:flex-start; gap:0.9rem; flex:1;">
+              <div style="width:54px; height:54px; border:2px solid #333333; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:26px; background:#F8FAFC; flex-shrink:0;">
+                🧠
+              </div>
+              <div style="font-size:11pt; color:#333333; line-height:1.35;">
+                <div style="font-weight:800; font-size:11.5pt; color:#111827; letter-spacing:0.01em;">
+                  ศูนย์ความเป็นเลิศทางการแพทย์ด้านโรคสมองเสื่อมและประสาทวิทยาศาสตร์
+                </div>
+                <div style="font-weight:600; font-size:10pt; color:#4B5563;">
+                  Center of Excellence in Neurological &amp; Cognitive Disorders
+                </div>
+                <div style="font-size:9pt; color:#6B7280; margin-top:2px;">
+                  โรงพยาบาลระดับตติยภูมิ • บริการคัดกรอง วินิจฉัย และส่งเสริมสุขภาพสมองผู้สูงอายุ • โทร. 02-XXX-XXXX
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align:right; min-width:250px;">
+              <div style="font-size:15pt; font-weight:900; color:#111827; line-height:1.2;">
+                ใบรายงานผลการคัดกรองความเสี่ยงสมองเสื่อม
+              </div>
+              <div style="font-size:9.5pt; font-weight:700; color:#4B5563; margin-top:1px;">
+                Patient Cognitive Health &amp; Care Management Report
+              </div>
+              <div style="margin-top:6px; border:1px solid #444444; border-radius:4px; padding:4px 8px; background:#F9FAFB; font-size:9pt; text-align:left; display:inline-block;">
+                <div><strong>เลขที่เอกสาร (Doc No.):</strong> <span id="printDocumentNumberDisplay">DOC-690412-01</span></div>
+                <div><strong>วันที่ออกรายงาน:</strong> <span id="printReportDateDisplay">11 พฤศจิกายน 2569</span></div>
+              </div>
+            </div>
+          </div>
+
+          <table class="print-table" style="margin-top:8px;">
+            <thead>
+              <tr>
+                <th colspan="4" style="text-align:left; background:#F0F2F5; color:#111827; font-weight:800; padding:4px 8px;">
+                  📋 ข้อมูลผู้รับการประเมินและการระบุตัวตน (Patient Profile &amp; Demographics)
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="width:20%; background:#F9FAFB; font-weight:700;">ชื่อ-นามสกุล:</td>
+                <td style="width:30%; font-weight:600;" id="printPatientNameCell">คุณสมชาย ใจดี</td>
+                <td style="width:20%; background:#F9FAFB; font-weight:700;">HN / รหัสผู้ป่วย:</td>
+                <td style="width:30%; font-weight:600;" id="printPatientHnCell">HN-690412</td>
+              </tr>
+              <tr>
+                <td style="background:#F9FAFB; font-weight:700;">อายุ / การศึกษา:</td>
+                <td id="printPatientAgeEduCell">71 ปี (การศึกษา 12 ปี)</td>
+                <td style="background:#F9FAFB; font-weight:700;">รหัสแฝงกำกับผลตรวจ:</td>
+                <td id="printPatientTokenCell" style="font-family:monospace; font-weight:700;">PSN-XXXX-XXXXXXXX-XXXX</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ==================================================================
+             Patient Demographic Profile Card (High-Contrast, Clear Header)
+             ================================================================== -->
+        <div class="card-box no-print" style="background:var(--bg-card); border-left:6px solid var(--primary-bg); margin-bottom:1.25rem; padding:1.25rem 1.5rem;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.9rem; font-size:1.05rem;">
+            <div>👤 <strong>ชื่อ-นามสกุล:</strong> <span id="dashPatientName">คุณสมชาย ใจดี</span></div>
+            <div>🆔 <strong>HN:</strong> <span id="dashPatientHn">HN-690412</span></div>
+            <div>🎂 <strong>อายุ:</strong> <span id="dashPatientAge">71</span> ปี</div>
+            <div>🎓 <strong>การศึกษา:</strong> <span id="dashPatientEdu">12</span> ปี</div>
+            <div>📅 <strong>วันที่ตรวจ:</strong> <span id="dashPatientDate">11 พฤศจิกายน 2569</span></div>
+            <div class="clinician-only">🏷️ <strong>Token:</strong> <code id="dashPatientToken">PSN-XXXX</code></div>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             Master Overall Status Card & Composite Progress Gauge
+             ================================================================== -->
+        <div id="patientMasterStatusCard" class="card-box" style="border-width:3px; padding:1.75rem; margin-bottom:1.5rem; background:var(--bg-card);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem;">
+            <div style="flex:1; min-width:300px;">
+              <div style="font-size:0.95rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-secondary); margin-bottom:0.35rem;">
+                สถานะสุขภาพสมองภาพรวม (Overall Cognitive Health Status)
+              </div>
+              <div style="display:flex; align-items:center; gap:0.85rem;">
+                <span id="dashMasterStatusIcon" style="font-size:3rem; line-height:1;">🟢</span>
+                <div>
+                  <h3 id="dashMasterStatusTitle" style="margin:0; font-size:1.9rem; font-weight:900; line-height:1.2;">
+                    สมองทำงานปกติ (Cognitively Healthy)
+                  </h3>
+                  <div id="dashMasterStatusBadge" class="badge" style="margin-top:0.4rem; display:inline-block; font-size:0.95rem; font-weight:800; padding:0.35rem 0.85rem; border-radius:6px; background:var(--status-low-surface); color:var(--status-low-text); border:1px solid var(--status-low-border);">
+                    ความเสี่ยงต่ำ (Low Risk)
+                  </div>
+                </div>
+              </div>
+              <p id="dashMasterStatusDesc" style="margin:1rem 0 0 0; font-size:1.15rem; line-height:1.6; font-weight:700; color:var(--text-primary);">
+                สมรรถภาพการรู้คิดทุกมิติอยู่ในเกณฑ์ปกติเหมาะสมตามวัย ไม่พบสัญญาณความเสี่ยงของภาวะสมองเสื่อม แนะนำส่งเสริมสุขภาพสมองด้วยโภชนาการ การออกกำลังกาย และฝึกสมองต่อเนื่อง
+              </p>
+            </div>
+
+            <!-- Composite Score Gauge Box -->
+            <div style="min-width:270px; background:var(--bg-surface); padding:1.25rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:0.92rem; font-weight:800; color:var(--text-secondary); margin-bottom:0.25rem;">ดัชนีคะแนนรวมภายใน (Composite Index)</div>
+              <div id="dashCompositeScoreText" style="font-size:2.8rem; font-weight:900; line-height:1.1; color:var(--primary-bg);">
+                0 / 100
+              </div>
+              <div style="height:14px; background:var(--bg-elevated); border-radius:7px; overflow:hidden; margin:0.75rem 0 0.5rem 0; border:1px solid var(--border-subtle); position:relative;">
+                <div id="dashCompositeScoreBar" style="height:100%; width:5%; background:var(--status-low-border); border-radius:7px; transition:width 0.5s ease, background 0.5s ease;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:700; color:var(--text-secondary);">
+                <span>0 ปกติ</span>
+                <span>25 เฝ้าระวัง</span>
+                <span>55+ เสี่ยงสูง</span>
+              </div>
+              <div id="dashCompositeScoreLevel" style="font-size:0.92rem; font-weight:800; margin-top:0.4rem; color:var(--status-low-text);">
+                ระดับความเสี่ยง: ปกติ (Low Risk)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             5 Multimodal Cognitive Domain Cards (Clear, Large, High-Contrast)
+             ================================================================== -->
+        <div style="margin-bottom:1.5rem;">
+          <h3 style="font-size:1.4rem; margin:0 0 0.5rem 0; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+            <span>🧩</span> สรุปผลการทดสอบการทำงานของสมอง 5 มิติ (5 Cognitive Domains)
+          </h3>
+          <p style="margin:0 0 1rem 0; color:var(--text-secondary); font-size:1.05rem;">
+            ประเมินสมรรถภาพแยกตามหน้าที่เฉพาะของสมอง ช่วยชี้ชัดจุดแข็งและสัญญาณเตือนได้อย่างแม่นยำ
+          </p>
+
+          <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+            <!-- Domain 1: Short-Term Memory -->
+            <div class="card-box" style="margin:0; border-top:6px solid #2563EB;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <h4 style="margin:0; font-size:1.2rem; color:var(--text-primary);">🧠 1. ความจำระยะสั้น</h4>
+                <span id="dashRecallBadge" class="badge" style="font-size:0.85rem; padding:0.25rem 0.65rem; border-radius:6px; font-weight:800; background:var(--status-low-surface); color:var(--status-low-text);">ปกติ</span>
+              </div>
+              <div style="font-size:0.88rem; color:var(--text-secondary); margin-top:0.2rem;">Mini-Cog Delayed Recall (Hippocampus)</div>
+              <div style="margin:0.85rem 0 0.4rem 0; font-size:1.75rem; font-weight:900;" id="dashRecallScore">3 / 3 คำ</div>
+              <div id="dashRecallWords" style="font-size:0.95rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.5rem;">คำศัพท์: จำได้ครบทั้ง 3 คำ</div>
+              <div id="dashRecallDesc" style="font-size:0.98rem; line-height:1.5; color:var(--text-primary);">
+                สมองสามารถบันทึกและดึงข้อมูลคำศัพท์ใหม่ได้สมบูรณ์ ไม่พบภาวะบกพร่องของความจำระยะสั้น
+              </div>
+            </div>
+
+            <!-- Domain 2: Visuospatial & Executive (Clock Drawing) -->
+            <div class="card-box" style="margin:0; border-top:6px solid #7C3AED;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <h4 style="margin:0; font-size:1.2rem; color:var(--text-primary);">🕒 2. มิติสัมพันธ์ &amp; วางแผน</h4>
+                <span id="dashCdtResultBadge" class="badge" style="font-size:0.85rem; padding:0.25rem 0.65rem; border-radius:6px; font-weight:800; background:var(--status-low-surface); color:var(--status-low-text);">ปกติ</span>
+              </div>
+              <div style="font-size:0.88rem; color:var(--text-secondary); margin-top:0.2rem;">Clock Drawing Test (CDT เวลา 11:10 น.)</div>
+              <div style="display:flex; gap:0.85rem; align-items:center; margin:0.75rem 0;">
+                <img id="dashCdtImg" alt="ภาพวาดนาฬิกา" style="width:110px; height:110px; border-radius:8px; border:2px solid var(--border-strong); background:#FFF; object-fit:contain; flex-shrink:0;" />
+                <div style="font-size:0.92rem; line-height:1.5; font-weight:700;">
+                  <div id="dashCdtCircleCheck">✅ วงกลมสมส่วน ปิดสนิท</div>
+                  <div id="dashCdtNumbersCheck">✅ ตัวเลข 1–12 ครบในตำแหน่ง</div>
+                  <div id="dashCdtHandsCheck">✅ เข็มสั้น-ยาวชี้ 11:10 ถูกต้อง</div>
+                  <div id="dashCdtTremorBadge" style="margin-top:0.25rem; font-size:0.85rem; color:var(--text-secondary);">ไม่พบอาการมือสั่นผิดปกติ</div>
+                </div>
+              </div>
+              <div id="dashCdtDesc" style="font-size:0.98rem; line-height:1.5; color:var(--text-primary);">
+                การวางแผนเชิงพื้นที่และการสั่งการทำงานของสมองส่วนหน้า (Executive Function) สมบูรณ์ดี
+              </div>
+            </div>
+
+            <!-- Domain 3: Daily Function & Informant (AD8 & IADL) -->
+            <div class="card-box" style="margin:0; border-top:6px solid #059669;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <h4 style="margin:0; font-size:1.2rem; color:var(--text-primary);">📋 3. กิจวัตรประจำวัน</h4>
+                <span id="dashAd8Badge" class="badge" style="font-size:0.85rem; padding:0.25rem 0.65rem; border-radius:6px; font-weight:800; background:var(--status-low-surface); color:var(--status-low-text);">ปกติ</span>
+              </div>
+              <div style="font-size:0.88rem; color:var(--text-secondary); margin-top:0.2rem;">AD8 Informant Report &amp; Brief IADL</div>
+              <div style="margin:0.85rem 0 0.4rem 0; font-size:1.75rem; font-weight:900;" id="dashAd8Score">0 / 8 ข้อ</div>
+              <div id="dashIadlStatus" style="font-size:0.95rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.5rem;">IADL: จัดการชีวิตประจำวันได้อิสระ</div>
+              <div id="dashAd8Desc" style="font-size:0.98rem; line-height:1.5; color:var(--text-primary);">
+                คนใกล้ชิดไม่พบการเปลี่ยนแปลงด้านความจำ ยังคงทานยา จัดการเงิน และช่วยเหลือตนเองได้ดี
+              </div>
+            </div>
+
+            <!-- Domain 4: Processing Speed & Coordination (Visual-Motor) -->
+            <div class="card-box" style="margin:0; border-top:6px solid #D97706;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <h4 style="margin:0; font-size:1.2rem; color:var(--text-primary);">⚡ 4. ความเร็ว &amp; ประสานงาน</h4>
+                <span id="dashVmtBadge" class="badge" style="font-size:0.85rem; padding:0.25rem 0.65rem; border-radius:6px; font-weight:800; background:var(--status-low-surface); color:var(--status-low-text);">ปกติ</span>
+              </div>
+              <div style="font-size:0.88rem; color:var(--text-secondary); margin-top:0.2rem;">Visual-Motor Task (1→ก→2→ข)</div>
+              <div style="margin:0.85rem 0 0.4rem 0; font-size:1.75rem; font-weight:900;" id="dashVmtTime">24.5 วินาที</div>
+              <div id="dashVmtErrors" style="font-size:0.95rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.5rem;">กดผิดลำดับ: 0 ครั้ง</div>
+              <div id="dashVmtDesc" style="font-size:0.98rem; line-height:1.5; color:var(--text-primary);">
+                ความเร็วในการสลับชุดความคิดและการทำงานประสานกันของสายตากับมืออยู่ในเกณฑ์มาตรฐาน
+              </div>
+            </div>
+
+            <!-- Domain 5: Affective & Drug Safety (2Q & ACB) -->
+            <div class="card-box" style="margin:0; border-top:6px solid #DC2626;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <h4 style="margin:0; font-size:1.2rem; color:var(--text-primary);">🛡️ 5. อารมณ์ &amp; ปลอดภัยด้านยา</h4>
+                <span id="dashAffectiveBadge" class="badge" style="font-size:0.85rem; padding:0.25rem 0.65rem; border-radius:6px; font-weight:800; background:var(--status-low-surface); color:var(--status-low-text);">ปลอดภัย</span>
+              </div>
+              <div style="font-size:0.88rem; color:var(--text-secondary); margin-top:0.2rem;">2Q Depression &amp; ACB Anticholinergic Scale</div>
+              <div style="margin:0.85rem 0 0.4rem 0; font-size:1.45rem; font-weight:900;" id="dash2QStatus">2Q: ปกติ (ไม่พบซึมเศร้า)</div>
+              <div id="dashAcbScore" style="font-size:0.95rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.5rem;">ภาระยา ACB = 0 คะแนน</div>
+              <div id="dashAffectiveDesc" style="font-size:0.98rem; line-height:1.5; color:var(--text-primary);">
+                ไม่พบภาวะซึมเศร้าแฝง และไม่มียากลุ่มเสี่ยงที่มีฤทธิ์กดสมองหรือทำให้เกิดอาการสับสน
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             Actionable High-Efficiency Brain Health Care Plan (4 Pillars)
+             ================================================================== -->
+        <div class="card-box" style="border-width:3px; border-color:var(--primary-bg); background:var(--bg-elevated); margin-bottom:1.5rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+            <span style="font-size:2.2rem;">🌟</span>
+            <div>
+              <h3 style="margin:0; font-size:1.5rem; color:var(--text-primary);">
+                แผนคำแนะนำการส่งเสริมสุขภาพสมองที่มีประสิทธิภาพสูงสุด (Actionable Brain Care Plan)
+              </h3>
+              <p style="margin:0.25rem 0 0 0; color:var(--text-secondary); font-size:1.05rem;">
+                อ้างอิงมาตรฐานสากล (Lancet Commission 2024 &amp; WHO Guidelines) ปรับให้เข้ากับวิถีชีวิตคนไทย
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap:1rem;">
+            <!-- Pillar 1: Medical Action Plan -->
+            <div class="card-box" style="margin:0; background:var(--bg-card); border-left:5px solid #2563EB;">
+              <h4 style="margin:0 0 0.6rem 0; font-size:1.15rem; color:#2563EB; display:flex; align-items:center; gap:0.4rem;">
+                <span>👨‍⚕️</span> เสาหลักที่ 1: การดูแลทางการแพทย์
+              </h4>
+              <div id="dashCareMedical" style="font-size:0.95rem; line-height:1.6; color:var(--text-primary);">
+                <ul style="margin:0; padding-left:1.25rem;">
+                  <li style="margin-bottom:0.4rem;"><strong>กำหนดการพบแพทย์:</strong> ตรวจสุขภาพสมองเป็นประจำทุก 1 ปี</li>
+                  <li style="margin-bottom:0.4rem;"><strong>ทบทวนรายการยา (Deprescribing):</strong> นำยาทั้งหมด (รวมสมุนไพรและยาแก้แพ้) ปรึกษาแพทย์เพื่อตัดยาที่มีฤทธิ์กดสมอง</li>
+                  <li style="margin-bottom:0.4rem;"><strong>ควบคุมหลอดเลือด:</strong> ควบคุมความดัน &lt; 130/80 mmHg, น้ำตาลสะสม HbA1c &lt; 7.0%, และไขมัน LDL</li>
+                  <li><strong>ตรวจการได้ยินและสายตา:</strong> ตรวจเช็กการได้ยิน หากมีปัญหาควรใส่เครื่องช่วยฟังเพื่อลดภาวะสมองขาดการกระตุ้น</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Pillar 2: Nutrition & Diet -->
+            <div class="card-box" style="margin:0; background:var(--bg-card); border-left:5px solid #059669;">
+              <h4 style="margin:0 0 0.6rem 0; font-size:1.15rem; color:#059669; display:flex; align-items:center; gap:0.4rem;">
+                <span>🥗</span> เสาหลักที่ 2: โภชนาการชะลอสมองเสื่อม
+              </h4>
+              <div id="dashCareNutrition" style="font-size:0.95rem; line-height:1.6; color:var(--text-primary);">
+                <ul style="margin:0; padding-left:1.25rem;">
+                  <li style="margin-bottom:0.4rem;"><strong>สูตรอาหาร MIND Diet:</strong> เน้นผักใบเขียวเข้ม (คะน้า ตำลึง ผักโขม) &ge; 6 มื้อ/สัปดาห์</li>
+                  <li style="margin-bottom:0.4rem;"><strong>เบอร์รี &amp; โอเมก้า 3:</strong> ผลไม้ตระกูลเบอร์รี (บลูเบอร์รี มัลเบอร์รี) &ge; 2 มื้อ/สัปดาห์ และปลาทะเล (ปลาทู แซลมอน) 1–2 ครั้ง/สัปดาห์</li>
+                  <li style="margin-bottom:0.4rem;"><strong>ไขมันดี:</strong> ใช้น้ำมันมะกอกหรือน้ำมันรำข้าว และทานถั่วเปลือกแข็งวันละ 1 กำมือ</li>
+                  <li><strong>อาหารที่ควรเลี่ยง:</strong> ลดเนื้อสัตว์แปรรูป (ไส้กรอก กุนเชียง), อาหารทอดไขมันทรานส์, และเครื่องดื่มรสหวานจัด</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Pillar 3: Physical Exercise & Balance -->
+            <div class="card-box" style="margin:0; background:var(--bg-card); border-left:5px solid #D97706;">
+              <h4 style="margin:0 0 0.6rem 0; font-size:1.15rem; color:#D97706; display:flex; align-items:center; gap:0.4rem;">
+                <span>🏃‍♂️</span> เสาหลักที่ 3: ออกกำลังกาย &amp; ทรงตัว
+              </h4>
+              <div id="dashCareExercise" style="font-size:0.95rem; line-height:1.6; color:var(--text-primary);">
+                <ul style="margin:0; padding-left:1.25rem;">
+                  <li style="margin-bottom:0.4rem;"><strong>แอโรบิกปานกลาง 150 นาที/สัปดาห์:</strong> เดินเร็วต่อเนื่อง 30 นาที 5 วันต่อสัปดาห์ กระตุ้นสาร BDNF ซ่อมแซมเซลล์สมอง</li>
+                  <li style="margin-bottom:0.4rem;"><strong>ฝึกการทรงตัว (Balance):</strong> รำไทเก๊ก หรือโยคะผู้สูงอายุ สัปดาห์ละ 2–3 ครั้ง ช่วยลดโอกาสหกล้มกระทบสมองได้กว่า 40%</li>
+                  <li style="margin-bottom:0.4rem;"><strong>เดินรับแดดยามเช้า:</strong> 15–20 นาที เพื่อสังเคราะห์วิตามิน D และตั้งวงจรชีวภาพการหลั่งฮอร์โมน</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Pillar 4: Cognitive Stimulation & Sleep -->
+            <div class="card-box" style="margin:0; background:var(--bg-card); border-left:5px solid #7C3AED;">
+              <h4 style="margin:0 0 0.6rem 0; font-size:1.15rem; color:#7C3AED; display:flex; align-items:center; gap:0.4rem;">
+                <span>🧩</span> เสาหลักที่ 4: ฝึกสมอง สังคม &amp; การนอน
+              </h4>
+              <div id="dashCareCognitive" style="font-size:0.95rem; line-height:1.6; color:var(--text-primary);">
+                <ul style="margin:0; padding-left:1.25rem;">
+                  <li style="margin-bottom:0.4rem;"><strong>กระตุ้นสมองทุกวัน (Cognitive Reserve):</strong> อ่านหนังสือ, ต่อคำศัพท์, เล่นหมากรุก, ซูโดกุ, ทำงานฝีมือ, หรือเรียนรู้ทักษะใหม่</li>
+                  <li style="margin-bottom:0.4rem;"><strong>ปฏิสัมพันธ์ทางสังคม:</strong> พูดคุยพบปะเพื่อนฝูง ร่วมกิจกรรมชมรมผู้สูงอายุ ลดความรู้สึกโดดเดี่ยว</li>
+                  <li style="margin-bottom:0.4rem;"><strong>นอนหลับลึก 7–8 ชม./คืน:</strong> เพื่อเปิดระบบ Glymphatic ขับของเสียและโปรตีนผิดปกติออกจากสมอง</li>
+                  <li><strong>สุขอนามัยการนอน:</strong> เลี่ยงชา กาแฟหลัง 14:00 น. และงดหน้าจอโทรศัพท์ 1 ชั่วโมงก่อนนอน</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons Footer for Patients & Family -->
+        <div class="no-print" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; padding:1.25rem; background:var(--bg-card); border-radius:12px; border:2px solid var(--border-subtle);">
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" style="min-height:54px; font-size:1.15rem; font-weight:800;" onclick="window.print()">
+              🖨️ พิมพ์เอกสารสรุปผล A4 สำหรับพบแพทย์ (Print / PDF)
+            </button>
+            <button type="button" class="btn btn-tts" style="min-height:54px; font-size:1.05rem; font-weight:700;" onclick="speakReportSummary(this)">
+              🔊 ฟังเสียงสรุปคำแนะนำทั้งหมด
+            </button>
+          </div>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <button type="button" class="btn" style="min-height:54px; font-weight:700;" onclick="resetForNewPatient()">
+              🔄 เริ่มประเมินผู้ป่วยรายใหม่
+            </button>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             CLINICIAN EXTENDED DETAILS & SCIENTIFIC ANALYTICS (Clinician Only)
+             ==================================================================== -->
+        <div class="clinician-only no-print" style="margin-top:2rem;">
+          <div style="border-top:3px solid var(--primary-bg); padding-top:1.5rem; margin-bottom:1rem;">
+            <h3 style="font-size:1.4rem; margin:0 0 0.4rem 0; color:var(--text-primary);">
+              👨‍⚕️ ส่วนข้อมูลวิเคราะห์เชิงลึกทางการแพทย์ (Clinician Diagnostic Hub)
+            </h3>
+            <p style="color:var(--text-secondary); margin:0; font-size:1rem;">
+              สำหรับแพทย์ พยาบาลวิชาชีพ และนักเทคนิคการแพทย์: ข้อมูลผลแล็บ LIS, การจัดระดับ 4 แกน, ระบบส่งต่อ EMR, และบันทึก Audit Trail
+            </p>
+          </div>
+
+          <!-- Hero Risk Stratification Banner (Original) -->
+          <div id="riskHeroBanner" class="risk-hero-banner cat-LOW" style="margin-bottom:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <div style="font-size:0.95rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">
+                  สถานะการคัดกรองเบื้องต้น (Primary Screening Summary)</div>
+                <h3 id="riskCategoryHeading" style="margin:0.25rem 0; font-size:1.85rem; font-weight:800;">COGNITIVE SCREENING COMPLETE</h3>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.95rem; font-weight:800;">ดัชนีคะแนนรวมภายใน (Composite Index)</div>
+                <div id="riskScorePercentHeading" style="font-size:2.5rem; font-weight:800; line-height:1.1;">0 / 100 จุด</div>
+                <div style="font-size:0.82rem; font-weight:700; color:var(--text-secondary); margin-top:0.2rem;">*คะแนนจัดลำดับภายใน ไม่ใช่ค่าความน่าจะเป็นทางสถิติ</div>
+              </div>
+            </div>
+            <hr style="border:1px solid currentColor; opacity:0.35; margin:1rem 0;" />
+            <div>
+              <strong style="font-size:1.15rem;">📋 คำแนะนำหลักสำหรับการดูแลและส่งต่อแพทย์ (Primary Clinical Recommendation):</strong>
+              <p id="primaryRecommendationText" style="margin:0.4rem 0 0 0; font-size:1.15rem; font-weight:700;"></p>
+            </div>
+          </div>
+
+          <!-- 4 Parallel Multi-Axes Reporting Cards -->
+          <div class="card-box" style="border-width:3px; background:var(--bg-card); margin-bottom:1.25rem;">
+            <h3 style="margin-top:0; font-size:1.35rem;">🧭 ผลการประเมิน 4 แกนคู่ขนานตามมาตรฐานคลินิก (4-Axis Parallel Assessment)</h3>
+            <p style="margin:0.2rem 0 1rem 0; color:var(--text-secondary);">
+              รายงานผลแบบแยกแกนอิสระ ไม่ให้สาเหตุเมตาบอลิกหรือผลเลือดบดบังความเสี่ยงอัลไซเมอร์ เพื่อให้แพทย์เห็นภาพรวมพยาธิสภาพรอบด้าน
+            </p>
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+              <div class="card-box" style="margin:0; border-left:6px solid var(--primary-bg);">
+                <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">🧠 แกนที่ 1: สมรรถภาพการรู้คิด (Cognitive Axis)</h4>
+                <div id="axisCognitiveDisplay" style="font-weight:800; font-size:1.2rem;">-</div>
+                <div id="axisCognitiveNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
+              </div>
+
+              <div class="card-box" style="margin:0; border-left:6px solid var(--status-rev-border);">
+                <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">💊 แกนที่ 2: สาเหตุที่แก้ไขได้ &amp; ยา (Reversible Axis)</h4>
+                <div id="axisReversibleDisplay" style="font-weight:800; font-size:1.15rem;">-</div>
+                <div id="axisReversibleNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
+              </div>
+
+              <div class="card-box" style="margin:0; border-left:6px solid var(--status-ad-border);">
+                <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">🧬 แกนที่ 3: ตัวชี้วัดอัลไซเมอร์ (Biomarker Axis)</h4>
+                <div id="axisBiomarkerDisplay" style="font-weight:800; font-size:1.15rem;">-</div>
+                <div id="axisBiomarkerNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
+              </div>
+
+              <div class="card-box" style="margin:0; border-left:6px solid var(--status-mod-border);">
+                <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">🛡️ แกนที่ 4: ภาวะอารมณ์ &amp; ซึมเศร้า (Affective Axis)</h4>
+                <div id="axisAffectiveDisplay" style="font-weight:800; font-size:1.15rem;">-</div>
+                <div id="axisAffectiveNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OPTIONAL LAB BIOMARKERS DRAWER -->
+          <!-- OPTIONAL LAB BIOMARKERS DRAWER (Available only in Clinician View) -->
+          <details class="card-box clinician-only no-print" id="step-lab-container" style="border:2px dashed var(--primary-bg); background:var(--bg-elevated); margin-bottom:1.5rem;">
+            <summary style="font-size:1.15rem; font-weight:800; cursor:pointer; color:var(--primary-bg); padding:0.4rem 0;">
+              🔬 บันทึกผลแล็บทางห้องปฏิบัติการ (Optional Laboratory Biomarkers &amp; Mock LIS Loader — เฉพาะบุคลากรการแพทย์)
+            </summary>
+            <div style="margin-top:1rem;">
+              <!-- Mock HIS/LIS API Bar -->
       <div class="card-box clinician-only" style="background:var(--bg-elevated);">
         <h3 style="margin-top:0; font-size:1.2rem;">🔌 ดึงข้อมูลผลตรวจจากระบบ HIS / LIS API (Mock FHIR DiagnosticReport
           Loader)</h3>
@@ -2137,473 +2526,282 @@
           ⚠️ <strong>Clinical Advisory on Blood Biomarkers:</strong> ผลตรวจ Plasma Biomarkers เป็นเครื่องมือคัดกรองและประเมินความเสี่ยงเบื้องต้น (Screening &amp; Triage Enrichment) การยืนยันพยาธิสภาพก่อนเริ่มยาชะลอโรคกลุ่มใหม่อย่างเป็นทางการ (Disease-Modifying Therapy เช่น Amyloid mAb) ต้องได้รับการยืนยันด้วย Amyloid-PET หรือ CSF Biomarkers ตามเกณฑ์สากลเสมอ
         </div>
       </div>
-
-      <div class="footer-nav">
-        <button type="button" class="btn" onclick="goToStep(3)">⬅️ ย้อนกลับ (โมดูลที่ 3)</button>
-        <button type="button" class="btn btn-primary" onclick="goToStep(5)">📊 ประมวลผลความเสี่ยงและออกรายงานส่งต่อแพทย์
-          ➡️</button>
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         STEP 5: Module 5 - Hierarchical Risk Stratification & Clinical Report
-         ====================================================================== -->
-    <section class="module-panel" id="step-5" aria-labelledby="step5-title">
-      <div class="module-header">
-        <div>
-          <h2 class="module-title" id="step5-title">ผลการคัดกรองความเสี่ยงและการจัดลำดับการส่งต่อแพทย์
-            (Biomarker-Informed Triage Report)</h2>
-          <p class="module-desc">ประมวลผลด้วยอัลกอริทึมลำดับชั้น (Hierarchical Stratification Engine)
-            ผสานข้อมูลพหุโมดูลและผลตรวจทางห้องปฏิบัติการ</p>
-        </div>
-        <div class="no-print" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-          <button type="button" class="btn btn-tts" onclick="speakReportSummary(this)">🔊 ฟังสรุปผลและคำแนะนำ</button>
-          <button type="button" class="btn" onclick="exportClinicalJson()">💾 ดาวน์โหลด JSON</button>
-          <button type="button" class="btn" onclick="exportFhirBundle()">🏥 ส่งออก HL7 FHIR R4 (LOINC)</button>
-          <button type="button" class="btn" onclick="saveCurrentSessionForFollowUp()">📌 บันทึกเป็น Baseline
-            ครั้งถัดไป</button>
-          <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ พิมพ์ใบส่งตัวแพทย์ (Print /
-            PDF)</button>
-        </div>
-      </div>
-
-      <!-- Incomplete Assessment Warning Banner (Displayed when any core module is null) -->
-      <div id="incompleteAssessmentWarningCard" class="card-box" style="display:none; border-width:3px; border-color:var(--status-high-border); background:var(--status-high-surface); color:var(--status-high-text);">
-        <h3 style="margin-top:0; font-size:1.4rem;">⚠️ ข้อมูลการประเมินไม่ครบถ้วน (Incomplete Clinical Assessment Data)</h3>
-        <p style="font-weight:700; font-size:1.1rem; margin:0.4rem 0;">
-          ระบบจะไม่แสดงผลการจัดระดับความเสี่ยงหรือคำนวณคะแนน เพื่อความปลอดภัยของผู้ป่วยและป้องกันการเกิดผลลบลวง (False Negative)
-        </p>
-        <div style="margin-top:0.75rem;">
-          <strong>รายการโมดูลที่ยังค้างอยู่:</strong>
-          <ul id="incompleteMissingDomainsList" style="margin:0.4rem 0 0.8rem 0; padding-left:1.5rem; font-weight:700;"></ul>
-        </div>
-        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary" onclick="goToStep(1)">✏️ ไปทำโมดูลที่ 1 (AD8)</button>
-          <button type="button" class="btn btn-primary" onclick="goToStep(2)">✏️ ไปทำโมดูลที่ 2 (Mini-Cog)</button>
-          <button type="button" class="btn btn-primary" onclick="goToStep(3)">✏️ ไปทำโมดูลที่ 3 (Visual-Motor)</button>
-        </div>
-      </div>
-
-      <div id="completeAssessmentReportContainer">
-        <!-- ==================================================================
-             Formal Corporate Print Document Header (Visible only in Print Layout)
-             ================================================================== -->
-        <div class="print-only-header" style="display:none;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1.5rem;">
-            <!-- Left Header: Organization Name, Subtitle & Department Address (11pt dark grey) -->
-            <div style="display:flex; align-items:flex-start; gap:0.9rem; flex:1;">
-              <div style="width:54px; height:54px; border:2px solid #333333; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:26px; background:#F8FAFC; flex-shrink:0;">
-                🧠
-              </div>
-              <div style="font-size:11pt; color:#333333; line-height:1.35;">
-                <div style="font-weight:800; font-size:11.5pt; color:#111827; letter-spacing:0.01em;">
-                  ศูนย์ความเป็นเลิศทางการแพทย์ด้านโรคสมองเสื่อมและประสาทวิทยาศาสตร์
-                </div>
-                <div style="font-weight:600; font-size:10pt; color:#4B5563;">
-                  Center of Excellence in Neurological &amp; Cognitive Disorders
-                </div>
-                <div style="font-size:9pt; color:#6B7280; margin-top:2px;">
-                  โรงพยาบาลระดับตติยภูมิ • บริการคัดกรอง วินิจฉัย และส่งเสริมสุขภาพสมองผู้สูงอายุ • โทร. 02-XXX-XXXX
-                </div>
+              <div style="margin-top:1rem; display:flex; justify-content:flex-end;">
+                <button type="button" class="btn btn-primary" onclick="renderRiskStratificationReport()">
+                  🔄 อัปเดตการประมวลผลความเสี่ยงด้วยผลแล็บใหม่ (Re-calculate Triage)
+                </button>
               </div>
             </div>
+          </details>
 
-            <!-- Right Header: Document Type (16pt bold) & Document Metadata Box -->
-            <div style="text-align:right; min-width:250px;">
-              <div style="font-size:15pt; font-weight:900; color:#111827; line-height:1.2;">
-                ใบรายงานผลการคัดกรองความเสี่ยงสมองเสื่อม
-              </div>
-              <div style="font-size:9.5pt; font-weight:700; color:#4B5563; margin-top:1px;">
-                4-Axis Multimodal Cognitive Screening Report
-              </div>
-              <div style="margin-top:6px; border:1px solid #444444; border-radius:4px; padding:4px 8px; background:#F9FAFB; font-size:9pt; text-align:left; display:inline-block;">
-                <div><strong>เลขที่เอกสาร (Doc No.):</strong> <span id="printDocumentNumberDisplay">DOC-690412-01</span></div>
-                <div><strong>วันที่ออกรายงาน:</strong> <span id="printReportDateDisplay">11 พฤศจิกายน 2569</span></div>
-              </div>
+          <!-- Action Checklist for Clinical Personnel -->
+          <div class="card-box" style="border-width:2px; background:var(--bg-elevated); margin-bottom:1.25rem;">
+            <h3 style="margin-top:0; font-size:1.2rem;">✅ รายการสิ่งที่ควรทำต่อไปทางคลินิก (Clinical Action Checklist)</h3>
+            <ul id="clinicalActionChecklist" style="margin:0; padding-left:1.5rem; font-weight:700;"></ul>
+          </div>
+
+          <!-- 2Q, ACB, Speech & Longitudinal Details -->
+          <div class="form-grid" style="margin-bottom:1.25rem;">
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">🛡️ ด่านคัดกรองซึมเศร้า (2Q Gatekeeper)</h4>
+              <div id="summary2QBox" style="font-weight:600;"></div>
+            </div>
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">💊 ภาระยากลุ่มเสี่ยง (Anticholinergic Burden - ACB)</h4>
+              <div id="summaryAcbBox" style="font-weight:600;"></div>
+            </div>
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">🎙️ คุณลักษณะเสียงพูด (Speech Biomarkers)</h4>
+              <div id="summarySpeechBox" style="font-weight:600;"></div>
+            </div>
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">📈 การเปลี่ยนแปลงเทียบครั้งก่อน (Δ-Decline Rate)</h4>
+              <div id="summaryLongitudinalBox" style="font-weight:600;"></div>
             </div>
           </div>
 
-          <!-- Formal Patient Summary Header Table (Thin 1px border, thead repeated across pages) -->
-          <table class="print-table" style="margin-top:8px;">
-            <thead>
-              <tr>
-                <th colspan="4" style="text-align:left; background:#F0F2F5; color:#111827; font-weight:800; padding:4px 8px;">
-                  📋 ข้อมูลผู้รับการประเมินและการระบุตัวตน (Patient Profile &amp; Demographics)
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="width:20%; background:#F9FAFB; font-weight:700;">ชื่อ-นามสกุล:</td>
-                <td style="width:30%; font-weight:600;" id="printPatientNameCell">คุณสมชาย ใจดี</td>
-                <td style="width:20%; background:#F9FAFB; font-weight:700;">HN / รหัสผู้ป่วย:</td>
-                <td style="width:30%; font-weight:600;" id="printPatientHnCell">HN-690412</td>
-              </tr>
-              <tr>
-                <td style="background:#F9FAFB; font-weight:700;">อายุ / การศึกษา:</td>
-                <td id="printPatientAgeEduCell">71 ปี (การศึกษา 12 ปี)</td>
-                <td style="background:#F9FAFB; font-weight:700;">รหัสแฝงกำกับผลตรวจ:</td>
-                <td id="printPatientTokenCell" style="font-family:monospace; font-weight:700;">PSN-XXXX-XXXXXXXX-XXXX</td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Clinical Flags List -->
+          <div class="card-box" style="margin-bottom:1.25rem;">
+            <h3 style="margin-top:0; font-size:1.3rem;">🚩 ประเด็นสำคัญทางคลินิกที่ตรวจพบ (`clinicalFlags[]`)</h3>
+            <ul class="flag-list" id="clinicalFlagsList"></ul>
+          </div>
+
+          <!-- Multimodal Summary Grid -->
+          <div class="form-grid" style="margin-bottom:1.25rem;">
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">1️⃣ แบบประเมินญาติ (AD8)</h4>
+              <div id="summaryAd8Box" style="font-weight:600;"></div>
+            </div>
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">2️⃣ Mini-Cog &amp; Delayed Recall</h4>
+              <div id="summaryMiniCogBox" style="font-weight:600;"></div>
+            </div>
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">3️⃣ Visual-Motor Trail Making</h4>
+              <div id="summaryVmtBox" style="font-weight:600;"></div>
+            </div>
+          </div>
+
+          <!-- Clock Drawing Snapshot & Biomarkers Box -->
+          <div class="form-grid" style="margin-bottom:1.25rem;">
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">🕒 ภาพวาดหน้าปัดนาฬิกา (CDT Snapshot เวลา 11:10 น.)</h4>
+              <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                <img id="reportCdtImage" alt="ภาพวาดหน้าปัดนาฬิกาของผู้รับการประเมิน"
+                  style="width:180px; height:180px; border:3px solid var(--border-strong); border-radius:12px; background:#FFF;" />
+                <div id="reportCdtTelemetryText" style="font-weight:600;"></div>
+              </div>
+            </div>
+
+            <div class="card-box" style="margin:0;">
+              <h4 style="margin-top:0; font-size:1.15rem;">🧬 สรุปสถานะตัวชี้วัดทางห้องปฏิบัติการ (Lab Biomarkers)</h4>
+              <div id="summaryBiomarkersBox" style="font-weight:600;"></div>
+            </div>
+          </div>
+
+          <!-- Clinician Decision Override & Formal Sign-Off Card -->
+          <div class="card-box no-print" style="border-width:3px; border-color:var(--primary-bg); background:var(--bg-elevated); margin-bottom:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h3 style="margin:0; font-size:1.3rem;">👨‍⚕️ บันทึกการทบทวนและลงนามโดยแพทย์ (Clinician Review &amp; Sign-Off)</h3>
+                <p style="margin:0.25rem 0 0 0; color:var(--text-secondary);">
+                  แพทย์ผู้ตรวจสามารถปรับเปลี่ยนผลการจัดกลุ่มการรู้คิดตามดุลยพินิจทางคลินิก (Clinician Decision Override) พร้อมบันทึกเหตุผลและเลขที่ใบอนุญาตประกอบวิชาชีพเวชกรรม
+                </p>
+              </div>
+              <div style="font-weight:700; font-size:0.95rem; padding:0.2rem 0.6rem; border-radius:6px; background:var(--bg-card); border:2px solid var(--border-strong);">
+                เวอร์ชันอัลกอริทึม: <code>v2.4.1-clinical-multiaxis-hardened</code>
+              </div>
+            </div>
+
+            <div class="form-grid" style="margin-top:1rem;">
+              <div class="field-group">
+                <label class="field-label" for="physicianNameInput">ชื่อ-นามสกุล แพทย์ผู้ตรวจประเมิน *</label>
+                <input type="text" id="physicianNameInput" class="input-control" placeholder="เช่น นพ. ปัญญา เจริญสุข" value="" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="physicianLicenseInput">เลขที่ใบประกอบวิชาชีพเวชกรรม (Medical License No.) *</label>
+                <input type="text" id="physicianLicenseInput" class="input-control" placeholder="เช่น ว.49120 หรือ 49120" value="" />
+                <span class="field-hint">ต้องเป็นเลข 4–6 หลัก ขึ้นต้นด้วย ว. หรือตัวเลขล้วน (ตรวจสอบตามเกณฑ์แพทยสภา)</span>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="clinicianOverrideSelect">การปรับดุลยพินิจทางคลินิก (Override Cognitive Axis)</label>
+                <select id="clinicianOverrideSelect" class="input-control">
+                  <option value="">— ไม่ปรับเปลี่ยน (ใช้ผลตามอัลกอริทึม) —</option>
+                  <option value="COGNITIVE_NORMAL">ปรับเป็น: COGNITIVE_NORMAL (ปกติ)</option>
+                  <option value="MCI_SUSPECTED">ปรับเป็น: MCI_SUSPECTED (สงสัย MCI)</option>
+                  <option value="DEMENTIA_SUSPECTED">ปรับเป็น: DEMENTIA_SUSPECTED (สงสัยสมองเสื่อม)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group" style="margin-top:0.75rem;">
+              <label class="field-label" for="clinicianOverrideRationale">เหตุผลและข้อบ่งชี้ทางคลินิกในการปรับผล (Clinical Rationale):</label>
+              <input type="text" id="clinicianOverrideRationale" class="input-control" placeholder="เช่น ผู้ป่วยมีอาการลืมชั่วคราวจากผลข้างเคียงยา หรือ สมาธิดีมากเมื่อทดสอบซ้ำ" />
+            </div>
+
+            <div style="margin-top:0.85rem; padding:0.75rem; border-radius:8px; border:2px solid var(--border-subtle); background:var(--bg-surface);">
+              <label style="display:flex; align-items:center; gap:0.65rem; font-weight:800; cursor:pointer;">
+                <input type="checkbox" id="physicianAttestationCheckbox" style="width:24px; height:24px;" />
+                <span>ข้าพเจ้าขอรับรองว่าได้ทบทวนข้อมูลทางคลินิกและผลการประเมินของผู้ป่วยรายนี้ด้วยตนเองอย่างถูกต้องครบถ้วนตามหลักวิชาชีพเวชกรรม</span>
+              </label>
+            </div>
+
+            <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <button type="button" class="btn btn-primary" onclick="applyClinicianSignOff()">
+                ✍️ บันทึกการทบทวนและลงนามรับรองผล (Sign-Off Report)
+              </button>
+              <div id="clinicianSignOffStatus" style="font-weight:800; color:var(--status-low-text);"></div>
+            </div>
+          </div>
+
+          <!-- Enhancement: Secure Hospital Referral & Cloud EMR Integration -->
+          <div class="card-box clinician-only" id="secureReferralCard" style="border-width:3px; border-color:var(--primary-bg); margin-bottom:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h3 style="margin:0; font-size:1.35rem;">🏥 ระบบส่งต่อผู้ป่วยและเชื่อมโยง EMR คลาวด์ความปลอดภัยสูง (Secure Referral &amp; Cloud Sync)</h3>
+                <p style="margin:0.3rem 0 0 0; color:var(--text-secondary); font-size:0.95rem;">
+                  แก้ปัญหาข้อจำกัด LocalStorage: ส่งต่อข้อมูลเวชระเบียนคัดกรองในรูปแบบ <strong>HL7 FHIR R4 Bundle</strong> เข้าสู่ Secure Hospital Backend API พร้อมระดับความเร่งด่วนตามมาตรฐาน HIPAA / PDPA สำหรับการติดตามผลระยะยาวอย่างปลอดภัย
+                </p>
+              </div>
+              <span class="badge" style="background:var(--primary-bg); color:#FFF; font-weight:800; padding:0.4rem 0.8rem; border-radius:6px; font-size:0.85rem;">
+                FHIR R4 SERVICE REQUEST
+              </span>
+            </div>
+
+            <div class="form-grid" style="margin-top:1rem;">
+              <div class="field-group">
+                <label class="field-label" for="referralHospitalSelect">โรงพยาบาล / แผนกเฉพาะทางปลายทาง</label>
+                <select id="referralHospitalSelect" class="input-control">
+                  <option value="HOSP_SIRIRAJ">โรงพยาบาลศิริราช (Siriraj Hospital - Memory Clinic)</option>
+                  <option value="HOSP_CHULA">โรงพยาบาลจุฬาลงกรณ์ (King Chulalongkorn Memorial Hospital)</option>
+                  <option value="HOSP_RAMA">โรงพยาบาลรามาธิบดี (Ramathibodi Hospital - Geriatrics)</option>
+                  <option value="HOSP_PROVINCIAL">โรงพยาบาลศูนย์ / โรงพยาบาลทั่วไปประจำจังหวัด</option>
+                  <option value="CUSTOM_GATEWAY">กำหนด Secure EMR Endpoint เอง (Custom Cloud Gateway)</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="referralPrioritySelect">ระดับความเร่งด่วนในการส่งต่อ (Triage Priority)</label>
+                <select id="referralPrioritySelect" class="input-control">
+                  <option value="routine">Routine (ส่งต่อตรวจตามนัดปกติ 2–4 สัปดาห์)</option>
+                  <option value="urgent">Urgent (ด่วน: พบภาวะขาดวิตามิน/ไทรอยด์ หรือสงสัย MCI/Dementia)</option>
+                  <option value="asap">Emergency / ASAP (ฉุกเฉิน: พบภาวะ Delirium หรือถดถอยฉับพลัน)</option>
+                </select>
+              </div>
+              <div class="field-group" style="grid-column: 1 / -1;">
+                <label class="field-label" for="backendApiEndpointInput">Secure EMR Gateway API Endpoint (TLS 1.3)</label>
+                <input type="url" id="backendApiEndpointInput" class="input-control" value="https://api.hospital-emr.health.go.th/v1/cognitive-referrals" />
+                <span class="field-hint">ต้องเป็น HTTPS TLS 1.3 พร้อม mTLS หรือ JWT Bearer Authentication เพื่อการจัดเก็บข้อมูลระยะยาวที่ปลอดภัย</span>
+              </div>
+            </div>
+
+            <div style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.75rem; flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary" onclick="dispatchSecureHospitalReferral()" style="min-height:50px; font-weight:800; font-size:1.05rem;">
+                🚀 ยืนยันและส่งต่อข้อมูลผู้ป่วย (Dispatch Encrypted FHIR Referral)
+              </button>
+            </div>
+
+            <div id="referralStatusFeedback" style="display:none; margin-top:1rem; padding:1rem; border-radius:8px; border:2px solid var(--border-strong);"></div>
+          </div>
+
+          <!-- Structured TypeScript Interface Output Inspector -->
+          <div class="card-box no-print clinician-only" style="margin-bottom:1.25rem;">
+            <h3 style="margin-top:0; font-size:1.2rem;">💻 ข้อมูลโครงสร้างอินเทอร์เฟซ (`AssessmentInput` &amp; `RiskOutput` — Pseudonymized Clinical Vector)</h3>
+            <pre class="code-inspector" id="jsonPayloadPreview"></pre>
+          </div>
+
+          <!-- HIPAA / PDPA Pseudonymization Vaults & Immutable Audit Trail -->
+          <div class="card-box no-print clinician-only" style="border-width:3px; margin-bottom:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h3 style="margin:0; font-size:1.3rem;">🔒 สถาปัตยกรรมความปลอดภัยและการปกป้องข้อมูลชีวภาพ (HIPAA / PDPA Compliance &amp; Audit Trail)</h3>
+                <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
+                  แยกฐานข้อมูล <strong>Schema A (Identifiable PII Vault)</strong> ออกจาก <strong>Schema B (Clinical Screening Vector)</strong> อย่างเด็ดขาด ผูกด้วยรหัสแฝงทางเดียว <code>pseudonymToken</code> พร้อมบันทึก <strong>Hash-Chained Access Audit Log</strong>
+                </p>
+              </div>
+              <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                <button type="button" class="btn" onclick="togglePiiVaultInspector()">🔑 ดูการแยก Schema A (PII) vs Schema B</button>
+                <button type="button" class="btn" onclick="exportAuditTrailJson()">📜 ส่งออก Audit Trail Log (.json)</button>
+              </div>
+            </div>
+            <div id="piiSeparationPreviewBox" style="display:none; margin-top:1rem;">
+              <pre class="code-inspector" id="piiSeparationJsonText"></pre>
+            </div>
+            <div style="margin-top:1rem;">
+              <h4 style="margin:0 0 0.5rem 0; font-size:1.1rem;">📋 บันทึกการเข้าถึงเวชระเบียนอิเล็กทรอนิกส์ (Immutable EMR Access Audit Log):</h4>
+              <div id="auditTrailTableContainer" style="overflow-x:auto; font-size:0.92rem; font-weight:600;"></div>
+            </div>
+          </div>
         </div>
 
-        <!-- Patient Mode Friendly Report Summary Card -->
-        <div class="card-box patient-only" style="background:var(--bg-card); border:3px solid var(--primary-bg); padding:1.75rem; margin-bottom:1.5rem;">
-          <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
-            <span style="font-size:2.2rem;">🎉</span>
+        <!-- ====================================================================
+             Formal 3-Column Corporate Sign-Off Block (A4 Print Standard)
+             ==================================================================== -->
+        <div class="print-sign-off-block print-avoid-break" style="margin-top:1.25rem; border:1px solid #444444; border-radius:4px; padding:12px; background:#FAFAFA;">
+          <div style="font-weight:800; font-size:10.5pt; color:#111827; margin-bottom:8px; border-bottom:1px solid #E5E7EB; padding-bottom:4px;">
+            ✍️ การลงนามรับรองเอกสารทางการแพทย์ (Clinical Attestation &amp; Sign-Off)
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; text-align:center;">
+            <div style="display:flex; flex-direction:column; justify-content:space-between; min-height:125px; padding:4px; border-right:1px dashed #D1D5DB;">
+              <div style="font-weight:800; font-size:9.5pt; color:#111827;">ผู้จัดทำ / ผู้ทำการทดสอบ (Prepared by)</div>
+              <div style="margin-top:auto; padding-top:24px;">
+                <div style="border-bottom:1px dashed #333333; width:85%; margin:0 auto 4px auto;"></div>
+                <div style="font-size:9pt; color:#374151;">(...............................................................)</div>
+                <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">พยาบาลวิชาชีพ / นักจิตวิทยาคลินิก</div>
+                <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">วันที่: ......./......./............</div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; justify-content:space-between; min-height:125px; padding:4px; border-right:1px dashed #D1D5DB;">
+              <div style="font-weight:800; font-size:9.5pt; color:#111827;">ผู้ตรวจสอบข้อมูล (Reviewed by)</div>
+              <div style="margin-top:auto; padding-top:24px;">
+                <div style="border-bottom:1px dashed #333333; width:85%; margin:0 auto 4px auto;"></div>
+                <div style="font-size:9pt; color:#374151;">(...............................................................)</div>
+                <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">เภสัชกรคลินิก / นักเทคนิคการแพทย์</div>
+                <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">วันที่: ......./......./............</div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; justify-content:space-between; min-height:125px; padding:4px;">
+              <div style="font-weight:800; font-size:9.5pt; color:#111827;">ผู้อนุมัติและรับรองผล (Approved by)</div>
+              <div style="margin-top:auto; padding-top:24px;">
+                <div style="border-bottom:1px dashed #333333; width:85%; margin:0 auto 4px auto;"></div>
+                <div style="font-size:9.5pt; font-weight:700; color:#111827;" id="printSignOffDoctorName">( ............................................................... )</div>
+                <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">แพทย์ผู้ตรวจประเมิน (เลขที่ ว. <span id="printSignOffDoctorLicense">.............</span>)</div>
+                <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">วันที่: <span id="printSignOffDoctorDate">......./......./............</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formal Print Document Footer (Visible only in print) -->
+        <div class="print-only-footer" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:8pt; color:#555555;">
             <div>
-              <h3 style="margin:0; font-size:1.5rem; color:var(--text-primary);">การประเมินสุขภาพความจำเสร็จสมบูรณ์แล้วค่ะ</h3>
-              <p style="margin:0.25rem 0 0 0; color:var(--text-secondary); font-size:1.05rem;">
-                ขอบคุณที่ทำแบบทดสอบครบถ้วนทุกขั้นตอน ข้อมูลเบื้องต้นพร้อมสำหรับการปรึกษาแพทย์แล้ว
-              </p>
+              ⚖️ <strong>การรับรองความถูกต้อง:</strong> รายงานฉบับนี้สร้างขึ้นเพื่อเป็นเครื่องมือสนับสนุนการตัดสินใจทางคลินิก (Class II SaMD CDS) ผลการตรวจต้องได้รับการยืนยันโดยแพทย์ผู้ตรวจ
             </div>
-          </div>
-          <div id="patientFriendlyStatusCard" style="background:var(--status-low-surface); border:2px solid var(--status-low-border); color:var(--status-low-text); border-radius:8px; padding:1.25rem; font-size:1.15rem; font-weight:700; line-height:1.6; margin-bottom:1.25rem;">
-            ✅ ข้อมูลการตอบแบบประเมินและภาพวาดนาฬิกาถูกรวบรวมเรียบร้อยแล้ว แนะนำให้นำรายงานนี้ปรึกษาแพทย์ประจำตัวหรือแพทย์เฉพาะทางด้านระบบประสาทและสมองเพื่อรับคำแนะนำที่เหมาะสม
-          </div>
-          <p style="font-size:1.1rem; line-height:1.6; color:var(--text-primary); margin-bottom:1.25rem;">
-            📄 คุณสามารถกดปุ่ม <strong>"🖨️ พิมพ์เอกสารสำหรับนำไปพบแพทย์"</strong> ด้านล่าง เพื่อพิมพ์ใส่กระดาษหรือบันทึกเป็นไฟล์ PDF นำไปให้แพทย์ดูได้ทันทีค่ะ
-          </p>
-          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-            <button type="button" class="btn btn-primary" style="min-height:56px; font-size:1.2rem; font-weight:800;" onclick="window.print()">
-              🖨️ พิมพ์เอกสารสำหรับนำไปพบแพทย์ (Print / Save as PDF)
-            </button>
-            <button type="button" class="btn" style="min-height:56px; font-size:1.1rem; font-weight:700;" onclick="speakReportSummary(this)">
-              🔊 ฟังเสียงสรุปคำแนะนำ
-            </button>
-          </div>
-        </div>
-
-        <!-- Hero Risk Stratification Banner -->
-        <div id="riskHeroBanner" class="risk-hero-banner cat-LOW">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-            <div>
-              <div style="font-size:0.95rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">
-                สถานะการคัดกรองเบื้องต้น (Primary Screening Summary)</div>
-              <h3 id="riskCategoryHeading" style="margin:0.25rem 0; font-size:1.85rem; font-weight:800;">COGNITIVE SCREENING COMPLETE</h3>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:0.95rem; font-weight:800;">ดัชนีคะแนนรวมภายใน (Composite Index)</div>
-              <div id="riskScorePercentHeading" style="font-size:2.5rem; font-weight:800; line-height:1.1;">0 / 100 จุด</div>
-              <div style="font-size:0.82rem; font-weight:700; color:var(--text-secondary); margin-top:0.2rem;">*คะแนนจัดลำดับภายใน ไม่ใช่ค่าความน่าจะเป็นทางสถิติ</div>
-            </div>
-          </div>
-          <hr style="border:1px solid currentColor; opacity:0.35; margin:1rem 0;" />
-          <div>
-            <strong style="font-size:1.15rem;">📋 คำแนะนำหลักสำหรับการดูแลและส่งต่อแพทย์ (Primary Clinical Recommendation):</strong>
-            <p id="primaryRecommendationText" style="margin:0.4rem 0 0 0; font-size:1.15rem; font-weight:700;"></p>
-          </div>
-        </div>
-
-        <!-- 4 Parallel Multi-Axes Reporting Cards (No Masking) -->
-        <div class="card-box" style="border-width:3px; background:var(--bg-card); margin-bottom:1.25rem;">
-          <h3 style="margin-top:0; font-size:1.35rem;">🧭 ผลการประเมิน 4 แกนคู่ขนานตามมาตรฐานคลินิก (4-Axis Parallel Assessment)</h3>
-          <p style="margin:0.2rem 0 1rem 0; color:var(--text-secondary);">
-            รายงานผลแบบแยกแกนอิสระ ไม่ให้สาเหตุเมตาบอลิกหรือผลเลือดบดบังความเสี่ยงอัลไซเมอร์ เพื่อให้แพทย์เห็นภาพรวมพยาธิสภาพรอบด้าน
-          </p>
-          <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-            <div class="card-box" style="margin:0; border-left:6px solid var(--primary-bg);">
-              <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">🧠 แกนที่ 1: สมรรถภาพการรู้คิด (Cognitive Axis)</h4>
-              <div id="axisCognitiveDisplay" style="font-weight:800; font-size:1.2rem;">-</div>
-              <div id="axisCognitiveNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
-            </div>
-
-            <div class="card-box" style="margin:0; border-left:6px solid var(--status-rev-border);">
-              <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">💊 แกนที่ 2: สาเหตุที่แก้ไขได้ &amp; ยา (Reversible Axis)</h4>
-              <div id="axisReversibleDisplay" style="font-weight:800; font-size:1.15rem;">-</div>
-              <div id="axisReversibleNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
-            </div>
-
-            <div class="card-box" style="margin:0; border-left:6px solid var(--status-ad-border);">
-              <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">🧬 แกนที่ 3: ตัวชี้วัดอัลไซเมอร์ (Biomarker Axis)</h4>
-              <div id="axisBiomarkerDisplay" style="font-weight:800; font-size:1.15rem;">-</div>
-              <div id="axisBiomarkerNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
-            </div>
-
-            <div class="card-box" style="margin:0; border-left:6px solid var(--status-mod-border);">
-              <h4 style="margin:0 0 0.4rem 0; font-size:1.1rem;">🛡️ แกนที่ 4: ภาวะอารมณ์ &amp; ซึมเศร้า (Affective Axis)</h4>
-              <div id="axisAffectiveDisplay" style="font-weight:800; font-size:1.15rem;">-</div>
-              <div id="axisAffectiveNote" style="font-size:0.92rem; color:var(--text-secondary); margin-top:0.3rem;">-</div>
+            <div style="text-align:right; white-space:nowrap; margin-left:1rem;">
+              <span id="printFooterTimestamp">พิมพ์เมื่อ: 11/11/2569 --:-- น.</span>
             </div>
           </div>
         </div>
 
-        <!-- Action Checklist for Clinical Personnel -->
-        <div class="card-box" style="border-width:2px; background:var(--bg-elevated); margin-bottom:1.25rem;">
-          <h3 style="margin-top:0; font-size:1.2rem;">✅ รายการสิ่งที่ควรทำต่อไปทางคลินิก (Clinical Action Checklist)</h3>
-          <ul id="clinicalActionChecklist" style="margin:0; padding-left:1.5rem; font-weight:700;"></ul>
+        <!-- Prominent Regulatory Disclaimer Footer in Report -->
+        <div class="card-box no-print"
+          style="margin-top:1rem; border-color:var(--status-mod-border); background:var(--status-mod-surface); color:var(--status-mod-text); font-weight:700;">
+          ⚖️ <strong>ข้อจำกัดความรับผิดชอบทางการแพทย์ (Regulatory &amp; SaMD Disclaimer):</strong><br />
+          "ระบบนี้เป็นเพียงเครื่องมือประเมินความเสี่ยงเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์
+          และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น"
         </div>
 
-      <!-- Enhancement 1, 3, 4 & 5: 2Q Gatekeeper + ACB Medication + Speech Biomarker + Longitudinal Delta-Decline -->
-      <div class="form-grid" style="margin-bottom:1.25rem;">
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">🛡️ ด่านคัดกรองซึมเศร้า (2Q Gatekeeper)</h4>
-          <div id="summary2QBox" style="font-weight:600;"></div>
-        </div>
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">💊 ภาระยากลุ่มเสี่ยง (Anticholinergic Burden - ACB)</h4>
-          <div id="summaryAcbBox" style="font-weight:600;"></div>
-        </div>
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">🎙️ คุณลักษณะเสียงพูด (Speech Biomarkers)</h4>
-          <div id="summarySpeechBox" style="font-weight:600;"></div>
-        </div>
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">📈 การเปลี่ยนแปลงเทียบครั้งก่อน (Δ-Decline Rate)</h4>
-          <div id="summaryLongitudinalBox" style="font-weight:600;"></div>
-        </div>
-      </div>
-
-      <!-- Clinical Flags List -->
-      <div class="card-box">
-        <h3 style="margin-top:0; font-size:1.3rem;">🚩 ประเด็นสำคัญทางคลินิกที่ตรวจพบ (`clinicalFlags[]`)</h3>
-        <ul class="flag-list" id="clinicalFlagsList"></ul>
-      </div>
-
-      <!-- Multimodal Summary Grid -->
-      <div class="form-grid" style="margin-bottom:1.25rem;">
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">1️⃣ แบบประเมินญาติ (AD8)</h4>
-          <div id="summaryAd8Box" style="font-weight:600;"></div>
-        </div>
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">2️⃣ Mini-Cog &amp; Delayed Recall</h4>
-          <div id="summaryMiniCogBox" style="font-weight:600;"></div>
-        </div>
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">3️⃣ Visual-Motor Trail Making</h4>
-          <div id="summaryVmtBox" style="font-weight:600;"></div>
-        </div>
-      </div>
-
-      <!-- Clock Drawing Snapshot & Telemetry Inspector -->
-      <div class="form-grid" style="margin-bottom:1.25rem;">
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">🕒 ภาพวาดหน้าปัดนาฬิกา (CDT Snapshot เวลา 11:10 น.)</h4>
-          <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
-            <img id="reportCdtImage" alt="ภาพวาดหน้าปัดนาฬิกาของผู้รับการประเมิน"
-              style="width:180px; height:180px; border:3px solid var(--border-strong); border-radius:12px; background:#FFF;" />
-            <div id="reportCdtTelemetryText" style="font-weight:600;"></div>
-          </div>
+        <div class="footer-nav no-print">
+          <button type="button" class="btn" onclick="goToStep(3)">⬅️ ย้อนกลับไปโมดูลที่ 3 (Visual-Motor)</button>
+          <button type="button" class="btn btn-primary" onclick="resetForNewPatient()">🔄 เริ่มประเมินผู้ป่วยรายใหม่</button>
         </div>
 
-        <div class="card-box" style="margin:0;">
-          <h4 style="margin-top:0; font-size:1.15rem;">🧬 สรุปสถานะตัวชี้วัดทางห้องปฏิบัติการ (Lab Biomarkers)</h4>
-          <div id="summaryBiomarkersBox" style="font-weight:600;"></div>
-        </div>
-      </div>
-
-      <!-- Clinician Decision Override & Formal Sign-Off Card -->
-      <div class="card-box no-print" style="border-width:3px; border-color:var(--primary-bg); background:var(--bg-elevated);">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-          <div>
-            <h3 style="margin:0; font-size:1.3rem;">👨‍⚕️ บันทึกการทบทวนและลงนามโดยแพทย์ (Clinician Review &amp; Sign-Off)</h3>
-            <p style="margin:0.25rem 0 0 0; color:var(--text-secondary);">
-              แพทย์ผู้ตรวจสามารถปรับเปลี่ยนผลการจัดกลุ่มการรู้คิดตามดุลยพินิจทางคลินิก (Clinician Decision Override) พร้อมบันทึกเหตุผลและเลขที่ใบอนุญาตประกอบวิชาชีพเวชกรรม
-            </p>
-          </div>
-          <div style="font-weight:700; font-size:0.95rem; padding:0.2rem 0.6rem; border-radius:6px; background:var(--bg-card); border:2px solid var(--border-strong);">
-            เวอร์ชันอัลกอริทึม: <code>v2.4.1-clinical-multiaxis-hardened</code>
-          </div>
-        </div>
-
-        <div class="form-grid" style="margin-top:1rem;">
-          <div class="field-group">
-            <label class="field-label" for="physicianNameInput">ชื่อ-นามสกุล แพทย์ผู้ตรวจประเมิน *</label>
-            <input type="text" id="physicianNameInput" class="input-control" placeholder="เช่น นพ. ปัญญา เจริญสุข" value="" />
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="physicianLicenseInput">เลขที่ใบประกอบวิชาชีพเวชกรรม (Medical License No.) *</label>
-            <input type="text" id="physicianLicenseInput" class="input-control" placeholder="เช่น ว.49120 หรือ 49120" value="" />
-            <span class="field-hint">ต้องเป็นเลข 4–6 หลัก ขึ้นต้นด้วย ว. หรือตัวเลขล้วน (ตรวจสอบตามเกณฑ์แพทยสภา)</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="clinicianOverrideSelect">การปรับดุลยพินิจทางคลินิก (Override Cognitive Axis)</label>
-            <select id="clinicianOverrideSelect" class="input-control">
-              <option value="">— ไม่ปรับเปลี่ยน (ใช้ผลตามอัลกอริทึม) —</option>
-              <option value="COGNITIVE_NORMAL">ปรับเป็น: COGNITIVE_NORMAL (ปกติ)</option>
-              <option value="MCI_SUSPECTED">ปรับเป็น: MCI_SUSPECTED (สงสัย MCI)</option>
-              <option value="DEMENTIA_SUSPECTED">ปรับเป็น: DEMENTIA_SUSPECTED (สงสัยสมองเสื่อม)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field-group" style="margin-top:0.75rem;">
-          <label class="field-label" for="clinicianOverrideRationale">เหตุผลและข้อบ่งชี้ทางคลินิกในการปรับผล (Clinical Rationale):</label>
-          <input type="text" id="clinicianOverrideRationale" class="input-control" placeholder="เช่น ผู้ป่วยมีอาการลืมชั่วคราวจากผลข้างเคียงยา หรือ สมาธิดีมากเมื่อทดสอบซ้ำ" />
-        </div>
-
-        <div style="margin-top:0.85rem; padding:0.75rem; border-radius:8px; border:2px solid var(--border-subtle); background:var(--bg-surface);">
-          <label style="display:flex; align-items:center; gap:0.65rem; font-weight:800; cursor:pointer;">
-            <input type="checkbox" id="physicianAttestationCheckbox" style="width:24px; height:24px;" />
-            <span>ข้าพเจ้าขอรับรองว่าได้ทบทวนข้อมูลทางคลินิกและผลการประเมินของผู้ป่วยรายนี้ด้วยตนเองอย่างถูกต้องครบถ้วนตามหลักวิชาชีพเวชกรรม</span>
-          </label>
-        </div>
-
-        <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-          <button type="button" class="btn btn-primary" onclick="applyClinicianSignOff()">
-            ✍️ บันทึกการทบทวนและลงนามรับรองผล (Sign-Off Report)
-          </button>
-          <div id="clinicianSignOffStatus" style="font-weight:800; color:var(--status-low-text);"></div>
-        </div>
-      </div>
-
-      <!-- ====================================================================
-           Formal 3-Column Corporate Sign-Off Block (A4 Print Standard)
-           ==================================================================== -->
-      <div class="print-sign-off-block print-avoid-break" style="margin-top:1.25rem; border:1px solid #444444; border-radius:4px; padding:12px; background:#FAFAFA;">
-        <div style="font-weight:800; font-size:10.5pt; color:#111827; margin-bottom:8px; border-bottom:1px solid #E5E7EB; padding-bottom:4px;">
-          ✍️ การลงนามรับรองเอกสารทางการแพทย์ (Clinical Attestation &amp; Sign-Off)
-        </div>
-        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; text-align:center;">
-          <!-- Column 1: Prepared By -->
-          <div style="display:flex; flex-direction:column; justify-content:space-between; min-height:125px; padding:4px; border-right:1px dashed #D1D5DB;">
-            <div style="font-weight:800; font-size:9.5pt; color:#111827;">ผู้จัดทำ / ผู้ทำการทดสอบ (Prepared by)</div>
-            <div style="margin-top:auto; padding-top:24px;">
-              <div style="border-bottom:1px dashed #333333; width:85%; margin:0 auto 4px auto;"></div>
-              <div style="font-size:9pt; color:#374151;">(...............................................................)</div>
-              <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">พยาบาลวิชาชีพ / นักจิตวิทยาคลินิก</div>
-              <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">วันที่: ......./......./............</div>
-            </div>
-          </div>
-
-          <!-- Column 2: Reviewed By -->
-          <div style="display:flex; flex-direction:column; justify-content:space-between; min-height:125px; padding:4px; border-right:1px dashed #D1D5DB;">
-            <div style="font-weight:800; font-size:9.5pt; color:#111827;">ผู้ตรวจสอบข้อมูล (Reviewed by)</div>
-            <div style="margin-top:auto; padding-top:24px;">
-              <div style="border-bottom:1px dashed #333333; width:85%; margin:0 auto 4px auto;"></div>
-              <div style="font-size:9pt; color:#374151;">(...............................................................)</div>
-              <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">เภสัชกรคลินิก / นักเทคนิคการแพทย์</div>
-              <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">วันที่: ......./......./............</div>
-            </div>
-          </div>
-
-          <!-- Column 3: Approved By -->
-          <div style="display:flex; flex-direction:column; justify-content:space-between; min-height:125px; padding:4px;">
-            <div style="font-weight:800; font-size:9.5pt; color:#111827;">ผู้อนุมัติและรับรองผล (Approved by)</div>
-            <div style="margin-top:auto; padding-top:24px;">
-              <div style="border-bottom:1px dashed #333333; width:85%; margin:0 auto 4px auto;"></div>
-              <div style="font-size:9.5pt; font-weight:700; color:#111827;" id="printSignOffDoctorName">( ............................................................... )</div>
-              <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">แพทย์ผู้ตรวจประเมิน (เลขที่ ว. <span id="printSignOffDoctorLicense">.............</span>)</div>
-              <div style="font-size:8.5pt; color:#6B7280; margin-top:2px;">วันที่: <span id="printSignOffDoctorDate">......./......./............</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Formal Print Document Footer (Visible only in print) -->
-      <div class="print-only-footer" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:8pt; color:#555555;">
-          <div>
-            ⚖️ <strong>การรับรองความถูกต้อง:</strong> รายงานฉบับนี้สร้างขึ้นเพื่อเป็นเครื่องมือสนับสนุนการตัดสินใจทางคลินิก (Class II SaMD CDS) ผลการตรวจต้องได้รับการยืนยันโดยแพทย์ผู้ตรวจ
-          </div>
-          <div style="text-align:right; white-space:nowrap; margin-left:1rem;">
-            <span id="printFooterTimestamp">พิมพ์เมื่อ: 11/11/2569 --:-- น.</span>
-          </div>
-        </div>
-      </div>
       </div> <!-- End #completeAssessmentReportContainer -->
-
-      <!-- Enhancement: Secure Hospital Referral & Cloud EMR Integration (Longitudinal Persistence) -->
-      <div class="card-box clinician-only" id="secureReferralCard" style="border-width:3px; border-color:var(--primary-bg); margin-top:1.5rem;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-          <div>
-            <h3 style="margin:0; font-size:1.35rem;">🏥 ระบบส่งต่อผู้ป่วยและเชื่อมโยง EMR คลาวด์ความปลอดภัยสูง (Secure Referral &amp; Cloud Sync)</h3>
-            <p style="margin:0.3rem 0 0 0; color:var(--text-secondary); font-size:0.95rem;">
-              แก้ปัญหาข้อจำกัด LocalStorage: ส่งต่อข้อมูลเวชระเบียนคัดกรองในรูปแบบ <strong>HL7 FHIR R4 Bundle</strong> เข้าสู่ Secure Hospital Backend API พร้อมระดับความเร่งด่วนตามมาตรฐาน HIPAA / PDPA สำหรับการติดตามผลระยะยาวอย่างปลอดภัย
-            </p>
-          </div>
-          <span class="badge" style="background:var(--primary-bg); color:#FFF; font-weight:800; padding:0.4rem 0.8rem; border-radius:6px; font-size:0.85rem;">
-            FHIR R4 SERVICE REQUEST
-          </span>
-        </div>
-
-        <div class="form-grid" style="margin-top:1rem;">
-          <div class="field-group">
-            <label class="field-label" for="referralHospitalSelect">โรงพยาบาล / แผนกเฉพาะทางปลายทาง</label>
-            <select id="referralHospitalSelect" class="input-control">
-              <option value="HOSP_SIRIRAJ">โรงพยาบาลศิริราช (Siriraj Hospital - Memory Clinic)</option>
-              <option value="HOSP_CHULA">โรงพยาบาลจุฬาลงกรณ์ (King Chulalongkorn Memorial Hospital)</option>
-              <option value="HOSP_RAMA">โรงพยาบาลรามาธิบดี (Ramathibodi Hospital - Geriatrics)</option>
-              <option value="HOSP_PROVINCIAL">โรงพยาบาลศูนย์ / โรงพยาบาลทั่วไปประจำจังหวัด</option>
-              <option value="CUSTOM_GATEWAY">กำหนด Secure EMR Endpoint เอง (Custom Cloud Gateway)</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="referralPrioritySelect">ระดับความเร่งด่วนในการส่งต่อ (Triage Priority)</label>
-            <select id="referralPrioritySelect" class="input-control">
-              <option value="routine">Routine (ส่งต่อตรวจตามนัดปกติ 2–4 สัปดาห์)</option>
-              <option value="urgent">Urgent (ด่วน: พบภาวะขาดวิตามิน/ไทรอยด์ หรือสงสัย MCI/Dementia)</option>
-              <option value="asap">Emergency / ASAP (ฉุกเฉิน: พบภาวะ Delirium หรือถดถอยฉับพลัน)</option>
-            </select>
-          </div>
-          <div class="field-group" style="grid-column: 1 / -1;">
-            <label class="field-label" for="backendApiEndpointInput">Secure EMR Gateway API Endpoint (TLS 1.3)</label>
-            <input type="url" id="backendApiEndpointInput" class="input-control" value="https://api.hospital-emr.health.go.th/v1/cognitive-referrals" />
-            <span class="field-hint">ต้องเป็น HTTPS TLS 1.3 พร้อม mTLS หรือ JWT Bearer Authentication เพื่อการจัดเก็บข้อมูลระยะยาวที่ปลอดภัย</span>
-          </div>
-        </div>
-
-        <div style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.75rem; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary" onclick="dispatchSecureHospitalReferral()" style="min-height:50px; font-weight:800; font-size:1.05rem;">
-            🚀 ยืนยันและส่งต่อข้อมูลผู้ป่วย (Dispatch Encrypted FHIR Referral)
-          </button>
-        </div>
-
-        <div id="referralStatusFeedback" style="display:none; margin-top:1rem; padding:1rem; border-radius:8px; border:2px solid var(--border-strong);"></div>
-      </div>
-
-      <!-- Structured TypeScript Interface Output Inspector -->
-      <div class="card-box no-print clinician-only">
-        <h3 style="margin-top:0; font-size:1.2rem;">💻 ข้อมูลโครงสร้างอินเทอร์เฟซ (`AssessmentInput` &amp; `RiskOutput`
-          — Pseudonymized Clinical Vector)</h3>
-        <pre class="code-inspector" id="jsonPayloadPreview"></pre>
-      </div>
-
-      <!-- Enhancement 7: HIPAA / PDPA Pseudonymization Vaults & Immutable Audit Trail -->
-      <div class="card-box no-print clinician-only" style="border-width:3px;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-          <div>
-            <h3 style="margin:0; font-size:1.3rem;">🔒 สถาปัตยกรรมความปลอดภัยและการปกป้องข้อมูลชีวภาพ (HIPAA / PDPA
-              Compliance &amp; Audit Trail)</h3>
-            <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
-              แยกฐานข้อมูล <strong>Schema A (Identifiable PII Vault)</strong> ออกจาก <strong>Schema B (Clinical
-                Screening Vector)</strong> อย่างเด็ดขาด ผูกด้วยรหัสแฝงทางเดียว <code>pseudonymToken</code>
-              พร้อมบันทึก <strong>Hash-Chained Access Audit Log</strong> ทุกครั้งที่มีการอ่านผลแล็บหรือส่งออกรายงาน
-            </p>
-          </div>
-          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-            <button type="button" class="btn" onclick="togglePiiVaultInspector()">🔑 ดูการแยก Schema A (PII) vs Schema
-              B</button>
-            <button type="button" class="btn" onclick="exportAuditTrailJson()">📜 ส่งออก Audit Trail Log
-              (.json)</button>
-          </div>
-        </div>
-        <div id="piiSeparationPreviewBox" style="display:none; margin-top:1rem;">
-          <pre class="code-inspector" id="piiSeparationJsonText"></pre>
-        </div>
-        <div style="margin-top:1rem;">
-          <h4 style="margin:0 0 0.5rem 0; font-size:1.1rem;">📋 บันทึกการเข้าถึงเวชระเบียนอิเล็กทรอนิกส์ (Immutable EMR
-            Access Audit Log):</h4>
-          <div id="auditTrailTableContainer" style="overflow-x:auto; font-size:0.92rem; font-weight:600;"></div>
-        </div>
-      </div>
-
-      <!-- Prominent Regulatory Disclaimer Footer in Report -->
-      <div class="card-box"
-        style="border-color:var(--status-mod-border); background:var(--status-mod-surface); color:var(--status-mod-text); font-weight:700;">
-        ⚖️ <strong>ข้อจำกัดความรับผิดชอบทางการแพทย์ (Regulatory &amp; SaMD Disclaimer):</strong><br />
-        "ระบบนี้เป็นเพียงเครื่องมือประเมินความเสี่ยงเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์
-        และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น"
-      </div>
-
-      <div class="footer-nav no-print">
-        <button type="button" class="btn" onclick="goToStep(4)">⬅️ ย้อนกลับไปแก้ไขผลแล็บ</button>
-        <button type="button" class="btn" onclick="resetForNewPatient()">🔄 เริ่มประเมินผู้ป่วยรายใหม่</button>
-      </div>
     </section>
+
+
 
   </main>
 
@@ -2691,8 +2889,8 @@
     </div>
 
     <div style="display:flex; flex-direction:column; gap:0.75rem;">
-      <button type="button" class="btn btn-primary" id="scenarioGoStep5Btn" style="min-height:56px; font-size:1.15rem; font-weight:800; justify-content:center; display:flex; align-items:center; gap:0.5rem;" onclick="goToStep(5); document.getElementById('scenarioLoadedModal').close();">
-        📊 ไปดูรายงานผลการคัดกรอง 4 แกนทันที (โมดูลที่ 5) ➔
+      <button type="button" class="btn btn-primary" id="scenarioGoStep5Btn" style="min-height:56px; font-size:1.15rem; font-weight:800; justify-content:center; display:flex; align-items:center; gap:0.5rem;" onclick="goToStep(4); document.getElementById('scenarioLoadedModal').close();">
+        📊 ไปดูแดชบอร์ดสรุปผลและคำแนะนำการดูแลทันที ➔
       </button>
       <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
         <button type="button" class="btn" style="flex:1; min-height:48px; font-weight:700; justify-content:center;" onclick="goToStep(1); document.getElementById('scenarioLoadedModal').close();">
@@ -3997,9 +4195,13 @@
         openGatekeeperAlertModal();
         return;
       }
+      // Step 4 is the Patient Dashboard (Step 5 redirects to 4 for backward compatibility)
+      if (stepIndex >= 4) {
+        stepIndex = 4;
+      }
       appState.currentStep = stepIndex;
 
-      for (let i = 0; i <= 5; i++) {
+      for (let i = 0; i <= 4; i++) {
         const panel = document.getElementById(`step-${i}`);
         const tab = document.getElementById(`tab-${i}`);
         if (panel) panel.classList.toggle("active", i === stepIndex);
@@ -4008,6 +4210,8 @@
           if (i < stepIndex) tab.classList.add("completed");
         }
       }
+      const legacyStep5 = document.getElementById("step-5");
+      if (legacyStep5) legacyStep5.classList.remove("active");
 
       if (stepIndex === 2 && !appState.wordsLocked) {
         startFiveSecondWordLock();
@@ -4016,7 +4220,7 @@
         renderPracticeBoard();
         renderTrailBoard();
       }
-      if (stepIndex === 5) {
+      if (stepIndex === 4) {
         renderRiskStratificationReport();
       }
       if (stepIndex !== 0) window.scrollTo({ top: 0, behavior: "smooth" });
@@ -6833,8 +7037,8 @@
                 ✅ <strong>กำลังจำลองข้อมูล:</strong> ${meta.title} <span style="font-weight:600; font-size:0.95rem;">• ข้อมูลครบทุกโมดูลแล้ว พร้อมดูผลคัดกรอง</span>
               </div>
               <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button type="button" class="btn btn-primary" style="padding:0.4rem 0.85rem; font-size:0.95rem; font-weight:800;" onclick="goToStep(5)">
-                  📊 ไปดูรายงานผลคัดกรอง 4 แกน (โมดูลที่ 5) ➔
+                <button type="button" class="btn btn-primary" style="padding:0.4rem 0.85rem; font-size:0.95rem; font-weight:800;" onclick="goToStep(4)">
+                  📊 ไปดูแดชบอร์ดสรุปผลผู้ป่วย ➔
                 </button>
                 <button type="button" class="btn" style="padding:0.4rem 0.85rem; font-size:0.95rem; font-weight:700;" onclick="const m = document.getElementById('scenarioLoadedModal'); if (m && typeof m.showModal === 'function') m.showModal(); else m.setAttribute('open', '');">
                   📋 ดูรายละเอียดเคส
@@ -7298,6 +7502,276 @@
             null,
             2
           );
+        }
+
+        // Populate Patient Cognitive Health Dashboard
+        const patNameVal = document.getElementById("patientNameInput")?.value || "คุณสมชาย ใจดี";
+        const patHnVal = document.getElementById("patientNationalIdInput")?.value || "HN-690412";
+        const dName = document.getElementById("dashPatientName");
+        const dHn = document.getElementById("dashPatientHn");
+        const dAge = document.getElementById("dashPatientAge");
+        const dEdu = document.getElementById("dashPatientEdu");
+        const dDate = document.getElementById("dashPatientDate");
+        const dToken = document.getElementById("dashPatientToken");
+
+        if (dName) dName.textContent = patNameVal;
+        if (dHn) dHn.textContent = patHnVal;
+        if (dAge) dAge.textContent = input.age;
+        if (dEdu) dEdu.textContent = input.yearsOfEducation;
+        if (dToken) dToken.textContent = appState.pseudonymToken || "PSN-XXXX";
+        if (dDate) {
+          const now = new Date();
+          const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+          dDate.textContent = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+        }
+
+        // Master Status & Gauge
+        const iconEl = document.getElementById("dashMasterStatusIcon");
+        const titleEl = document.getElementById("dashMasterStatusTitle");
+        const badgeEl = document.getElementById("dashMasterStatusBadge");
+        const descEl = document.getElementById("dashMasterStatusDesc");
+        const scoreTextEl = document.getElementById("dashCompositeScoreText");
+        const scoreBarEl = document.getElementById("dashCompositeScoreBar");
+        const scoreLevelEl = document.getElementById("dashCompositeScoreLevel");
+        const masterCard = document.getElementById("patientMasterStatusCard");
+
+        const compScore = cleanOutput.screeningCompositeIndex || 0;
+        if (scoreTextEl) scoreTextEl.textContent = `${compScore} / 100`;
+        if (scoreBarEl) {
+          scoreBarEl.style.width = `${Math.min(100, Math.max(5, compScore))}%`;
+          if (compScore >= 55) {
+            scoreBarEl.style.backgroundColor = "var(--status-high-border)";
+          } else if (compScore >= 25) {
+            scoreBarEl.style.backgroundColor = "var(--status-mod-border)";
+          } else {
+            scoreBarEl.style.backgroundColor = "var(--status-low-border)";
+          }
+        }
+
+        const isRevHigh = cleanOutput.axes.reversibleAxis?.some(c => c === "HIGH_ACB_BURDEN" || c === "VITAMIN_B12_DEFICIENCY" || c === "OVERT_HYPOTHYROIDISM");
+        const isDepressed = cleanOutput.axes.affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE";
+
+        if (cogAxis === "DEMENTIA_SUSPECTED") {
+          if (iconEl) iconEl.textContent = "🔴";
+          if (titleEl) titleEl.textContent = "พบสัญญาณความเสี่ยงสูง (High Dementia Risk)";
+          if (badgeEl) {
+            badgeEl.textContent = "ความเสี่ยงสูง — แนะนำพบแพทย์เฉพาะทาง";
+            badgeEl.style.background = "var(--status-high-surface)";
+            badgeEl.style.color = "var(--status-high-text)";
+            badgeEl.style.borderColor = "var(--status-high-border)";
+          }
+          if (descEl) descEl.textContent = "พบความบกพร่องร่วมกันในหลายด้าน (ความจำ การวางแผน หรือกิจวัตรประจำวัน) แนะนำให้นำผลนี้เข้าพบแพทย์เฉพาะทางระบบประสาทหรือคลินิกผู้สูงอายุเพื่อรับการตรวจวินิจฉัยเชิงลึกโดยเร็ว";
+          if (scoreLevelEl) {
+            scoreLevelEl.textContent = "ระดับความเสี่ยง: เสี่ยงสูง (High Risk)";
+            scoreLevelEl.style.color = "var(--status-high-text)";
+          }
+          if (masterCard) masterCard.style.borderColor = "var(--status-high-border)";
+        } else if (cogAxis === "MCI_SUSPECTED") {
+          if (iconEl) iconEl.textContent = "🟡";
+          if (titleEl) titleEl.textContent = "พบภาวะการรู้คิดบกพร่องเล็กน้อย (Mild Cognitive Impairment)";
+          if (badgeEl) {
+            badgeEl.textContent = "เฝ้าระวังระยะเริ่มต้น (MCI Risk)";
+            badgeEl.style.background = "var(--status-mod-surface)";
+            badgeEl.style.color = "var(--status-mod-text)";
+            badgeEl.style.borderColor = "var(--status-mod-border)";
+          }
+          if (descEl) descEl.textContent = "พบสัญญาณเตือนบกพร่องในบางด้าน เช่น ความจำหรือความเร็วการประมวลผล แต่ยังสามารถช่วยเหลือตนเองในชีวิตประจำวันได้ดี ถือเป็นช่วงเวลาทอง (Golden Period) ในการชะลอความเสื่อมด้วยการปรับพฤติกรรม";
+          if (scoreLevelEl) {
+            scoreLevelEl.textContent = "ระดับความเสี่ยง: เฝ้าระวัง / เสี่ยงปานกลาง (Mild Risk)";
+            scoreLevelEl.style.color = "var(--status-mod-text)";
+          }
+          if (masterCard) masterCard.style.borderColor = "var(--status-mod-border)";
+        } else if (isDepressed || isRevHigh) {
+          if (iconEl) iconEl.textContent = "🔵";
+          if (titleEl) titleEl.textContent = "ตรวจพบปัจจัยแก้ไขได้ / ภาระยา (Reversible Factors)";
+          if (badgeEl) {
+            badgeEl.textContent = isDepressed ? "สงสัยภาวะซึมเศร้าที่บดบังความจำ" : "ตรวจพบภาระยาต้านโคลิเนอร์จิก";
+            badgeEl.style.background = "var(--status-rev-surface)";
+            badgeEl.style.color = "var(--status-rev-text)";
+            badgeEl.style.borderColor = "var(--status-rev-border)";
+          }
+          if (descEl) descEl.textContent = isDepressed
+            ? "ผลคัดกรอง 2Q เป็นบวก อาการหลงลืมอาจเกิดจากภาวะซึมเศร้าแฝง (Pseudodementia) ซึ่งสามารถรักษาให้อาการความจำกลับมาปกติได้เมื่อรักษาภาวะอารมณ์"
+            : "ตรวจพบยาที่มีฤทธิ์กดสมองหรือสาเหตุทางกายที่แก้ไขได้ แนะนำนำยาทั้งหมดไปให้แพทย์ทบทวนเพื่อปรับลดยา";
+          if (scoreLevelEl) {
+            scoreLevelEl.textContent = "ระดับความเสี่ยง: ปัจจัยที่แก้ไขได้ (Reversible Warning)";
+            scoreLevelEl.style.color = "var(--status-rev-text)";
+          }
+          if (masterCard) masterCard.style.borderColor = "var(--status-rev-border)";
+        } else {
+          if (iconEl) iconEl.textContent = "🟢";
+          if (titleEl) titleEl.textContent = "สมองทำงานปกติ (Cognitively Healthy)";
+          if (badgeEl) {
+            badgeEl.textContent = "ปกติ เหมาะสมตามวัย (Low Risk)";
+            badgeEl.style.background = "var(--status-low-surface)";
+            badgeEl.style.color = "var(--status-low-text)";
+            badgeEl.style.borderColor = "var(--status-low-border)";
+          }
+          if (descEl) descEl.textContent = "สมรรถภาพการรู้คิดทุกมิติอยู่ในเกณฑ์ปกติเหมาะสมตามวัย ไม่พบสัญญาณความเสี่ยงของภาวะสมองเสื่อม แนะนำส่งเสริมสุขภาพสมองด้วยโภชนาการ การออกกำลังกาย และฝึกสมองต่อเนื่อง";
+          if (scoreLevelEl) {
+            scoreLevelEl.textContent = "ระดับความเสี่ยง: ปกติ (Low Risk)";
+            scoreLevelEl.style.color = "var(--status-low-text)";
+          }
+          if (masterCard) masterCard.style.borderColor = "var(--status-low-border)";
+        }
+
+        // Domain 1: Short-Term Memory (Recall)
+        const dRecScore = document.getElementById("dashRecallScore");
+        const dRecWords = document.getElementById("dashRecallWords");
+        const dRecBadge = document.getElementById("dashRecallBadge");
+        const dRecDesc = document.getElementById("dashRecallDesc");
+        if (dRecScore) dRecScore.textContent = `${input.delayedRecallScore} / 3 คำ`;
+        if (dRecWords) {
+          const words = appState.miniCogWords || [];
+          dRecWords.textContent = input.delayedRecallScore === 3
+            ? `จำได้ครบทั้ง 3 คำ: ${words.join(", ")}`
+            : (input.delayedRecallScore === 0 ? "จำคำศัพท์ไม่ได้เลย (0 คำ)" : `จำได้ ${input.delayedRecallScore} คำ จาก 3 คำ`);
+        }
+        if (dRecBadge) {
+          if (input.delayedRecallScore === 3) {
+            dRecBadge.textContent = "ปกติ ดีมาก";
+            dRecBadge.style.background = "var(--status-low-surface)";
+            dRecBadge.style.color = "var(--status-low-text)";
+          } else if (input.delayedRecallScore >= 1) {
+            dRecBadge.textContent = "บกพร่องเล็กน้อย";
+            dRecBadge.style.background = "var(--status-mod-surface)";
+            dRecBadge.style.color = "var(--status-mod-text)";
+          } else {
+            dRecBadge.textContent = "บกพร่องชัดเจน";
+            dRecBadge.style.background = "var(--status-high-surface)";
+            dRecBadge.style.color = "var(--status-high-text)";
+          }
+        }
+        if (dRecDesc) {
+          dRecDesc.textContent = input.delayedRecallScore === 3
+            ? "การทำงานของสมองส่วนฮิปโปแคมปัส (Hippocampus) ในการบันทึกและดึงข้อมูลใหม่อยู่ในเกณฑ์สมบูรณ์"
+            : (input.delayedRecallScore >= 1 ? "มีความยากลำบากในการดึงข้อมูลความจำระยะสั้น แนะนำฝึกเทคนิคจำภาพและบันทึกช่วยจำ" : "พบความบกพร่องชัดเจนในการจำคำศัพท์ใหม่ เป็นหนึ่งในสัญญาณเตือนสำคัญของโรคอัลไซเมอร์");
+        }
+
+        // Domain 2: Visuospatial & Executive (Clock Drawing)
+        const dCdtBadge = document.getElementById("dashCdtResultBadge");
+        const dCdtImg = document.getElementById("dashCdtImg");
+        const dCdtCircle = document.getElementById("dashCdtCircleCheck");
+        const dCdtNumbers = document.getElementById("dashCdtNumbersCheck");
+        const dCdtHands = document.getElementById("dashCdtHandsCheck");
+        const dCdtTremor = document.getElementById("dashCdtTremorBadge");
+        const dCdtDesc = document.getElementById("dashCdtDesc");
+
+        if (dCdtImg && appState.cdtTelemetry?.imageDataUrl) {
+          dCdtImg.src = appState.cdtTelemetry.imageDataUrl;
+        }
+        const isCdtNormal = input.cdtResult === "NORMAL";
+        if (dCdtBadge) {
+          dCdtBadge.textContent = isCdtNormal ? "ผ่านเกณฑ์ ปกติ" : "ผิดปกติ";
+          dCdtBadge.style.background = isCdtNormal ? "var(--status-low-surface)" : "var(--status-high-surface)";
+          dCdtBadge.style.color = isCdtNormal ? "var(--status-low-text)" : "var(--status-high-text)";
+        }
+        if (dCdtCircle) dCdtCircle.textContent = isCdtNormal ? "✅ วงกลมสมส่วน ปิดสนิท" : "❌ โครงสร้างวงกลมบิดเบี้ยวหรือไม่กลม";
+        if (dCdtNumbers) dCdtNumbers.textContent = isCdtNormal ? "✅ ตัวเลข 1–12 ครบในตำแหน่ง" : "⚠️ ตัวเลขขาด/เกิน หรือไม่อยู่ในตำแหน่ง";
+        if (dCdtHands) dCdtHands.textContent = isCdtNormal ? "✅ เข็มสั้น-ยาวชี้ 11:10 ถูกต้อง" : "⚠️ เข็มนาฬิกาไม่ถูกต้อง (ไม่ใช่ 11:10)";
+        if (dCdtTremor) {
+          dCdtTremor.textContent = input.cdtMotorTremorDetected ? "⚠️ ตรวจพบอาการมือสั่น (ระบบกรองสัญญาณรบกวนแล้ว)" : "✅ ควบคุมลายเส้นได้มั่นคง ไม่พบมือสั่น";
+        }
+        if (dCdtDesc) {
+          dCdtDesc.textContent = isCdtNormal
+            ? "การรับรู้มิติสัมพันธ์และการวางแผนสั่งการของสมองส่วนหน้า (Executive Function) สมบูรณ์ดี"
+            : "พบความผิดปกติในการวางตำแหน่งตัวเลขหรือเข็มนาฬิกา บ่งชี้ความบกพร่องด้านมิติสัมพันธ์และการวางแผน";
+        }
+
+        // Domain 3: Daily Function & Informant (AD8 & IADL)
+        const dAd8Badge = document.getElementById("dashAd8Badge");
+        const dAd8Score = document.getElementById("dashAd8Score");
+        const dIadlSt = document.getElementById("dashIadlStatus");
+        const dAd8Desc = document.getElementById("dashAd8Desc");
+
+        if (dAd8Score) dAd8Score.textContent = `${input.ad8Score} / 8 ข้อ`;
+        const isAd8Impaired = input.ad8Score >= 2;
+        if (dAd8Badge) {
+          dAd8Badge.textContent = isAd8Impaired ? "พบการเปลี่ยนแปลง (>= 2)" : "ปกติ (< 2)";
+          dAd8Badge.style.background = isAd8Impaired ? "var(--status-mod-surface)" : "var(--status-low-surface)";
+          dAd8Badge.style.color = isAd8Impaired ? "var(--status-mod-text)" : "var(--status-low-text)";
+        }
+        const iadlImpCount = input.briefIADL?.totalImpairments || 0;
+        if (dIadlSt) {
+          dIadlSt.textContent = iadlImpCount === 0
+            ? "IADL: สามารถดูแลตนเอง ทานยา จัดการเงินได้เป็นอิสระ (0/4 บกพร่อง)"
+            : `IADL: พบข้อจำกัดในชีวิตประจำวัน ${iadlImpCount} ด้าน (เริ่มต้องการผู้ดูแลช่วยเหลือ)`;
+        }
+        if (dAd8Desc) {
+          dAd8Desc.textContent = isAd8Impaired
+            ? `คนใกล้ชิดสังเกตเห็นการเปลี่ยนแปลงด้านความจำและการตัดสินใจ ${input.ad8Score} ด้าน จากเดิมในอดีต`
+            : "คนใกล้ชิดยืนยันว่าผู้รับการประเมินยังมีความจำดี ไม่พบพฤติกรรมหลงลืมหรือความยากลำบากในการตัดสินใจ";
+        }
+
+        // Domain 4: Processing Speed & Motor (Visual-Motor)
+        const dVmtBadge = document.getElementById("dashVmtBadge");
+        const dVmtTime = document.getElementById("dashVmtTime");
+        const dVmtErrors = document.getElementById("dashVmtErrors");
+        const dVmtDesc = document.getElementById("dashVmtDesc");
+
+        const vmtSec = input.visualMotorTimeMs !== null ? (input.visualMotorTimeMs / 1000).toFixed(1) : "-";
+        if (dVmtTime) dVmtTime.textContent = input.visualMotorTimeMs !== null ? `${vmtSec} วินาที` : "ไม่ได้ทดสอบ";
+        if (dVmtErrors) dVmtErrors.textContent = `กดผิดลำดับ: ${input.visualMotorErrors} ครั้ง`;
+
+        const isVmtSlow = _meta?.vmt?.isImpaired || false;
+        if (dVmtBadge) {
+          dVmtBadge.textContent = isVmtSlow ? "ช้ากว่าเกณฑ์" : "ความเร็วปกติ";
+          dVmtBadge.style.background = isVmtSlow ? "var(--status-mod-surface)" : "var(--status-low-surface)";
+          dVmtBadge.style.color = isVmtSlow ? "var(--status-mod-text)" : "var(--status-low-text)";
+        }
+        if (dVmtDesc) {
+          dVmtDesc.textContent = isVmtSlow
+            ? `ใช้เวลา ${vmtSec} วินาที ซึ่งช้ากว่าเกณฑ์มาตรฐานประชากรไทยในช่วงอายุและการศึกษาเดียวกัน แนะนำฝึกความคล่องตัวของกล้ามเนื้อมือและสายตา`
+            : "ความเร็วในการประมวลผล สมาธิ และการประสานงานของสายตากับมืออยู่ในเกณฑ์คล่องแคล่วดี";
+        }
+
+        // Domain 5: Affective & Drug Safety (2Q & ACB)
+        const dAffBadge = document.getElementById("dashAffectiveBadge");
+        const d2QSt = document.getElementById("dash2QStatus");
+        const dAcbScore = document.getElementById("dashAcbScore");
+        const dAffDesc = document.getElementById("dashAffectiveDesc");
+
+        const acbVal = input.anticholinergicBurden?.acbTotalScore || 0;
+        if (d2QSt) d2QSt.textContent = isDepressed ? "2Q: ตรวจพบความเสี่ยงซึมเศร้า" : "2Q: ปกติ (ไม่พบซึมเศร้า)";
+        if (dAcbScore) dAcbScore.textContent = `ภาระยา ACB = ${acbVal} คะแนน (${acbVal >= 3 ? "ภาระยาสูง เสี่ยงกดสมอง" : "ปลอดภัย"})`;
+        if (dAffBadge) {
+          const isAffIssue = isDepressed || acbVal >= 3;
+          dAffBadge.textContent = isAffIssue ? "ต้องทบทวน" : "ปลอดภัย";
+          dAffBadge.style.background = isAffIssue ? "var(--status-rev-surface)" : "var(--status-low-surface)";
+          dAffBadge.style.color = isAffIssue ? "var(--status-rev-text)" : "var(--status-low-text)";
+        }
+        if (dAffDesc) {
+          dAffDesc.textContent = isDepressed
+            ? "ผล 2Q บ่งชี้ความรู้สึกหดหู่หรือเบื่อหน่าย ซึ่งส่งผลโดยตรงต่อสมาธิและความจำ (ภาวะสมองเสื่อมเทียม) แนะนำให้แพทย์ประเมินรักษาอารมณ์"
+            : (acbVal >= 3 ? "ตรวจพบการใช้ยาหลายตัวที่มีฤทธิ์กดระบบประสาท อาจทำให้ง่วงซึมหรือสับสน แนะนำปรึกษาแพทย์เพื่อปรับลดรายการยา" : "ไม่พบภาวะซึมเศร้า และไม่พบการใช้ยาต้านโคลิเนอร์จิกที่เป็นอันตรายต่อสมอง");
+        }
+
+        // Actionable High-Efficiency Brain Health Care Plan Tailoring
+        const medPlanEl = document.getElementById("dashCareMedical");
+        if (medPlanEl) {
+          let medList = [];
+          if (cogAxis === "DEMENTIA_SUSPECTED") {
+            medList.push("<strong>นัดพบแพทย์ด่วน:</strong> แนะนำส่งต่อพบแพทย์เฉพาะทางระบบประสาท (Neurologist) หรือจิตเวชผู้สูงอายุภายใน 2–4 สัปดาห์ เพื่อตรวจ MRI/CT สมอง");
+          } else if (cogAxis === "MCI_SUSPECTED") {
+            medList.push("<strong>นัดพบแพทย์:</strong> ปรึกษาแพทย์คลินิกผู้สูงอายุหรืออายุรแพทย์ภายใน 1–2 เดือน เพื่อตรวจติดตามความจำซ้ำ (Neurocognitive Re-evaluation)");
+          } else {
+            medList.push("<strong>ตรวจสุขภาพสมองประจำปี:</strong> ทำแบบคัดกรองติดตามผลเป็นประจำทุก 1 ปี เพื่อเปรียบเทียบแนวโน้ม (Baseline Tracking)");
+          }
+
+          if (acbVal >= 3) {
+            medList.push("<strong>ทบทวนยาเร่งด่วน (Deprescribing):</strong> นำยาทั้งหมด (ยาแก้แพ้ ยานอนหลับ ยาคลายกล้ามเนื้อ) ให้แพทย์ตรวจเพื่อลดหรือเปลี่ยนยาที่มี ACB สูง");
+          } else {
+            medList.push("<strong>ทบทวนรายการยา:</strong> พกยาทั้งหมดที่ทานประจำปรึกษาเภสัชกรทุกครั้งที่ไปรับยา");
+          }
+
+          if (isDepressed) {
+            medList.push("<strong>ดูแลภาวะอารมณ์:</strong> ตรวจประเมินแบบละเอียด TGDS-15 เพื่อแยกภาวะซึมเศร้าที่รักษาหายได้ (Pseudodementia)");
+          }
+
+          medList.push("<strong>ควบคุมหลอดเลือด:</strong> คุมความดันโลหิต &lt; 130/80 mmHg, น้ำตาลสะสม HbA1c &lt; 7.0%, และไขมันในเลือด");
+          medList.push("<strong>ตรวจเช็กการได้ยิน:</strong> ภาวะหูตึงเพิ่มความเสี่ยงสมองเสื่อมถึง 2 เท่า หากได้ยินไม่ชัดควรปรึกษาแพทย์ใส่เครื่องช่วยฟัง");
+
+          medPlanEl.innerHTML = `<ul style="margin:0; padding-left:1.25rem;">${medList.map(item => `<li style="margin-bottom:0.4rem;">${item}</li>`).join("")}</ul>`;
         }
 
         // Populate Formal Corporate Print Header, Footer & Sign-Off Fields
