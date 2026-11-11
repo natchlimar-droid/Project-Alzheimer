@@ -161,3 +161,55 @@ $$\text{integrityHash}_k = \text{HexHash}\left(\text{CanonicalString}_k\right)$$
 
 หากมีการแก้ไข ลบ หรือสลับลำดับบันทึกใดๆ ห่วงโซ่ `previousHash` $\rightarrow$ `integrityHash` จะขาดออกจากกันทันที ทำให้สามารถตรวจสอบความโปร่งใสและหลักฐานทางเวชระเบียน (Tamper-Evident EMR Auditability) ได้อย่างสมบูรณ์
 
+---
+
+## 9. สถาปัตยกรรม Dual-Persona UX, Paper-to-Digital CDT และระบบส่งต่อ EMR Cloud
+
+### 9.1 การแยกหน้าจอระหว่าง "โหมดผู้สูงอายุ (Patient Mode)" และ "โหมดบุคลากรการแพทย์ (Clinician Mode)"
+เพื่อแก้ไขปัญหา **Cognitive Overload** และ **Test Anxiety** (ความเครียดและความกังวลขณะทดสอบ) สถาปัตยกรรมระบบได้แบ่งการแสดงผลออกเป็น 2 มุมมอง (Dual Persona Architecture):
+
+1. **โหมดผู้สูงอายุ / ผู้รับการประเมิน (Senior Patient Mode):**
+   - **ซ่อนข้อมูลเชิงเทคนิคและ Telemetry:** ไม่แสดงศัพท์เทคนิคการวิเคราะห์ (เช่น Normative Adjustment, Salted Token Key, Pause-to-Speech Ratio, Kinematic Jerk, LOINC Codes)
+   - **ซ่อนการให้คะแนนและตัวเลขแบบ Real-Time:** ป้องกันความเครียดจากการเห็นคะแนนหรือเวลานับถอยหลังขณะทำแบบทดสอบ
+   - **การออกแบบฟอนต์และปุ่มขนาดใหญ่พิเศษ (Touch-Friendly WCAG AAA):** ปุ่มมีพื้นที่สัมผัส $\ge 60\times 60$ พิกเซล ตัวอักษรขนาด $\ge 19-24$ พิกเซล พร้อมปุ่มฟังเสียงแนะนำ (Text-to-Speech) ชัดเจนในทุกโมดูล
+   - **สรุปผลลัพธ์ที่เป็นมิตรและไม่ข่มขวัญ:** แสดงคำแนะนำที่อบอุ่นและปุ่มพิมพ์เอกสารสำหรับนำไปปรึกษาแพทย์เฉพาะทาง
+
+2. **โหมดบุคลากรทางการแพทย์ (Staff / Clinician Mode):**
+   - แสดงแดชบอร์ดทางคลินิกครบทั้ง 4 มิติ (4-Axis Parallel Model)
+   - แสดงตัวชี้วัดจลนศาสตร์การวาด (CDT Kinematics & Tremor Vectors) และตัวชี้วัดเสียง (Speech Telemetry)
+   - โมดูลนำเข้า-ส่งออกผลตรวจแล็บผ่าน LIS / FHIR DiagnosticReport
+   - ระบบบันทึกดุลยพินิจของแพทย์ (Clinician Override) พร้อมเลขที่ใบอนุญาตประกอบวิชาชีพเวชกรรม (ว.)
+   - การจัดพิมพ์เอกสารทางการแพทย์มาตรฐานองค์กร A4 (Corporate Print Layout)
+
+### 9.2 การแก้ไขปัญหาความฝืดของอุปกรณ์ (Hardware Friction) ด้วยระเบียบวิธี Paper-to-Digital CDT
+การทำแบบทดสอบ Clock Drawing Test ด้วยเมาส์คอมพิวเตอร์ (Mouse-drawn) จะสูญเสียความแม่นยำด้าน Fine-motor control อย่างสิ้นเชิง และสร้างความหงุดหงิดให้กับผู้สูงอายุ ระบบจึงพัฒนาระเบียบวิธี 2 ทางเลือก:
+- **ทางเลือกที่ 1 (Touchscreen / Stylus):** ใช้งานบน Tablet หรือหน้าจอสัมผัสที่มีปากกา Stylus
+- **ทางเลือกที่ 2 (Paper-to-Digital Photo Upload - แนะนำสำหรับผู้สูงอายุ):**
+  1. ให้ผู้รับการประเมินใช้ปากกาหรือดินสอวาดหน้าปัดนาฬิกาวงกลม ตัวเลข 1–12 และเข็ม 11:10 น. ลงบนกระดาษเปล่า A4 ตามมาตรฐานเวชปฏิบัติสากล
+  2. เจ้าหน้าที่หรือผู้ดูแลใช้กล้องถ่ายภาพกระดาษวาด หรือเลือกไฟล์ภาพอัปโหลดเข้าสู่ระบบ
+  3. ระบบจะแปลงภาพถ่ายเข้าสู่ Canvas Frame พร้อมบันทึกภาพลงในเวชระเบียน FHIR Bundle และให้บุคลากรการแพทย์ตรวจเกณฑ์ 3 ข้อ (12 ตัวเลขครบ, 4 จตุภาคถูกต้อง, เข็ม 11:10) ได้อย่างสะดวก แม่นยำ และเป็นธรรมชาติที่สุด
+
+### 9.3 สถาปัตยกรรมการจัดเก็บข้อมูลติดตามผลระยะยาว (Secure Healthcare Cloud & EMR Referral)
+เพื่อก้าวข้ามข้อจำกัดของ Browser LocalStorage (ซึ่งข้อมูลอาจสูญหายเมื่อเปลี่ยนเครื่อง, ล้างประวัติ หรือใช้งานโหมด Incognito) ระบบได้ออกแบบการเชื่อมต่อ Secure Backend API:
+
+```mermaid
+flowchart TD
+    Client["เว็บแอปพลิเคชันคัดกรอง\n(Client-Side Application)"]
+    Gateway["Secure API Gateway\n(TLS 1.3 + mTLS + JWT Bearer Auth)"]
+    EMR_Service["Referral & Longitudinal Service\n(FHIR R4 Microservice)"]
+    CloudKMS["Cloud KMS / HSM\n(Hardware Encryption Key Management)"]
+    DB[("Secure Healthcare Database\n(PostgreSQL with Row-Level Security\n& Encrypted Identifiers)")]
+    HospitalEMR["ระบบสารสนเทศโรงพยาบาล\n(Hospital HIS / EMR / PACS)"]
+
+    Client -->|"ส่งออก HL7 FHIR R4 Bundle\n(ServiceRequest + Observations)"| Gateway
+    Gateway --> EMR_Service
+    EMR_Service <-->|"สร้าง/ถอดรหัส Token แฝง"| CloudKMS
+    EMR_Service -->|"จัดเก็บเวชระเบียนระยะยาว\n(Longitudinal Tracking)"| DB
+    EMR_Service -->|"ส่งต่อผู้ป่วยเข้า Memory Clinic"| HospitalEMR
+```
+
+- **FHIR R4 ServiceRequest:** สร้างแพ็กเกจส่งต่อผู้ป่วย (e-Referral Ticket) ที่มีรหัสมาตรฐาน LOINC ครบถ้วน
+- **การจัดลำดับความเร่งด่วน (Triage Priority):** คัดแยกระดับ Routine (นัด 2-4 สัปดาห์), Urgent (พบภาวะขาด B12/ไทรอยด์ หรือ MCI), Emergency/ASAP (พบ Delirium หรือสมองเสื่อมถอยฉับพลัน)
+- **การคงอยู่ของข้อมูลระยะยาว (Longitudinal Continuity):** ข้อมูลถูกบันทึกลงฐานข้อมูลระดับโรงพยาบาลที่มีการสำรองข้อมูลตามมาตรฐาน HIPAA / PDPA ทำให้สามารถคำนวณอัตราความเสื่อมถอยต่อปี ($\Delta$-Decline Rate) ในการตรวจซ้ำครั้งถัดไปได้อย่างแม่นยำ ไม่ว่าจะประเมินจากอุปกรณ์ใดก็ตาม
+
+
