@@ -1,0 +1,184 @@
+{
+  "resourceType": "Bundle",
+  "id": "sample-fhir-acb-speech-tremor",
+  "type": "collection",
+  "timestamp": "2026-11-11T10:30:00.000Z",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-psn-e821",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-psn-e821",
+        "identifier": [
+          {
+            "system": "urn:cog-screen:pseudonym-token",
+            "value": "PSN-E821-4F2A90C1-B739"
+          }
+        ],
+        "name": [
+          {
+            "text": "Pseudonymized Subject (PSN-E821-4F2A90C1-B739)"
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1951-04-18"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-acb-score",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-acb-score",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "LP268153-6",
+              "display": "Anticholinergic Cognitive Burden (ACB) Total Score"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:patient-psn-e821"
+        },
+        "effectiveDateTime": "2026-11-11T10:30:00.000Z",
+        "valueQuantity": {
+          "value": 6,
+          "unit": "{score}",
+          "system": "http://unitsofmeasure.org",
+          "code": "{score}"
+        },
+        "component": [
+          {
+            "code": { "text": "high_acb_risk_flag" },
+            "valueBoolean": true
+          },
+          {
+            "code": { "text": "suspectedMedications" },
+            "valueString": "Chlorpheniramine (ACB=3), Oxybutynin (ACB=3)"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-speech-mci",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-speech-mci",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "LP419518-8",
+              "display": "Acoustic & Linguistic Speech Biomarkers (MCI Screen)"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:patient-psn-e821"
+        },
+        "effectiveDateTime": "2026-11-11T10:30:00.000Z",
+        "valueBoolean": true,
+        "component": [
+          {
+            "code": { "text": "pauseToSpeechRatio" },
+            "valueQuantity": { "value": 0.62, "unit": "{ratio}" }
+          },
+          {
+            "code": { "text": "phoneticLatencyMs" },
+            "valueInteger": 3150
+          },
+          {
+            "code": { "text": "semanticRepetitionCount" },
+            "valueInteger": 3
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-cdt-tremor",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-cdt-tremor",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "72171-2",
+              "display": "Clock Drawing Test (11:10)"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:patient-psn-e821"
+        },
+        "effectiveDateTime": "2026-11-11T10:30:00.000Z",
+        "valueString": "NORMAL",
+        "component": [
+          {
+            "code": { "text": "motor_tremor_flag" },
+            "valueBoolean": true
+          },
+          {
+            "code": { "text": "tremorRmsJitterPx" },
+            "valueQuantity": { "value": 4.12, "unit": "pixel" }
+          },
+          {
+            "code": { "text": "decompositionFinding" },
+            "valueString": "High-frequency oscillatory hand tremor filtered; clock contour and 11:10 hands placed correctly."
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-tsh-normal",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-tsh-normal",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "3016-3",
+              "display": "Thyrotropin [Units/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 1.7,
+          "unit": "uIU/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "uIU/mL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-b12-normal",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-b12-normal",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2132-9",
+              "display": "Cobalamin (Vitamin B12) [Mass/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 520,
+          "unit": "pg/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "pg/mL"
+        }
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,119 @@
+{
+  "resourceType": "Bundle",
+  "id": "sample-fhir-alzheimers-ptau217-positive",
+  "type": "collection",
+  "timestamp": "2026-11-11T09:00:00.000Z",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:obs-tsh-2",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-tsh-2",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "3016-3",
+              "display": "Thyrotropin [Units/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 1.75,
+          "unit": "uIU/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "uIU/mL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-b12-2",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-b12-2",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2132-9",
+              "display": "Cobalamin (Vitamin B12) [Mass/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 520,
+          "unit": "pg/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "pg/mL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-apoe-2",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-apoe-2",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "41762-6",
+              "display": "APOE gene allele genotype"
+            }
+          ]
+        },
+        "valueString": "e4/e4"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-ptau217-2",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-ptau217-2",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "LP438664-7",
+              "display": "Phosphorylated tau-217 [Mass/volume] in Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 0.74,
+          "unit": "pg/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "pg/mL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-abeta-2",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-abeta-2",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "94660-8",
+              "display": "Beta-amyloid 42/Beta-amyloid 40 ratio in Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 0.048,
+          "unit": "{ratio}",
+          "system": "http://unitsofmeasure.org",
+          "code": "{ratio}"
+        }
+      }
+    }
+  ]
+}
+

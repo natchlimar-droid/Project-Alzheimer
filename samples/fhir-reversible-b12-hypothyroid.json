@@ -1,0 +1,147 @@
+{
+  "resourceType": "Bundle",
+  "id": "sample-fhir-reversible-b12-hypothyroid",
+  "type": "collection",
+  "timestamp": "2026-11-11T09:00:00.000Z",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:obs-tsh-1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-tsh-1",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "3016-3",
+              "display": "Thyrotropin [Units/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 8.6,
+          "unit": "uIU/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "uIU/mL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-ft4-1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-ft4-1",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "3024-7",
+              "display": "Thyroxine (T4) free [Mass/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 0.68,
+          "unit": "ng/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "ng/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-b12-1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-b12-1",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2132-9",
+              "display": "Cobalamin (Vitamin B12) [Mass/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 135,
+          "unit": "pg/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "pg/mL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-na-1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-na-1",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2951-2",
+              "display": "Sodium [Moles/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 138,
+          "unit": "mEq/L",
+          "system": "http://unitsofmeasure.org",
+          "code": "mEq/L"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-hba1c-1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-hba1c-1",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "4548-4",
+              "display": "Hemoglobin A1c/Hemoglobin.total in Blood"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 5.7,
+          "unit": "%",
+          "system": "http://unitsofmeasure.org",
+          "code": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-egfr-1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-egfr-1",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "62238-1",
+              "display": "Glomerular filtration rate/1.73 sq M.predicted [CKD-EPI]"
+            }
+          ]
+        },
+        "valueQuantity": {
+          "value": 76,
+          "unit": "mL/min/1.73m2",
+          "system": "http://unitsofmeasure.org",
+          "code": "mL/min/1.73m2"
+        }
+      }
+    }
+  ]
+}
+
