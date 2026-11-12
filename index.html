@@ -1191,7 +1191,7 @@
   </style>
 </head>
 
-<body>
+<body class="patient-mode">
 
   <!-- Floating Toast Notification Container -->
   <div id="appToastContainer" aria-live="polite" aria-atomic="true"></div>
@@ -1218,7 +1218,35 @@
   <!-- ========================================================================
        Application Header & Accessibility Controls
        ======================================================================== -->
-  <header class="app-header">
+    <!-- ========================================================================
+       Portfolio Guided Tour Banner (First Impression for Reviewers & Evaluators)
+       ======================================================================== -->
+  <div id="portfolioTourBanner" class="no-print" style="background:linear-gradient(135deg, #0F172A, #1E293B); color:#F8FAFC; border-bottom:3px solid var(--primary-bg); padding:0.85rem 1.25rem;">
+    <div style="max-width:1280px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+      <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:320px;">
+        <span style="font-size:1.75rem; line-height:1;">👋</span>
+        <div style="font-size:0.98rem; line-height:1.5;">
+          <strong>สำหรับผู้เยี่ยมชม Portfolio:</strong> สามารถกดปุ่ม <strong>[⚡ โหลดเคสจำลอง]</strong> เพื่อทดสอบผลลัพธ์การคัดกรอง หรือสลับเป็น <strong>[👨‍⚕️ โหมดเจ้าหน้าที่]</strong> เพื่อดูระบบ Telemetry, Stroke Latency &amp; EMR Export ได้ทันที
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+        <button type="button" class="btn" style="background:#2563EB; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#3B82F6;" onclick="scrollToQuickPresets()">
+          ⚡ โหลดเคสจำลอง
+        </button>
+        <button type="button" class="btn" id="tourModeSwitchBtn" style="background:#059669; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#10B981;" onclick="toggleTourViewMode()">
+          👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่
+        </button>
+        <button type="button" class="btn" style="background:#475569; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#64748B;" onclick="openSystemArchitectureModal()">
+          📐 สถาปัตยกรรมระบบ
+        </button>
+        <button type="button" style="background:transparent; border:none; color:#94A3B8; font-size:1.3rem; cursor:pointer; padding:0.2rem 0.5rem;" onclick="dismissTourBanner()" title="ปิดแถบแนะนำ">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
+<header class="app-header">
     <div class="header-container">
       <div>
         <h1 class="brand-title">🧠 ระบบคัดกรองความเสี่ยงภาวะสมองรู้คิดบกพร่องและอัลไซเมอร์เบื้องต้น</h1>
@@ -1226,6 +1254,12 @@
           Biomarker-Informed Triage System</p>
       </div>
       <div class="a11y-controls" role="toolbar" aria-label="เครื่องมือช่วยการเข้าถึง">
+        <button type="button" class="btn" onclick="openSystemArchitectureModal()" style="font-weight:800; border-color:var(--primary-bg); background:var(--bg-elevated); color:var(--text-primary);" aria-label="ดูสถาปัตยกรรมระบบและแนวคิดการออกแบบ">
+          📐 สถาปัตยกรรมระบบ &amp; แนวคิดการออกแบบ
+        </button>
+        <button type="button" class="btn clinician-only" onclick="openPayloadPreviewModal()" style="font-weight:800; border-color:var(--primary-bg); background:var(--bg-elevated); color:var(--text-primary);" aria-label="ดูโครงสร้างข้อมูลส่งออก EMR/LIS Payload">
+          👁️ ดูโครงสร้างข้อมูลส่งออก (EMR / LIS Payload)
+        </button>
         <button type="button" class="btn" id="themeToggleBtn" onclick="toggleContrastTheme()"
           aria-label="สลับโหมดสีความคมชัดสูง">
           🌓 โหมดสี: พื้นสว่าง (WCAG AAA)
@@ -1251,10 +1285,10 @@
       <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
         <span style="font-weight:800; font-size:1.05rem; color:var(--text-primary);">โหมดการใช้งาน (View Mode):</span>
         <div class="mode-toggle-pill-group" role="radiogroup" aria-label="เลือกโหมดการแสดงผล">
-          <button type="button" class="mode-toggle-btn active" id="btnModeClinician" onclick="setViewMode('CLINICIAN')" role="radio" aria-checked="true">
+          <button type="button" class="mode-toggle-btn" id="btnModeClinician" onclick="setViewMode('CLINICIAN')" role="radio" aria-checked="false">
             👨‍⚕️ โหมดแพทย์ / เจ้าหน้าที่ (Staff &amp; Clinician)
           </button>
-          <button type="button" class="mode-toggle-btn" id="btnModePatient" onclick="setViewMode('PATIENT')" role="radio" aria-checked="false">
+          <button type="button" class="mode-toggle-btn active" id="btnModePatient" onclick="setViewMode('PATIENT')" role="radio" aria-checked="true">
             👤 โหมดผู้สูงอายุ / ผู้รับการประเมิน (Senior Patient)
           </button>
         </div>
@@ -3036,6 +3070,256 @@
     </div>
   </dialog>
 
+  
+  <!-- ========================================================================
+       MODAL 1: System Architecture & Clinical Logic
+       ======================================================================== -->
+  <dialog id="systemArchitectureModal" class="modal-dialog" style="max-width:980px; width:95vw;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:2px solid var(--border-subtle); padding-bottom:0.75rem;">
+      <div>
+        <h3 style="margin:0; font-size:1.45rem; color:var(--text-primary);">📐 สถาปัตยกรรมระบบ &amp; แนวคิดการตัดสินใจทางคลินิก (System Architecture &amp; Clinical CDSS Logic)</h3>
+        <p style="margin:0.25rem 0 0 0; color:var(--text-secondary); font-size:0.98rem;">
+          Clinical Decision Support System (SaMD Class II CDS Concept) • HIPAA/PDPA Privacy by Design • HL7 FHIR R4
+        </p>
+      </div>
+      <button type="button" class="btn" onclick="document.getElementById('systemArchitectureModal').close()" style="min-height:44px; padding:0.4rem 0.8rem;">✕ ปิด</button>
+    </div>
+
+    <!-- Modal Tab Switcher -->
+    <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <button type="button" class="btn btn-primary" id="archTabBtn1" onclick="switchArchTab(1)">
+        📊 1. Data Flow &amp; Privacy Diagram
+      </button>
+      <button type="button" class="btn" id="archTabBtn2" onclick="switchArchTab(2)">
+        🧭 2. Clinical Triage Decision Matrix
+      </button>
+      <button type="button" class="btn" id="archTabBtn3" onclick="switchArchTab(3)">
+        🛠️ 3. Tech Stack &amp; Standards
+      </button>
+    </div>
+
+    <!-- Tab 1: Data Flow & Privacy Architecture Diagram -->
+    <div id="archTabContent1">
+      <div class="card-box" style="background:var(--bg-elevated); margin-bottom:1rem; padding:1.25rem;">
+        <h4 style="margin:0 0 0.5rem 0; font-size:1.2rem;">🔒 สถาปัตยกรรมการปกป้องข้อมูลส่วนบุคคล (Privacy-by-Design Data Flow)</h4>
+        <p style="font-size:0.95rem; color:var(--text-secondary); margin:0 0 1rem 0;">
+          ระบบแยกข้อมูลระบุตัวตน (Schema A: PII Vault) ออกจากข้อมูลเวชสารสนเทศคัดกรอง (Schema B: Clinical Vector) อย่างเด็ดขาด และผูกโยงด้วยรหัสแฝงทางเดียว <code>pseudonymToken</code> ที่ผ่านการทำ 256-bit Salted SHA-256 Hashing ในระดับ In-Memory เท่านั้น ไม่มีการบันทึก PII ดิบลงบนเบราว์เซอร์
+        </p>
+        
+        <!-- SVG Architecture Diagram -->
+        <div style="background:#0A0E17; border-radius:10px; padding:1rem; overflow-x:auto; text-align:center;">
+          <svg viewBox="0 0 860 340" width="100%" height="320" style="min-width:680px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+            <!-- Box 1: Schema A PII Vault -->
+            <rect x="20" y="30" width="220" height="110" rx="8" fill="#1E293B" stroke="#3B82F6" stroke-width="2"/>
+            <text x="130" y="55" fill="#60A5FA" font-size="13" font-weight="bold" text-anchor="middle">SCHEMA A: PII VAULT</text>
+            <text x="130" y="75" fill="#E2E8F0" font-size="11" text-anchor="middle">• ชื่อ-นามสกุล / เลขบัตร ปชช.</text>
+            <text x="130" y="93" fill="#E2E8F0" font-size="11" text-anchor="middle">• เบอร์โทรศัพท์ / รหัส HN</text>
+            <text x="130" y="115" fill="#EF4444" font-size="10.5" font-weight="bold" text-anchor="middle">🔒 Strictly In-Memory Only</text>
+
+            <!-- Arrow 1 to Hash -->
+            <path d="M 240 85 L 290 85" stroke="#38BDF8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: Salted Hash & Tokenizer -->
+            <rect x="290" y="30" width="180" height="110" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="2"/>
+            <text x="380" y="55" fill="#34D399" font-size="13" font-weight="bold" text-anchor="middle">SECURITY BOUNDARY</text>
+            <text x="380" y="75" fill="#E2E8F0" font-size="11" text-anchor="middle">Pure JS SHA-256</text>
+            <text x="380" y="93" fill="#E2E8F0" font-size="11" text-anchor="middle">Salted Cryptographic Hash</text>
+            <text x="380" y="115" fill="#10B981" font-size="10.5" font-weight="bold" text-anchor="middle">Token: PSN-SHA256</text>
+
+            <!-- Arrow 2 to Schema B -->
+            <path d="M 470 85 L 520 85" stroke="#38BDF8" stroke-width="2.5" fill="none"/>
+
+            <!-- Box 3: Schema B Clinical Vector -->
+            <rect x="520" y="30" width="310" height="110" rx="8" fill="#1E293B" stroke="#8B5CF6" stroke-width="2"/>
+            <text x="675" y="55" fill="#C084FC" font-size="13" font-weight="bold" text-anchor="middle">SCHEMA B: CLINICAL VECTOR</text>
+            <text x="675" y="75" fill="#E2E8F0" font-size="11" text-anchor="middle">• AD8 (0-8) • Mini-Cog Recall (0-3)</text>
+            <text x="675" y="93" fill="#E2E8F0" font-size="11" text-anchor="middle">• CDT Kinematics &amp; Tremor RMS</text>
+            <text x="675" y="111" fill="#E2E8F0" font-size="11" text-anchor="middle">• 2Q Gatekeeper • ACB Medication Burden</text>
+            <text x="675" y="129" fill="#E2E8F0" font-size="11" text-anchor="middle">• Optional Lab Biomarkers (p-tau217, B12, TSH)</text>
+
+            <!-- Downward Arrow from Schema B to Engine -->
+            <path d="M 675 140 L 675 180" stroke="#A855F7" stroke-width="2.5" fill="none"/>
+
+            <!-- Box 4: Multi-Axis Decision Engine -->
+            <rect x="220" y="180" width="610" height="65" rx="8" fill="#1E293B" stroke="#F59E0B" stroke-width="2"/>
+            <text x="525" y="205" fill="#FBBF24" font-size="13" font-weight="bold" text-anchor="middle">PARALLEL 4-AXIS STRATIFICATION ENGINE (v2.4.1 Hardened)</text>
+            <text x="525" y="225" fill="#E2E8F0" font-size="11.5" text-anchor="middle">Axis 1: Cognitive Tier | Axis 2: Reversible Causes | Axis 3: AD Biomarkers | Axis 4: Affective (2Q)</text>
+
+            <!-- Output Arrows -->
+            <path d="M 340 245 L 340 275" stroke="#F59E0B" stroke-width="2" fill="none"/>
+            <path d="M 525 245 L 525 275" stroke="#F59E0B" stroke-width="2" fill="none"/>
+            <path d="M 710 245 L 710 275" stroke="#F59E0B" stroke-width="2" fill="none"/>
+
+            <!-- Box 5A: Patient View -->
+            <rect x="230" y="275" width="220" height="50" rx="6" fill="#047857" stroke="#10B981" stroke-width="1.5"/>
+            <text x="340" y="295" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">PATIENT VIEW (โหมดประชาชน)</text>
+            <text x="340" y="312" fill="#D1FAE5" font-size="9.5" text-anchor="middle">Plain Language + 4-Pillar Care Plan</text>
+
+            <!-- Box 5B: Clinician Diagnostic Hub -->
+            <rect x="460" y="275" width="180" height="50" rx="6" fill="#1D4ED8" stroke="#3B82F6" stroke-width="1.5"/>
+            <text x="550" y="295" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">CLINICIAN HUB</text>
+            <text x="550" y="312" fill="#DBEAFE" font-size="9.5" text-anchor="middle">Kinematics, Neglect, Triage Code</text>
+
+            <!-- Box 5C: FHIR R4 Bundle Export -->
+            <rect x="650" y="275" width="190" height="50" rx="6" fill="#7C2D12" stroke="#EA580C" stroke-width="1.5"/>
+            <text x="745" y="295" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">HL7 FHIR R4 BUNDLE</text>
+            <text x="745" y="312" fill="#FFEDD5" font-size="9.5" text-anchor="middle">17 LOINC Codes ➔ Hospital EMR</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Clinical Triage Decision Matrix (Decision Tree) -->
+    <div id="archTabContent2" style="display:none;">
+      <div class="card-box" style="background:var(--bg-elevated); margin-bottom:1rem; padding:1.25rem;">
+        <h4 style="margin:0 0 0.5rem 0; font-size:1.2rem;">🧭 ตารางเกณฑ์การตัดสินใจทางคลินิก (Clinical Triage &amp; Decision Matrix)</h4>
+        <p style="font-size:0.95rem; color:var(--text-secondary); margin:0 0 1rem 0;">
+          สถาปัตยกรรม Decision Tree แบบหลายลำดับขั้น ป้องกัน False Negatives และแยกแยะภาวะซึมเศร้า/ผลข้างเคียงยา ออกจากโรคสมองเสื่อมจริง
+        </p>
+
+        <div style="overflow-x:auto;">
+          <table class="print-table" style="width:100%; border-collapse:collapse; font-size:0.92rem;">
+            <thead>
+              <tr style="background:#1E293B; color:#F8FAFC;">
+                <th style="padding:8px 10px; text-align:left; width:22%;">ภาวะทางคลินิก</th>
+                <th style="padding:8px 10px; text-align:left; width:38%;">ตรรกะและเกณฑ์ตัดสินใจ (Decision Rules)</th>
+                <th style="padding:8px 10px; text-align:center; width:15%;">Triage Code</th>
+                <th style="padding:8px 10px; text-align:left; width:25%;">การดำเนินการทางคลินิก</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:#FFF5F5;">
+                <td style="padding:8px 10px; font-weight:800; color:#991B1B;">🛑 ภาวะเพ้อเฉียบพลัน<br/>(Acute Delirium)</td>
+                <td style="padding:8px 10px;">คะแนน 4AT &ge; 4 หรือ Pre-Test Validity ติดข้อห้ามความพร้อมเฉียบพลัน</td>
+                <td style="padding:8px 10px; text-align:center;"><span class="badge" style="background:#FEE2E2; color:#991B1B; font-weight:800;">EMERGENCY</span></td>
+                <td style="padding:8px 10px; font-weight:700;">ระงับการประเมินทันที ส่งห้องฉุกเฉิน (ER) เพื่อหาสาเหตุทางกาย</td>
+              </tr>
+              <tr style="background:#EFF6FF;">
+                <td style="padding:8px 10px; font-weight:800; color:#1E40AF;">🛡️ สมองเสื่อมเทียม<br/>(Pseudodementia)</td>
+                <td style="padding:8px 10px;">คำถามคัดกรอง 2Q เป็นบวก (ข้อ 1 หรือ 2 ตอบ "มี") แม้ผลความจำ Mini-Cog จะบกพร่อง</td>
+                <td style="padding:8px 10px; text-align:center;"><span class="badge" style="background:#DBEAFE; color:#1E40AF; font-weight:800;">YELLOW</span></td>
+                <td style="padding:8px 10px;">ส่งประเมิน TGDS-15 เพื่อรักษาโรคซึมเศร้า คาดว่าอาการหลงลืมจะฟื้นตัว</td>
+              </tr>
+              <tr style="background:#FEF3C7;">
+                <td style="padding:8px 10px; font-weight:800; color:#92400E;">💊 ภาระยากดสมอง<br/>(High ACB Burden)</td>
+                <td style="padding:8px 10px;">คะแนนรวม Anticholinergic Burden &ge; 3 (เช่น ทานยา CPM, Amitriptyline, Dimenhydrinate)</td>
+                <td style="padding:8px 10px; text-align:center;"><span class="badge" style="background:#FEF3C7; color:#92400E; font-weight:800;">YELLOW</span></td>
+                <td style="padding:8px 10px;">ทบทวนและปรับลดยา (Deprescribing) ปรึกษาแพทย์/เภสัชกร</td>
+              </tr>
+              <tr style="background:#F0FDF4;">
+                <td style="padding:8px 10px; font-weight:800; color:#166534;">🧪 ภาวะขาดวิตามิน/ฮอร์โมน<br/>(Reversible Metabolic)</td>
+                <td style="padding:8px 10px;">Vitamin B12 &lt; 200 pg/mL, Overt Hypothyroid (TSH &gt; 10), Na+ &lt; 130, Glucose &lt; 50</td>
+                <td style="padding:8px 10px; text-align:center;"><span class="badge" style="background:#DCFCE7; color:#166534; font-weight:800;">YELLOW</span></td>
+                <td style="padding:8px 10px;">รักษาภาวะขาดสารอาหาร/ไทรอยด์ สมองสามารถฟื้นฟูกลับมาปกติได้</td>
+              </tr>
+              <tr style="background:#FFFBEB;">
+                <td style="padding:8px 10px; font-weight:800; color:#B45309;">⚠️ บกพร่องเล็กน้อย<br/>(MCI Suspected)</td>
+                <td style="padding:8px 10px;">Mini-Cog &le; 2 หรือ AD8 &ge; 2 แต่ <strong>IADL ยังทำได้เป็นอิสระ (0/4 บกพร่อง)</strong></td>
+                <td style="padding:8px 10px; text-align:center;"><span class="badge" style="background:#FEF3C7; color:#B45309; font-weight:800;">YELLOW</span></td>
+                <td style="padding:8px 10px;">นัดตรวจติดตามซ้ำ 6 เดือน, ปรับอาหาร MIND Diet, ฝึกสมองสม่ำเสมอ</td>
+              </tr>
+              <tr style="background:#FEF2F2;">
+                <td style="padding:8px 10px; font-weight:800; color:#B91C1C;">🚨 สงสัยสมองเสื่อม<br/>(Probable Dementia)</td>
+                <td style="padding:8px 10px;">Mini-Cog &le; 2 หรือ AD8 &ge; 2 ร่วมกับ <strong>IADL บกพร่อง &ge; 1 กิจวัตร</strong> ในชีวิตประจำวัน</td>
+                <td style="padding:8px 10px; text-align:center;"><span class="badge" style="background:#FEE2E2; color:#B91C1C; font-weight:800;">RED</span></td>
+                <td style="padding:8px 10px; font-weight:700;">ส่งพบแพทย์เฉพาะทางระบบประสาท หรือคลินิกความจำ (Memory Clinic) ทันที</td>
+              </tr>
+              <tr style="background:#F8FAFC;">
+                <td style="padding:8px 10px; font-weight:800; color:#334155;">🟢 สมองปกติสมวัย<br/>(Cognitively Healthy)</td>
+                <td style="padding:8px 10px;">Mini-Cog 3–5 คำ, AD8 &lt; 2, IADL ปกติ, 2Q ปกติ, ไม่มีภาวะเสี่ยงเร่งด่วน</td>
+                <td style="padding:8px 10px; text-align:center;"><span class="badge" style="background:#E2E8F0; color:#334155; font-weight:800;">GREEN</span></td>
+                <td style="padding:8px 10px;">ตรวจคัดกรองติดตามผลประจำปี (Annual Baseline Follow-up)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Tech Stack & Regulatory Standards -->
+    <div id="archTabContent3" style="display:none;">
+      <div class="card-box" style="background:var(--bg-elevated); margin-bottom:1rem; padding:1.25rem;">
+        <h4 style="margin:0 0 0.5rem 0; font-size:1.2rem;">🛠️ สถาปัตยกรรมเทคโนโลยีและมาตรฐานที่ใช้อ้างอิง (Tech Stack &amp; Standards)</h4>
+        
+        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-top:1rem;">
+          <div style="background:var(--bg-card); padding:1rem; border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:1.1rem; font-weight:800; color:#2563EB; margin-bottom:0.35rem;">💻 Core Technologies</div>
+            <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
+              <li><strong>TypeScript 5.x / Modern ES2022:</strong> เขียน Logic แบบ Pure Deterministic Type-Safe</li>
+              <li><strong>HTML5 Canvas 2D API:</strong> คำนวณ Kinematic Stroke Latency, Tremor RMS Filter (4-12 Hz), และ Perspective Auto-Crop</li>
+              <li><strong>Web Speech API:</strong> ระบบอ่านออกเสียงคำแนะนำภาษาไทยสำหรับผู้สูงอายุ</li>
+              <li><strong>Zero-Dependency Architecture:</strong> รันแบบ Standalone Offline 100% ปราศจาก External CDN Tracking</li>
+            </ul>
+          </div>
+
+          <div style="background:var(--bg-card); padding:1rem; border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:1.1rem; font-weight:800; color:#059669; margin-bottom:0.35rem;">🏥 Health Informatics Standards</div>
+            <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
+              <li><strong>HL7 FHIR Release 4:</strong> จัดโครงสร้าง Collection Bundle (Patient, QuestionnaireResponse, Observation, DiagnosticReport, ServiceRequest)</li>
+              <li><strong>LOINC Standard Codes:</strong> กำกับรหัสมาตรฐานสากลครบ 17 รายการ (เช่น Plasma p-tau217 LOINC <code>104352-0</code>)</li>
+              <li><strong>SaMD Class II CDS Concept:</strong> ออกแบบตามแนวคิด US FDA Software as a Medical Device (Clinical Decision Support)</li>
+              <li><strong>Clinician Decision Override:</strong> มีระบบบันทึกและทบทวนผลโดยแพทย์พร้อมเลข ว. ใบอนุญาต</li>
+            </ul>
+          </div>
+
+          <div style="background:var(--bg-card); padding:1rem; border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:1.1rem; font-weight:800; color:#D97706; margin-bottom:0.35rem;">🔒 Privacy &amp; Accessibility</div>
+            <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
+              <li><strong>PDPA &amp; HIPAA Compliance:</strong> แยก Schema A (PII) ออกจาก Schema B (Clinical) ด้วย Salted Hashing</li>
+              <li><strong>Zero Raw PII Persistence:</strong> ไม่จัดเก็บข้อมูลส่วนตัวแบบ Unencrypted ลงใน LocalStorage</li>
+              <li><strong>Tamper-Evident Audit Trail:</strong> บันทึกประวัติการเข้าถึงเวชระเบียนด้วย Hash-Chaining</li>
+              <li><strong>WCAG 2.1 Level AAA:</strong> Contrast Ratio &gt; 7:1, ตัวหนังสือ &ge; 20px, ปุ่ม &ge; 60x60px</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================
+       MODAL 2: EMR / LIS Export Payload Preview (FHIR R4 & Schema B)
+       ======================================================================== -->
+  <dialog id="payloadPreviewModal" class="modal-dialog" style="max-width:920px; width:95vw;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:2px solid var(--border-subtle); padding-bottom:0.75rem;">
+      <div>
+        <h3 style="margin:0; font-size:1.4rem; color:var(--text-primary);">👁️ โครงสร้างข้อมูลส่งออก (EMR / LIS Export Payload Preview)</h3>
+        <p style="margin:0.25rem 0 0 0; color:var(--text-secondary); font-size:0.95rem;">
+          จำลองข้อมูลจริงที่พร้อมทำ ETL หรือเชื่อมต่อเข้าสู่ระบบ Hospital Information System (HIS) ผ่านมาตรฐาน HL7 FHIR R4
+        </p>
+      </div>
+      <button type="button" class="btn" onclick="document.getElementById('payloadPreviewModal').close()" style="min-height:44px; padding:0.4rem 0.8rem;">✕ ปิด</button>
+    </div>
+
+    <!-- Payload Tab Switcher -->
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary" id="payloadTabBtn1" onclick="switchPayloadTab(1)">
+          🏥 HL7 FHIR R4 Bundle (.json)
+        </button>
+        <button type="button" class="btn" id="payloadTabBtn2" onclick="switchPayloadTab(2)">
+          📊 De-identified Clinical Vector (Schema B)
+        </button>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        <button type="button" class="btn" onclick="copyCurrentPayloadToClipboard()">
+          📋 คัดลอก Payload
+        </button>
+        <button type="button" class="btn btn-primary" onclick="exportFhirBundle()">
+          💾 ดาวน์โหลด .json
+        </button>
+      </div>
+    </div>
+
+    <div id="payloadCodeContainer" style="max-height:55vh; overflow-y:auto; border-radius:8px; border:2px solid var(--border-strong);">
+      <pre class="code-inspector" id="payloadPreviewCodeBox" style="margin:0; font-size:0.88rem; line-height:1.45;"></pre>
+    </div>
+
+    <div style="margin-top:0.75rem; font-size:0.88rem; color:var(--text-secondary); display:flex; justify-content:space-between; flex-wrap:wrap;">
+      <span id="payloadMetaInfo">HL7 FHIR R4 Bundle • Format: application/fhir+json</span>
+      <span>🔒 Pseudonym Token: <code id="payloadTokenDisplay">PSN-XXXX</code></span>
+    </div>
+  </dialog>
+
   <!-- ========================================================================
        Clinical Engine & Interactive Application Script
        Implements exact TypeScript specification & telemetry collection
@@ -3293,7 +3577,7 @@
         cuedRecognitionScore: null,
         delayedRecallScore: null,
         cdtResult: null,
-        viewMode: "CLINICIAN",
+        viewMode: "PATIENT",
         cdtTelemetry: {
           inputMode: "SCREEN",
           sourceType: "SCREEN_DRAWING",
@@ -8076,6 +8360,128 @@
     }
 
     /* HL7 FHIR R4 Bundle Builder & Secure Hospital Referral Integration */
+
+
+    /* ========================================================================
+       Portfolio Guided Tour & Architecture / Payload Modals
+       ======================================================================== */
+    function dismissTourBanner() {
+      const banner = document.getElementById("portfolioTourBanner");
+      if (banner) banner.style.display = "none";
+      showToast("ซ่อนแถบแนะนำสำหรับผู้เยี่ยมชมเรียบร้อย", "info");
+    }
+
+    function toggleTourViewMode() {
+      const isPatient = document.body.classList.contains("patient-mode");
+      const targetMode = isPatient ? "CLINICIAN" : "PATIENT";
+      setViewMode(targetMode);
+      const switchBtn = document.getElementById("tourModeSwitchBtn");
+      if (switchBtn) {
+        switchBtn.textContent = targetMode === "CLINICIAN" ? "👤 สลับเป็นโหมดประชาชน" : "👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่";
+      }
+      showToast(targetMode === "CLINICIAN" ? "👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่ (แสดง Telemetry & LIS)" : "👤 สลับเป็นโหมดประชาชน (เรียบง่าย สบายตา)", "info");
+    }
+
+    function scrollToQuickPresets() {
+      goToStep(0);
+      const presetCard = document.getElementById("quickScenarioPresetCard");
+      if (presetCard) {
+        presetCard.scrollIntoView({ behavior: "smooth" });
+        presetCard.style.outline = "4px solid var(--primary-bg)";
+        setTimeout(() => { presetCard.style.outline = "none"; }, 2500);
+      }
+      showToast("เลือกเคสจำลองทางคลินิก 1 ใน 6 เคสด้านล่างเพื่อทดสอบระบบ", "info");
+    }
+
+    function openSystemArchitectureModal() {
+      const modal = document.getElementById("systemArchitectureModal");
+      if (modal) {
+        if (typeof modal.showModal === "function") modal.showModal();
+        else modal.setAttribute("open", "");
+      }
+      switchArchTab(1);
+      recordAuditLog("VIEW_SYSTEM_ARCHITECTURE", "Opened System Architecture & Clinical Logic Modal");
+    }
+
+    function switchArchTab(tabIndex) {
+      for (let i = 1; i <= 3; i++) {
+        const content = document.getElementById(`archTabContent${i}`);
+        const btn = document.getElementById(`archTabBtn${i}`);
+        if (content) content.style.display = (i === tabIndex) ? "block" : "none";
+        if (btn) {
+          if (i === tabIndex) btn.classList.add("btn-primary");
+          else btn.classList.remove("btn-primary");
+        }
+      }
+    }
+
+    let activePayloadType = 1; // 1: FHIR Bundle, 2: Schema B Clinical Vector
+    function openPayloadPreviewModal() {
+      if (!lastAssessmentPayload) renderRiskStratificationReport();
+      const modal = document.getElementById("payloadPreviewModal");
+      if (modal) {
+        if (typeof modal.showModal === "function") modal.showModal();
+        else modal.setAttribute("open", "");
+      }
+      switchPayloadTab(1);
+      const tokenDisplay = document.getElementById("payloadTokenDisplay");
+      if (tokenDisplay) tokenDisplay.textContent = appState.pseudonymToken || "PSN-XXXX";
+      recordAuditLog("PREVIEW_EXPORT_PAYLOAD", "Opened EMR/LIS Payload Preview Modal");
+    }
+
+    function switchPayloadTab(tabIndex) {
+      activePayloadType = tabIndex;
+      const btn1 = document.getElementById("payloadTabBtn1");
+      const btn2 = document.getElementById("payloadTabBtn2");
+      const codeBox = document.getElementById("payloadPreviewCodeBox");
+      const metaInfo = document.getElementById("payloadMetaInfo");
+
+      if (btn1) btn1.className = (tabIndex === 1) ? "btn btn-primary" : "btn";
+      if (btn2) btn2.className = (tabIndex === 2) ? "btn btn-primary" : "btn";
+
+      if (!lastAssessmentPayload) renderRiskStratificationReport();
+      const input = buildAssessmentInput();
+      const fullResult = stratifyCognitiveRisk(input);
+      const { _meta, ...cleanOutput } = fullResult;
+
+      if (tabIndex === 1) {
+        const bundle = buildCompleteFhirBundle();
+        if (codeBox) codeBox.textContent = JSON.stringify(bundle, null, 2);
+        if (metaInfo) metaInfo.textContent = `HL7 FHIR R4 Bundle • ${bundle.entry?.length || 0} Resources • Format: application/fhir+json`;
+      } else {
+        const piiRec = syncPseudonymVaults();
+        const schemaBVector = {
+          "pseudonymToken": piiRec.pseudonymToken,
+          "sessionId": appState.sessionId,
+          "demographics": { "age": input.age, "yearsOfEducation": input.yearsOfEducation },
+          "cognitiveScreening": {
+            "ad8Score": input.ad8Score,
+            "miniCogFreeRecall": input.delayedRecallScore,
+            "miniCogCuedRecognition": input.cuedRecognitionScore,
+            "cdtResult": input.cdtResult,
+            "cdtMotorTremorIsolated": !!input.cdtMotorTremorDetected,
+            "visualMotorTimeMs": input.visualMotorTimeMs,
+            "visualMotorErrors": input.visualMotorErrors
+          },
+          "anticholinergicBurden": input.anticholinergicBurden,
+          "speechBiomarkers": input.speechBiomarkers,
+          "labs": input.labs,
+          "triageResult": cleanOutput
+        };
+        if (codeBox) codeBox.textContent = JSON.stringify(schemaBVector, null, 2);
+        if (metaInfo) metaInfo.textContent = "Schema B De-identified Clinical Vector (ETL & ML Ready) • Zero PII";
+      }
+    }
+
+    function copyCurrentPayloadToClipboard() {
+      const codeBox = document.getElementById("payloadPreviewCodeBox");
+      if (!codeBox || !codeBox.textContent) return;
+      navigator.clipboard.writeText(codeBox.textContent).then(() => {
+        showToast("📋 คัดลอก Payload ไปยังคลิปบอร์ดเรียบร้อยแล้ว", "success");
+      }).catch(() => {
+        showToast("ไม่สามารถคัดลอกได้โดยอัตโนมัติ กรุณากดเลือกและคัดลอกด้วยตนเอง", "info");
+      });
+    }
 
     /* ========================================================================
        Dual-Role Interface, Touch/Stylus Enforcer & Radar Chart Engine
