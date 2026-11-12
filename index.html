@@ -3874,6 +3874,8 @@
       }
     ];
 
+    const WORD_REGISTRATION_SETS = WORD_SETS;
+
     const TRAIL_SEQUENCE = ["1", "ก", "2", "ข", "3", "ค", "4", "ง"];
 
     const ALGORITHM_VERSION = "2.4.1-clinical-multiaxis-hardened";
@@ -10057,28 +10059,35 @@
     /* ------------------------------------------------------------------------
        WIZARD STEP 3: MINI-COG (WORDS + CDT + RECALL)
        ------------------------------------------------------------------------ */
+    const WIZ_WORD_ICONS = {
+      "กล้วย": "🍌", "เก้าอี้": "🪑", "เหรียญ": "🪙",
+      "หลอดไฟ": "💡", "ดอกมะลิ": "🌸", "รถไฟ": "🚂",
+      "แม่น้ำ": "🌊", "เสื้อเชิ้ต": "👔", "กระจก": "🪞",
+      "ส้ม": "🍊", "โต๊ะ": "🪵", "ธนบัตร": "💵",
+      "พัดลม": "🪭", "ดอกกุหลาบ": "🌹", "เรือใบ": "⛵"
+    };
+
     function setupWizMiniCog() {
       document.getElementById("wizMiniCogSub-Words").style.display = "block";
       document.getElementById("wizMiniCogSub-Cdt").style.display = "none";
       document.getElementById("wizMiniCogSub-Recall").style.display = "none";
 
-      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
+      const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
       const words = wordSet.words;
-      const icons = ["🍌", "🚗", "💡"];
 
       const grid = document.getElementById("wizWordCardsGrid");
       if (grid) {
-        grid.innerHTML = words.map((w, idx) => `
+        grid.innerHTML = words.map(w => `
           <div style="background:var(--bg-elevated); border:3px solid var(--border-strong); border-radius:16px; padding:1.75rem 1rem; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
-            <div style="font-size:3rem; line-height:1; margin-bottom:0.75rem;">${icons[idx] || "📌"}</div>
-            <div style="font-size:1.75rem; font-weight:900; color:var(--text-primary);">${w}</div>
+            <div style="font-size:3.2rem; line-height:1; margin-bottom:0.75rem;">${WIZ_WORD_ICONS[w] || "📌"}</div>
+            <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary);">${w}</div>
           </div>
         `).join("");
       }
     }
 
     function speakWizWords() {
-      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
+      const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
       const phrase = `กรุณาตั้งใจจำสามคำนี้นะคะ ได้แก่ ${wordSet.words[0]}, ${wordSet.words[1]}, และ ${wordSet.words[2]}`;
       speakThai(phrase);
     }
@@ -10183,17 +10192,25 @@
       document.getElementById("wizMiniCogSub-Cdt").style.display = "none";
       document.getElementById("wizMiniCogSub-Recall").style.display = "block";
 
-      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
-      const targetWords = wordSet.words;
-      const distractorWords = wordSet.distractors || ["พัดลม", "เก้าอี้", "กระเป๋า"];
+      const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
+      const targetWords = wordSet ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
+      const distractorPool = (wordSet && wordSet.distractors) ? wordSet.distractors : ["ส้ม", "โต๊ะ", "ธนบัตร"];
+      const distractorWords = distractorPool.slice(0, 3);
       const allChoices = [...targetWords, ...distractorWords].sort(() => Math.random() - 0.5);
 
       selectedWizRecallWords = [];
+      const countBadge = document.getElementById("wizRecallCountBadge");
+      if (countBadge) {
+        countBadge.textContent = "(เลือกแล้ว 0 จาก 3 คำ)";
+        countBadge.style.color = "var(--text-secondary)";
+      }
+
       const grid = document.getElementById("wizRecallChoicesGrid");
       if (grid) {
         grid.innerHTML = allChoices.map(w => `
-          <button type="button" class="btn patient-choice-btn" id="wizWordChoice_${w}" onclick="toggleWizWordChoice('${w}')" style="justify-content:center; text-align:center; min-height:60px; font-size:1.3rem;">
-            ${w}
+          <button type="button" class="btn patient-choice-btn" id="wizWordChoice_${w}" onclick="toggleWizWordChoice('${w}')" style="justify-content:center; text-align:center; min-height:64px; font-size:1.35rem; font-weight:800; border-width:3px; border-radius:14px; display:flex; align-items:center; gap:0.5rem;">
+            <span style="font-size:1.6rem;">${WIZ_WORD_ICONS[w] || "📌"}</span>
+            <span>${w}</span>
           </button>
         `).join("");
       }
@@ -10232,7 +10249,7 @@
     }
 
     function finishPatientAssessment() {
-      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
+      const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
       const targetWords = wordSet.words;
       let recallScore = 0;
       targetWords.forEach(w => {
