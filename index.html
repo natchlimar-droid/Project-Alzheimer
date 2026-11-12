@@ -1922,18 +1922,60 @@
         </div>
       </div>
 
-      <!-- 3.3 Word Recall Check -->
+      <!-- 3.3 Word Recall Check (Dual-Phase: Free Recall + Cued Recognition) -->
       <div id="wizMiniCogSub-Recall" style="display:none;">
         <h3 style="font-size:1.75rem; font-weight:900; margin:0 0 0.5rem 0;">🧠 คำศัพท์ 3 คำที่จำไว้ คือคำใดบ้าง?</h3>
-        <p style="font-size:1.2rem; color:var(--text-secondary); margin:0 0 0.5rem 0;">
-          กรุณาแตะเลือกคำศัพท์ที่คุณจำได้จากรายการด้านล่าง (แตะเลือกตามที่จำได้จริงค่ะ):
-        </p>
-        <div id="wizRecallCountBadge" style="font-size:1.15rem; font-weight:800; color:var(--text-secondary); margin-bottom:1.5rem;">
-          (เลือกแล้ว 0 จาก 3 คำ)
+        
+        <!-- Step 3.3A: Informant / Self Free Recall Prompt -->
+        <div style="background:var(--bg-elevated); border:2px solid var(--border-subtle); border-radius:16px; padding:1.25rem 1.5rem; margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+            <div>
+              <div style="font-size:1.25rem; font-weight:900; color:var(--text-primary); margin-bottom:0.25rem;">
+                🗣️ ขั้นที่ 1: การนึกจำคำศัพท์เอง (Free Recall)
+              </div>
+              <p style="font-size:1.05rem; color:var(--text-secondary); margin:0; line-height:1.5;">
+                ผู้สูงอายุพูดทวนคำศัพท์ได้เองกี่คำ <strong>(โดยยังไม่ให้ดูตัวเลือกด้านล่าง)</strong>:
+              </p>
+            </div>
+            <button type="button" class="btn btn-tts" onclick="speakThai('กรุณาบอกคำศัพท์สามคำที่จำไว้เมื่อสักครู่โดยยังไม่ดูตัวเลือกค่ะ', this)" style="padding:0.35rem 0.75rem; font-size:0.92rem; min-height:40px;">
+              🔊 ฟังคำแนะนำ
+            </button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:0.75rem;">
+            <button type="button" class="btn patient-choice-btn" id="freeRecallBtn_0" onclick="setWizFreeRecallScore(0)" style="justify-content:center; text-align:center; min-height:56px; font-size:1.15rem; font-weight:800; border-radius:12px; padding:0.5rem;">
+              <span>❌ 0 คำ</span>
+            </button>
+            <button type="button" class="btn patient-choice-btn" id="freeRecallBtn_1" onclick="setWizFreeRecallScore(1)" style="justify-content:center; text-align:center; min-height:56px; font-size:1.15rem; font-weight:800; border-radius:12px; padding:0.5rem;">
+              <span>1 คำ</span>
+            </button>
+            <button type="button" class="btn patient-choice-btn" id="freeRecallBtn_2" onclick="setWizFreeRecallScore(2)" style="justify-content:center; text-align:center; min-height:56px; font-size:1.15rem; font-weight:800; border-radius:12px; padding:0.5rem;">
+              <span>2 คำ</span>
+            </button>
+            <button type="button" class="btn patient-choice-btn" id="freeRecallBtn_3" onclick="setWizFreeRecallScore(3)" style="justify-content:center; text-align:center; min-height:56px; font-size:1.15rem; font-weight:800; border-radius:12px; padding:0.5rem;">
+              <span>⭐ 3 คำ</span>
+            </button>
+          </div>
+          <div id="freeRecallStatusHint" style="font-size:0.95rem; font-weight:700; color:var(--text-secondary); text-align:center;">
+            (แตะเลือก 0, 1, 2 หรือ 3 คำตามที่นึกได้จริง)
+          </div>
         </div>
 
-        <div id="wizRecallChoicesGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:2rem;">
-          <!-- Dynamically populated recall choices -->
+        <!-- Step 3.3B: Cued Recognition (Choices Grid) -->
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-size:1.25rem; font-weight:900; color:var(--text-primary); margin-bottom:0.35rem;">
+            🔍 ขั้นที่ 2: แตะเลือกคำศัพท์จากรายการด้านล่าง (Cued Recognition)
+          </div>
+          <p style="font-size:1.1rem; color:var(--text-secondary); margin:0 0 0.5rem 0;">
+            (สำหรับช่วยยืนยันความจำ หรือกรณีที่นึกคำเองไม่ออกในขั้นที่ 1 ค่ะ):
+          </p>
+          <div id="wizRecallCountBadge" style="font-size:1.15rem; font-weight:800; color:var(--text-secondary); margin-bottom:1.25rem;">
+            (เลือกแล้ว 0 จาก 3 คำ)
+          </div>
+
+          <div id="wizRecallChoicesGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:1.5rem;">
+            <!-- Dynamically populated recall choices -->
+          </div>
         </div>
 
         <button type="button" class="btn btn-primary" onclick="finishPatientAssessment()" style="min-height:64px; font-size:1.35rem; font-weight:900; width:100%; border-radius:14px; box-shadow:0 6px 16px rgba(37,99,235,0.3);">
@@ -1982,7 +2024,24 @@
         <div style="font-weight:700; font-size:1.05rem;">
           💡 หากต้องการฟังเสียงอ่านข้อความ สามารถกดปุ่ม <strong>"🔊 ฟังคำแนะนำ"</strong> เพื่อฟังเสียงอ่านได้ทุกเมื่อค่ะ
         </div>
+      
+
+      <!-- Step 0 Progressive Disclosure Stepper Bar -->
+      <div class="step0-progressive-stepper clinician-only" style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
+        <button type="button" class="btn step0-tab-btn active btn-primary" id="step0TabBtn-1" onclick="switchStep0Tab(1)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
+          <span>👤 1. ข้อมูลผู้ป่วย &amp; ความพร้อม</span>
+        </button>
+        <button type="button" class="btn step0-tab-btn" id="step0TabBtn-2" onclick="switchStep0Tab(2)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
+          <span>💊 2. คัดกรองซึมเศร้า &amp; ยา ACB</span>
+        </button>
+        <button type="button" class="btn step0-tab-btn" id="step0TabBtn-3" onclick="switchStep0Tab(3)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
+          <span>📊 3. ติดตามผล &amp; เคสจำลอง</span>
+        </button>
       </div>
+
+      <!-- Sub-Panel 1: Demographics & Pre-test Validity -->
+      <div id="step0SubPanel-1" class="step0-subpanel" style="display:block;">
+        </div>
 
       <div class="card-box">
         <div class="form-grid">
@@ -2056,8 +2115,19 @@
         <div id="preTestValidityContainer" style="margin-top:1rem; display:flex; flex-direction:column; gap:0.6rem;"></div>
         <div id="preTestValidityAlert" style="margin-top:0.75rem; font-weight:800; display:none; padding:0.75rem; border-radius:8px; background:var(--status-high-surface); color:var(--status-high-text); border:2px solid var(--status-high-border);" role="alert"></div>
       </div>
+        <div class="clinician-only" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
+          <button type="button" class="btn" onclick="proceedFromGatekeeper()" style="font-weight:700;">
+            ข้ามไปทำแบบประเมิน AD8 ทันที ➔
+          </button>
+          <button type="button" class="btn btn-primary" onclick="switchStep0Tab(2)" style="font-weight:800; min-height:50px; padding:0.75rem 1.5rem;">
+            ถัดไป: คัดกรองซึมเศร้า &amp; ยา ACB ➔
+          </button>
+        </div>
+      </div>
 
-      <!-- Enhancement 1: Depression Screening Gatekeeper (2Q) -->
+      <!-- Sub-Panel 2: 2Q Depression & ACB Scale -->
+      <div id="step0SubPanel-2" class="step0-subpanel" style="display:none;">
+        <!-- Enhancement 1: Depression Screening Gatekeeper (2Q) -->
       <div class="card-box" id="gatekeeper2QCard" style="border-width:3px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
           <div>
@@ -2095,8 +2165,19 @@
         <div id="acbMedicationsContainer" style="margin-top:1rem;"></div>
         <div id="acbStatusBanner" style="margin-top:0.75rem; font-weight:800;" role="status" aria-live="polite"></div>
       </div>
+        <div class="clinician-only" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
+          <button type="button" class="btn" onclick="switchStep0Tab(1)" style="font-weight:700;">
+            ⬅️ ย้อนกลับไป ข้อมูลผู้ป่วย
+          </button>
+          <button type="button" class="btn btn-primary" onclick="switchStep0Tab(3)" style="font-weight:800; min-height:50px; padding:0.75rem 1.5rem;">
+            ถัดไป: ติดตามผล &amp; เคสจำลอง ➔
+          </button>
+        </div>
+      </div>
 
-      <!-- Enhancement 3: Longitudinal Session Linkage -->
+      <!-- Sub-Panel 3: Longitudinal Tracking & Presets -->
+      <div id="step0SubPanel-3" class="step0-subpanel" style="display:none;">
+        <!-- Enhancement 3: Longitudinal Session Linkage -->
       <div class="card-box clinician-only">
         <h3 style="margin-top:0; font-size:1.3rem;">📈 การติดตามผลระยะยาว (Longitudinal Tracking)</h3>
         <div class="form-grid">
@@ -2149,12 +2230,14 @@
           </button>
         </div>
       </div>
-
-      <div class="footer-nav">
-        <div></div>
-        <button type="button" class="btn btn-primary" id="startCognitiveBtn" onclick="proceedFromGatekeeper()">
-          เริ่มทำแบบประเมิน โมดูลที่ 1 (AD8) ➡️
-        </button>
+        <div class="clinician-only" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
+          <button type="button" class="btn" onclick="switchStep0Tab(2)" style="font-weight:700;">
+            ⬅️ ย้อนกลับไป 2Q &amp; ยา ACB
+          </button>
+          <button type="button" class="btn btn-primary" id="startCognitiveBtn" onclick="proceedFromGatekeeper()" style="font-weight:900; min-height:54px; font-size:1.15rem; padding:0.85rem 2rem;">
+            เริ่มทำแบบประเมิน โมดูลที่ 1 (AD8) ➡️
+          </button>
+        </div>
       </div>
     </section>
 
@@ -4219,6 +4302,8 @@
         delayedRecallScore: null,
         cdtResult: null,
         viewMode: "PATIENT",
+        freeRecallScore: null,
+        cuedRecognitionScore: null,
         cdtTelemetry: {
           inputMode: "SCREEN",
           sourceType: "SCREEN_DRAWING",
@@ -4229,7 +4314,15 @@
           svgDataUrl: "",
           motorTremorDetected: false,
           tremorRmsJitterPx: 0,
-          tremorDirectionReversalRate: 0
+          tremorDirectionReversalRate: 0,
+          screenShownMs: null,
+          firstStrokeStartMs: null,
+          initiationLatencyMs: null,
+          penLiftsCount: 0,
+          undoCount: 0,
+          totalPathLengthPx: 0,
+          activeDrawingDurationMs: 0,
+          strokeVelocityPxPerSec: 0
         },
         // Visual-Motor Trail Making (Experimental marker)
         trailTelemetry: {
@@ -8307,6 +8400,8 @@
         // Hero Risk Stratification Banner
         const hero = document.getElementById("riskHeroBanner");
         const cogAxis = cleanOutput.axes.cognitiveAxis;
+        const isRevHigh = cleanOutput.axes.reversibleAxis?.some(c => c === "HIGH_ACB_BURDEN" || c === "VITAMIN_B12_DEFICIENCY" || c === "OVERT_HYPOTHYROIDISM");
+        const isDepressed = cleanOutput.axes.affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE";
         if (hero) {
           hero.className = `risk-hero-banner cat-${cogAxis}`;
         }
@@ -8519,10 +8614,14 @@
         if (cdtTelemText) {
           cdtTelemText.innerHTML = `
             <div>ผลการประเมิน: <strong>${input.cdtResult}</strong></div>
-            <div>จำนวนเส้น: <strong>${appState.cdtTelemetry.strokeCount} เส้น</strong></div>
-            <div>เวลารวม: <strong>${appState.cdtTelemetry.totalDurationMs} ms</strong></div>
-            <div>ความลังเลเฉลี่ย: <strong>${meanHes} ms</strong></div>
+            <div>จำนวนเส้น: <strong>${appState.cdtTelemetry.strokeCount || 0} เส้น</strong> | ยกนิ้ว/ปากกา: <strong>${appState.cdtTelemetry.penLiftsCount || 0} ครั้ง</strong></div>
+            <div>เวลารวม: <strong>${appState.cdtTelemetry.totalDurationMs || 0} ms</strong> | ลบวาดใหม่: <strong>${appState.cdtTelemetry.undoCount || 0} ครั้ง</strong></div>
+            <div>เวลาคิดก่อนลากเส้นแรก (Initiation Latency): <strong>${appState.cdtTelemetry.initiationLatencyMs !== null && appState.cdtTelemetry.initiationLatencyMs !== undefined ? appState.cdtTelemetry.initiationLatencyMs + " ms" : "ไม่มีข้อมูล"}</strong> ${appState.cdtTelemetry.initiationLatencyMs ? (appState.cdtTelemetry.initiationLatencyMs < 3000 ? "✅ ปกติ (<3s)" : "⚠️ ลังเลนาน (>3s)") : ""}</div>
+            <div>ความเร็วลากเส้น (Stroke Velocity): <strong>${appState.cdtTelemetry.strokeVelocityPxPerSec || 0} px/s</strong></div>
             <div>Motor Tremor: <strong>${appState.cdtTelemetry.motorTremorDetected ? "ตรวจพบ (" + appState.cdtTelemetry.tremorRmsJitterPx + " px) — กรองเส้นอัตโนมัติ" : "ปกติ"}</strong></div>
+            <div style="margin-top:0.4rem; font-size:0.85rem; color:var(--text-secondary); background:var(--bg-elevated); padding:0.4rem 0.6rem; border-radius:6px; border:1px solid var(--border-subtle);">
+              🔬 <strong>Kinematic Telemetry Analysis:</strong> เวลาเริ่มลากเส้น (Initiation Latency) และความเร็วลากเส้นบ่งชี้ภาวะ Executive Planning &amp; Motor Sequencing แม่นยำกว่าความสวยของลายเส้น
+            </div>
           `;
         }
 
@@ -8646,6 +8745,7 @@
         const visuoScore = input.cdtResult === "NORMAL" ? 1.0 : (input.cdtResult === "ABNORMAL" ? 0.3 : 0.7);
         const iadlCount = input.briefIADL?.totalImpairments || 0;
         const ad8Val = input.ad8Score ?? 0;
+        const acbVal = input.anticholinergicBurden?.acbTotalScore || 0;
         const funcScore = Math.max(0.1, 1.0 - (ad8Val / 8) * 0.5 - (iadlCount / 4) * 0.5);
         const speedScore = _meta?.vmt?.isImpaired ? 0.4 : (input.visualMotorTimeMs !== null ? 0.95 : 0.85);
         const affScore = isDepressed ? 0.35 : (acbVal >= 3 ? 0.45 : 1.0);
@@ -8708,9 +8808,6 @@
             scoreBarEl.style.backgroundColor = "var(--status-low-border)";
           }
         }
-
-        const isRevHigh = cleanOutput.axes.reversibleAxis?.some(c => c === "HIGH_ACB_BURDEN" || c === "VITAMIN_B12_DEFICIENCY" || c === "OVERT_HYPOTHYROIDISM");
-        const isDepressed = cleanOutput.axes.affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE";
 
         if (cogAxis === "DEMENTIA_SUSPECTED") {
           if (iconEl) iconEl.textContent = "🔴";
@@ -8892,7 +8989,7 @@
         const dAcbScore = document.getElementById("dashAcbScore");
         const dAffDesc = document.getElementById("dashAffectiveDesc");
 
-        const acbVal = input.anticholinergicBurden?.acbTotalScore || 0;
+        // acbVal is already declared above
         if (d2QSt) d2QSt.textContent = isDepressed ? "2Q: ตรวจพบความเสี่ยงซึมเศร้า" : "2Q: ปกติ (ไม่พบซึมเศร้า)";
         if (dAcbScore) dAcbScore.textContent = `ภาระยา ACB = ${acbVal} คะแนน (${acbVal >= 3 ? "ภาระยาสูง เสี่ยงกดสมอง" : "ปลอดภัย"})`;
         if (dAffBadge) {
@@ -10268,12 +10365,26 @@
     function proceedWizToCdt() {
       document.getElementById("wizMiniCogSub-Words").style.display = "none";
       document.getElementById("wizMiniCogSub-Cdt").style.display = "block";
+      
+      // Initialize Kinematic Telemetry session
+      if (!appState.cdtTelemetry) appState.cdtTelemetry = {};
+      appState.cdtTelemetry.screenShownMs = performance.now();
+      appState.cdtTelemetry.firstStrokeStartMs = null;
+      appState.cdtTelemetry.initiationLatencyMs = null;
+      appState.cdtTelemetry.penLiftsCount = 0;
+      appState.cdtTelemetry.undoCount = 0;
+      appState.cdtTelemetry.totalPathLengthPx = 0;
+      appState.cdtTelemetry.activeDrawingDurationMs = 0;
+      appState.cdtTelemetry.strokeVelocityPxPerSec = 0;
+
       initWizCdtCanvas();
       scrollWizCardIntoView("wizMiniCogSub-Cdt");
     }
 
     let wizCdtDrawing = false;
     let wizCdtCtx = null;
+    let wizLastPoint = null;
+    let wizLastTimestamp = 0;
 
     function initWizCdtCanvas() {
       const canvas = document.getElementById("wizCdtCanvas");
@@ -10308,6 +10419,16 @@
         const pos = getTouchPos(e);
         wizCdtCtx.beginPath();
         wizCdtCtx.moveTo(pos.x, pos.y);
+
+        const now = performance.now();
+        if (!appState.cdtTelemetry.firstStrokeStartMs) {
+          appState.cdtTelemetry.firstStrokeStartMs = now;
+          if (appState.cdtTelemetry.screenShownMs) {
+            appState.cdtTelemetry.initiationLatencyMs = Math.round(now - appState.cdtTelemetry.screenShownMs);
+          }
+        }
+        wizLastPoint = pos;
+        wizLastTimestamp = now;
       }
 
       function draw(e) {
@@ -10316,11 +10437,25 @@
         const pos = getTouchPos(e);
         wizCdtCtx.lineTo(pos.x, pos.y);
         wizCdtCtx.stroke();
+
+        const now = performance.now();
+        if (wizLastPoint) {
+          const dx = pos.x - wizLastPoint.x;
+          const dy = pos.y - wizLastPoint.y;
+          const dist = Math.hypot(dx, dy);
+          appState.cdtTelemetry.totalPathLengthPx = (appState.cdtTelemetry.totalPathLengthPx || 0) + dist;
+          appState.cdtTelemetry.activeDrawingDurationMs = (appState.cdtTelemetry.activeDrawingDurationMs || 0) + Math.max(1, now - wizLastTimestamp);
+        }
+        wizLastPoint = pos;
+        wizLastTimestamp = now;
       }
 
       function stopDraw(e) {
-        if (wizCdtDrawing && e && e.cancelable) e.preventDefault();
-        wizCdtDrawing = false;
+        if (wizCdtDrawing) {
+          if (e && e.cancelable) e.preventDefault();
+          wizCdtDrawing = false;
+          appState.cdtTelemetry.penLiftsCount = (appState.cdtTelemetry.penLiftsCount || 0) + 1;
+        }
       }
 
       canvas.onmousedown = startDraw;
@@ -10339,29 +10474,45 @@
       if (canvas && wizCdtCtx) {
         wizCdtCtx.fillStyle = "#FFFFFF";
         wizCdtCtx.fillRect(0, 0, canvas.width, canvas.height);
+        if (!appState.cdtTelemetry) appState.cdtTelemetry = {};
+        appState.cdtTelemetry.undoCount = (appState.cdtTelemetry.undoCount || 0) + 1;
+        appState.cdtTelemetry.penLiftsCount = 0;
+        appState.cdtTelemetry.totalPathLengthPx = 0;
+        appState.cdtTelemetry.activeDrawingDurationMs = 0;
         showToast("ล้างกระดานวาดเรียบร้อยค่ะ", "info");
       }
     }
 
     function proceedWizToRecall() {
-      // Save CDT telemetry and copy to main clinician canvas
+      // Finalize CDT Kinematic Telemetry
       const canvas = document.getElementById("wizCdtCanvas");
       if (canvas) {
-        const dataUrl = canvas.toDataURL("image/png");
-        appState.cdtTelemetry.imageDataUrl = dataUrl;
-        appState.cdtTelemetry.sourceType = "SCREEN_DRAWING";
-        appState.cdtResult = "NORMAL";
+        try {
+          const dataUrl = canvas.toDataURL("image/png");
+          if (!appState.cdtTelemetry) appState.cdtTelemetry = {};
+          appState.cdtTelemetry.imageDataUrl = dataUrl;
+          appState.cdtTelemetry.sourceType = "SCREEN_DRAWING";
+          appState.cdtResult = "NORMAL";
 
-        // Mirror to main clinician canvas
-        const mainCanvas = document.getElementById("cdtCanvas");
-        if (mainCanvas) {
-          const mainCtx = mainCanvas.getContext("2d");
-          const img = new Image();
-          img.onload = () => {
-            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-            mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
-          };
-          img.src = dataUrl;
+          if (appState.cdtTelemetry.activeDrawingDurationMs > 0) {
+            appState.cdtTelemetry.strokeVelocityPxPerSec = Math.round(
+              (appState.cdtTelemetry.totalPathLengthPx / (appState.cdtTelemetry.activeDrawingDurationMs / 1000))
+            );
+          }
+
+          // Mirror to main clinician canvas
+          const mainCanvas = document.getElementById("cdtCanvas");
+          if (mainCanvas) {
+            const mainCtx = mainCanvas.getContext("2d");
+            const img = new Image();
+            img.onload = () => {
+              mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+              mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
+            };
+            img.src = dataUrl;
+          }
+        } catch (canvasErr) {
+          console.warn("Canvas export error:", canvasErr);
         }
       }
 
@@ -10375,6 +10526,25 @@
       const allChoices = [...targetWords, ...distractorWords].sort(() => Math.random() - 0.5);
 
       selectedWizRecallWords = [];
+      appState.freeRecallScore = null;
+      appState.cuedRecognitionScore = null;
+
+      // Reset Free Recall prompt buttons
+      for (let s = 0; s <= 3; s++) {
+        const btn = document.getElementById(`freeRecallBtn_${s}`);
+        if (btn) {
+          btn.classList.remove("selected");
+          btn.style.backgroundColor = "";
+          btn.style.color = "";
+          btn.style.borderColor = "";
+        }
+      }
+      const freeHint = document.getElementById("freeRecallStatusHint");
+      if (freeHint) {
+        freeHint.textContent = "(แตะเลือก 0, 1, 2 หรือ 3 คำตามที่นึกได้จริง)";
+        freeHint.style.color = "var(--text-secondary)";
+      }
+
       const countBadge = document.getElementById("wizRecallCountBadge");
       if (countBadge) {
         countBadge.textContent = "(เลือกแล้ว 0 จาก 3 คำ)";
@@ -10391,6 +10561,46 @@
         `).join("");
       }
       scrollWizCardIntoView("wizMiniCogSub-Recall");
+    }
+
+    function setWizFreeRecallScore(score) {
+      appState.freeRecallScore = score;
+      for (let s = 0; s <= 3; s++) {
+        const btn = document.getElementById(`freeRecallBtn_${s}`);
+        if (btn) {
+          if (s === score) {
+            btn.classList.add("selected");
+            btn.style.backgroundColor = "var(--primary-bg)";
+            btn.style.color = "var(--primary-text)";
+            btn.style.borderColor = "var(--primary-bg)";
+          } else {
+            btn.classList.remove("selected");
+            btn.style.backgroundColor = "";
+            btn.style.color = "";
+            btn.style.borderColor = "";
+          }
+        }
+      }
+
+      const hint = document.getElementById("freeRecallStatusHint");
+      if (hint) {
+        if (score === 3) {
+          hint.textContent = "✅ จำได้เองครบทั้ง 3 คำ (Free Recall เต็ม 3/3)!";
+          hint.style.color = "var(--status-low-text)";
+          // Auto-select the 3 target words in choices grid if not already selected
+          const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
+          if (wordSet && wordSet.words) {
+            wordSet.words.forEach(w => {
+              if (!selectedWizRecallWords.includes(w) && selectedWizRecallWords.length < 3) {
+                toggleWizWordChoice(w);
+              }
+            });
+          }
+        } else {
+          hint.textContent = `บันทึกแล้ว: จำได้เอง ${score} คำ (ให้แตะเลือกยืนยันในขั้นที่ 2 ด้านล่างได้เลยค่ะ)`;
+          hint.style.color = "var(--text-primary)";
+        }
+      }
     }
 
     function toggleWizWordChoice(word) {
@@ -10428,13 +10638,21 @@
       try {
         const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
         const targetWords = wordSet ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
-        let recallScore = 0;
+        let cuedScore = 0;
         const selected = Array.isArray(selectedWizRecallWords) ? selectedWizRecallWords : [];
         targetWords.forEach(w => {
-          if (selected.includes(w)) recallScore++;
+          if (selected.includes(w)) cuedScore++;
         });
-        appState.delayedRecallScore = recallScore;
-        if (typeof setDirectRecallScore === "function") setDirectRecallScore(recallScore);
+        appState.cuedRecognitionScore = cuedScore;
+
+        // If user didn't explicitly tap free recall buttons, default free recall to cued score
+        if (appState.freeRecallScore === null || appState.freeRecallScore === undefined) {
+          appState.freeRecallScore = cuedScore;
+        }
+
+        // Primary Delayed Recall Score is Free Recall (gold standard for Mini-Cog)
+        appState.delayedRecallScore = appState.freeRecallScore;
+        if (typeof setDirectRecallScore === "function") setDirectRecallScore(appState.delayedRecallScore);
 
         // Run clinician risk evaluation in background (non-blocking)
         try {
@@ -10470,7 +10688,9 @@
 
       try {
         const ad8Score = countAd8Yes();
-        const recall = (appState.delayedRecallScore !== null) ? appState.delayedRecallScore : 3;
+        const freeScore = (appState.freeRecallScore !== null && appState.freeRecallScore !== undefined) ? appState.freeRecallScore : (appState.delayedRecallScore ?? 3);
+        const cuedScore = (appState.cuedRecognitionScore !== null && appState.cuedRecognitionScore !== undefined) ? appState.cuedRecognitionScore : freeScore;
+        const recall = Math.max(freeScore, cuedScore);
         
         // Safely extract risk tier from payload output or fallback to clinical rules
         let tier = "LOW";
@@ -10478,110 +10698,132 @@
           tier = lastAssessmentPayload.output.riskTier;
         } else if (lastAssessmentPayload && lastAssessmentPayload.riskTier) {
           tier = lastAssessmentPayload.riskTier;
-        } else if (ad8Score >= 4 || recall === 0) {
+        } else if (ad8Score >= 4 || freeScore === 0) {
           tier = "HIGH";
-        } else if (ad8Score >= 2 || recall <= 1) {
+        } else if (ad8Score >= 2 || freeScore <= 1) {
           tier = "MODERATE";
         }
 
-      let lightColor = "green"; // green, yellow, red
-      let title = "สุขภาพความจำอยู่ในเกณฑ์ปกติสมวัย";
-      let subtitle = "ไม่พบสัญญาณความเสี่ยงของภาวะสมองเสื่อมจากการประเมินเบื้องต้น";
-      let badgeHtml = '<span style="background:#10B981; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🟢 ความจำสมวัย (เกณฑ์ปกติ)</span>';
-      let icon = "🟢";
-      let actionBoxHtml = "";
+        let lightColor = "green"; // green, yellow, red
+        let title = "สุขภาพความจำอยู่ในเกณฑ์ปกติสมวัย";
+        let subtitle = "ไม่พบสัญญาณความเสี่ยงของภาวะสมองเสื่อมจากการประเมินเบื้องต้น";
+        let badgeHtml = '<span style="background:#10B981; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🟢 ความจำสมวัย (เกณฑ์ปกติ)</span>';
+        let actionBoxHtml = "";
 
-      if (tier === "HIGH" || tier === "CRITICAL" || (ad8Score >= 4 && recall === 0)) {
-        lightColor = "red";
-        icon = "🔴";
-        title = "พบสัญญาณความเสี่ยงที่ควรปรึกษาแพทย์เฉพาะทาง";
-        subtitle = "ระบบตรวจพบความเปลี่ยนแปลงด้านความคิดความจำที่ชัดเจน หรือมีปัจจัยเสี่ยง";
-        badgeHtml = '<span style="background:#DC2626; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🔴 ควรได้รับการตรวจจากแพทย์เฉพาะทาง</span>';
-        actionBoxHtml = `
-          <div style="background:#FEF2F2; border:2px solid #FCA5A5; border-radius:14px; padding:1.25rem; color:#991B1B; margin:1.5rem 0; text-align:left;">
-            <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">🩺 คำแนะนำสำหรับการดูแล (นำไปพบแพทย์):</div>
-            <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
-              <li><strong>นัดหมายพบแพทย์:</strong> แนะนำพาผู้รับการตรวจไปพบแพทย์เฉพาะทางด้านประสาทวิทยา หรือคลินิกความจำ (Memory Clinic)</li>
-              <li><strong>เตรียมรายการยา:</strong> นำยาทุกชนิดที่ทานอยู่ปัจจุบัน (ทั้งยาประจำตัว ยาแก้แพ้ ยานอนหลับ) ไปให้แพทย์ตรวจสอบ</li>
-              <li><strong>พิมพ์ผลสรุปนี้:</strong> นำผลการประเมินนี้แนบไปด้วยเพื่อให้แพทย์ดูภาพรวมการคัดกรองเบื้องต้นได้ทันที</li>
-            </ul>
+        // Memory Deficit Type Diagnostic Analysis
+        let memoryInsightHtml = "";
+        if (freeScore <= 1 && cuedScore >= 2) {
+          memoryInsightHtml = `
+            <div style="background:#EFF6FF; border:2px solid #BFDBFE; border-radius:12px; padding:1rem; margin-top:1rem; text-align:left; color:#1E40AF;">
+              <div style="font-weight:900; font-size:1.15rem; margin-bottom:0.35rem;">💡 ข้อสังเกตความจำ (Retrieval Deficit Pattern):</div>
+              <p style="margin:0; font-size:1.05rem; line-height:1.6;">
+                ผู้รับการประเมินนึกคำเองได้น้อย (${freeScore}/3 คำ) แต่เมื่อมีตัวช่วยจะจำได้ดีขึ้นชัดเจน (${cuedScore}/3 คำ) รูปแบบนี้บ่งชี้ว่า <strong>เนื้อเซลล์สมองยังบันทึกความจำได้ดี</strong> แต่อาจมีอุปสรรคในการดึงข้อมูลหรือสมาธิ (เช่น จากความเครียด กังวล นอนไม่หลับ ภาวะซึมเศร้า หรือหลอดเลือดสมองขนาดเล็ก) ซึ่งเป็นภาวะที่ตรวจรักษาให้ดีขึ้นได้ค่ะ
+              </p>
+            </div>
+          `;
+        } else if (freeScore <= 1 && cuedScore <= 1) {
+          memoryInsightHtml = `
+            <div style="background:#FEF2F2; border:2px solid #FECACA; border-radius:12px; padding:1rem; margin-top:1rem; text-align:left; color:#991B1B;">
+              <div style="font-weight:900; font-size:1.15rem; margin-bottom:0.35rem;">⚠️ ข้อสังเกตความจำ (Storage / Encoding Deficit):</div>
+              <p style="margin:0; font-size:1.05rem; line-height:1.6;">
+                การจำคำศัพท์ทำได้จำกัดทั้งแบบนึกเอง (${freeScore}/3 คำ) และแบบมีตัวช่วย (${cuedScore}/3 คำ) รูปแบบนี้บ่งชี้ความบกพร่องในการบันทึกข้อมูลของสมองส่วนฮิปโปแคมปัส แนะนำให้นำผลนี้ปรึกษาแพทย์เฉพาะทางเพื่อตรวจประเมินอย่างละเอียดค่ะ
+              </p>
+            </div>
+          `;
+        }
+
+        if (tier === "HIGH" || tier === "CRITICAL" || (ad8Score >= 4 && freeScore === 0)) {
+          lightColor = "red";
+          title = "พบสัญญาณความเสี่ยงที่ควรปรึกษาแพทย์เฉพาะทาง";
+          subtitle = "ระบบตรวจพบความเปลี่ยนแปลงด้านความคิดความจำที่ชัดเจน หรือมีปัจจัยเสี่ยง";
+          badgeHtml = '<span style="background:#DC2626; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🔴 ควรได้รับการตรวจจากแพทย์เฉพาะทาง</span>';
+          actionBoxHtml = `
+            <div style="background:#FEF2F2; border:2px solid #FCA5A5; border-radius:14px; padding:1.25rem; color:#991B1B; margin:1.5rem 0; text-align:left;">
+              <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">🩺 คำแนะนำสำหรับการดูแล (นำไปพบแพทย์):</div>
+              <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
+                <li><strong>นัดหมายพบแพทย์:</strong> แนะนำพาผู้รับการตรวจไปพบแพทย์เฉพาะทางด้านประสาทวิทยา หรือคลินิกความจำ (Memory Clinic)</li>
+                <li><strong>เตรียมรายการยา:</strong> นำยาทุกชนิดที่ทานอยู่ปัจจุบัน (ทั้งยาประจำตัว ยาแก้แพ้ ยานอนหลับ) ไปให้แพทย์ตรวจสอบ</li>
+                <li><strong>พิมพ์ผลสรุปนี้:</strong> นำผลการประเมินนี้แนบไปด้วยเพื่อให้แพทย์ดูภาพรวมการคัดกรองเบื้องต้นได้ทันที</li>
+              </ul>
+              ${memoryInsightHtml}
+            </div>
+          `;
+        } else if (tier === "MODERATE" || ad8Score >= 2 || freeScore <= 1) {
+          lightColor = "yellow";
+          title = "เริ่มพบความเปลี่ยนแปลงเล็กน้อย ควรปรึกษาแพทย์";
+          subtitle = "มีความเปลี่ยนแปลงเรื่องความจำบางส่วนที่ควรตรวจเช็กหาสาเหตุที่รักษาหายได้";
+          badgeHtml = '<span style="background:#D97706; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🟡 เริ่มมีความเปลี่ยนแปลง (ควรปรึกษาแพทย์)</span>';
+          actionBoxHtml = `
+            <div style="background:#FFFBEB; border:2px solid #FCD34D; border-radius:14px; padding:1.25rem; color:#92400E; margin:1.5rem 0; text-align:left;">
+              <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">👨‍⚕️ คำแนะนำสำหรับการดูแล:</div>
+              <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
+                <li><strong>ตรวจเช็กสุขภาพทั่วไป:</strong> ปรึกษาแพทย์ปฐมภูมิเพื่อตรวจหาสาเหตุที่อาจรักษาหายได้ เช่น ภาวะขาดวิตามิน B12, ต่อมไทรอยด์ทำงานต่ำ หรือภาวะซึมเศร้า</li>
+                <li><strong>จดบันทึกอาการ:</strong> หากสังเกตเห็นอาการหลงลืม เช่น ลืมกินยา ลืมของ ให้จดบันทึกวันที่และเหตุการณ์ไว้เพื่อแจ้งแพทย์</li>
+                <li><strong>ตรวจติดตามผล:</strong> แนะนำทำแบบประเมินความจำซ้ำทุกๆ 3 - 6 เดือนเพื่อดูแนวโน้ม</li>
+              </ul>
+              ${memoryInsightHtml}
+            </div>
+          `;
+        } else {
+          actionBoxHtml = `
+            <div style="background:#ECFDF5; border:2px solid #6EE7B7; border-radius:14px; padding:1.25rem; color:#065F46; margin:1.5rem 0; text-align:left;">
+              <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">🥗 คำแนะนำการส่งเสริมสุขภาพสมอง:</div>
+              <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
+                <li><strong>อาหารบำรุงสมอง (MIND Diet):</strong> เน้นผักใบเขียว เบอร์รี่ ถั่ว ธัญพืชไม่ขัดสี ปลา และน้ำมันมะกอก</li>
+                <li><strong>ออกกำลังกายแบบแอโรบิก:</strong> เดินเร็ว หรือปั่นจักรยานอยู่กับที่ 30 นาทีต่อวัน อย่างน้อย 5 วันต่อสัปดาห์</li>
+                <li><strong>การนอนหลับที่มีคุณภาพ:</strong> นอนหลับให้สนิท 7–8 ชั่วโมงต่อคืน เพื่อให้สมองขจัดของเสีย</li>
+                <li><strong>ฝึกสมองและเข้าสังคม:</strong> อ่านหนังสือ เล่นเกมต่อคำศัพท์ และพบปะพูดคุยกับเพื่อนฝูงสม่ำเสมอ</li>
+              </ul>
+              ${memoryInsightHtml}
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <div style="text-align:center; padding:1rem 0;">
+            <div style="margin-bottom:1rem;">${badgeHtml}</div>
+            <h2 style="font-size:1.95rem; font-weight:900; margin:0 0 0.5rem 0; color:var(--text-primary); line-height:1.3;">
+              ${title}
+            </h2>
+            <p style="font-size:1.2rem; color:var(--text-secondary); margin:0 0 1.5rem 0; line-height:1.6;">
+              ${subtitle}
+            </p>
+
+            <!-- Summary Metric Cards -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+              <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
+                <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">แบบสอบถามญาติ (AD8)</div>
+                <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">${ad8Score} / 8 ข้อ</div>
+                <div style="font-size:0.85rem; color:var(--text-secondary);">${ad8Score >= 2 ? "⚠️ มีการเปลี่ยนแปลง" : "✅ ปกติดี"}</div>
+              </div>
+              <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
+                <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">ความจำ 3 คำ (Mini-Cog)</div>
+                <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">${freeScore} / 3 คำ</div>
+                <div style="font-size:0.85rem; color:var(--text-secondary);">${freeScore >= 2 ? "✅ นึกจำได้ดี" : (cuedScore >= 2 ? "💡 จำได้เมื่อมีตัวช่วย" : "⚠️ จำได้น้อย")}</div>
+              </div>
+              <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
+                <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">วาดรูปนาฬิกา (CDT)</div>
+                <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">✅ วาดเสร็จ</div>
+                <div style="font-size:0.85rem; color:var(--text-secondary);">บันทึก Kinematics แล้ว</div>
+              </div>
+            </div>
+
+            ${actionBoxHtml}
+
+            <!-- Action Buttons -->
+            <div style="display:flex; flex-direction:column; gap:12px; max-width:480px; margin:2rem auto 0 auto;">
+              <button type="button" class="btn btn-primary" onclick="window.print()" style="min-height:60px; font-size:1.25rem; font-weight:900; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;">
+                <span>🖨️ พิมพ์รายงานสรุปผลเพื่อนำไปพบแพทย์ (A4)</span>
+              </button>
+              <button type="button" class="btn" onclick="restartPatientWizard()" style="min-height:54px; font-size:1.15rem; font-weight:800; border-radius:14px;">
+                🔄 เริ่มตรวจใหม่อีกครั้ง
+              </button>
+              <button type="button" class="btn" onclick="setViewMode('CLINICIAN')" style="min-height:50px; font-size:1.05rem; font-weight:700; border-color:var(--primary-bg); background:var(--bg-surface); color:var(--text-primary);">
+                👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่ (ดูค่า Telemetry &amp; LIS)
+              </button>
+            </div>
           </div>
         `;
-      } else if (tier === "MODERATE" || ad8Score >= 2 || recall <= 1) {
-        lightColor = "yellow";
-        icon = "🟡";
-        title = "เริ่มพบความเปลี่ยนแปลงเล็กน้อย ควรปรึกษาแพทย์";
-        subtitle = "มีความเปลี่ยนแปลงเรื่องความจำบางส่วนที่ควรตรวจเช็กหาสาเหตุที่รักษาหายได้";
-        badgeHtml = '<span style="background:#D97706; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🟡 เริ่มมีความเปลี่ยนแปลง (ควรปรึกษาแพทย์)</span>';
-        actionBoxHtml = `
-          <div style="background:#FFFBEB; border:2px solid #FCD34D; border-radius:14px; padding:1.25rem; color:#92400E; margin:1.5rem 0; text-align:left;">
-            <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">👨‍⚕️ คำแนะนำสำหรับการดูแล:</div>
-            <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
-              <li><strong>ตรวจเช็กสุขภาพทั่วไป:</strong> ปรึกษาแพทย์ปฐมภูมิเพื่อตรวจหาสาเหตุที่อาจรักษาหายได้ เช่น ภาวะขาดวิตามิน B12, ต่อมไทรอยด์ทำงานต่ำ หรือภาวะซึมเศร้า</li>
-              <li><strong>จดบันทึกอาการ:</strong> หากสังเกตเห็นอาการหลงลืม เช่น ลืมกินยา ลืมของ ให้จดบันทึกวันที่และเหตุการณ์ไว้เพื่อแจ้งแพทย์</li>
-              <li><strong>ตรวจติดตามผล:</strong> แนะนำทำแบบประเมินความจำซ้ำทุกๆ 3 - 6 เดือนเพื่อดูแนวโน้ม</li>
-            </ul>
-          </div>
-        `;
-      } else {
-        actionBoxHtml = `
-          <div style="background:#ECFDF5; border:2px solid #6EE7B7; border-radius:14px; padding:1.25rem; color:#065F46; margin:1.5rem 0; text-align:left;">
-            <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">🥗 คำแนะนำการส่งเสริมสุขภาพสมอง:</div>
-            <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
-              <li><strong>อาหารบำรุงสมอง (MIND Diet):</strong> เน้นผักใบเขียว เบอร์รี่ ถั่ว ธัญพืชไม่ขัดสี ปลา และน้ำมันมะกอก</li>
-              <li><strong>ออกกำลังกายแบบแอโรบิก:</strong> เดินเร็ว หรือปั่นจักรยานอยู่กับที่ 30 นาทีต่อวัน อย่างน้อย 5 วันต่อสัปดาห์</li>
-              <li><strong>การนอนหลับที่มีคุณภาพ:</strong> นอนหลับให้สนิท 7–8 ชั่วโมงต่อคืน เพื่อให้สมองขจัดโปรตีนของเสีย</li>
-              <li><strong>ฝึกสมองและเข้าสังคม:</strong> อ่านหนังสือ เล่นเกมต่อคำศัพท์ และพบปะพูดคุยกับเพื่อนฝูงสม่ำเสมอ</li>
-            </ul>
-          </div>
-        `;
-      }
-
-      container.innerHTML = `
-        <div style="text-align:center; padding:1rem 0;">
-          <div style="margin-bottom:1rem;">${badgeHtml}</div>
-          <h2 style="font-size:1.95rem; font-weight:900; margin:0 0 0.5rem 0; color:var(--text-primary); line-height:1.3;">
-            ${title}
-          </h2>
-          <p style="font-size:1.2rem; color:var(--text-secondary); margin:0 0 1.5rem 0; line-height:1.6;">
-            ${subtitle}
-          </p>
-
-          <!-- Summary Metric Cards -->
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-            <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
-              <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">แบบสอบถามญาติ (AD8)</div>
-              <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">${ad8Score} / 8 ข้อ</div>
-              <div style="font-size:0.85rem; color:var(--text-secondary);">${ad8Score >= 2 ? "⚠️ มีการเปลี่ยนแปลง" : "✅ ปกติดี"}</div>
-            </div>
-            <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
-              <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">ความจำ 3 คำ (Mini-Cog)</div>
-              <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">${recall} / 3 คำ</div>
-              <div style="font-size:0.85rem; color:var(--text-secondary);">${recall >= 2 ? "✅ จำได้ดี" : "⚠️ จำได้น้อย"}</div>
-            </div>
-            <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
-              <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">วาดรูปนาฬิกา</div>
-              <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">✅ วาดเสร็จ</div>
-              <div style="font-size:0.85rem; color:var(--text-secondary);">บันทึกภาพหน้าปัดแล้ว</div>
-            </div>
-          </div>
-
-          ${actionBoxHtml}
-
-          <!-- Action Buttons -->
-          <div style="display:flex; flex-direction:column; gap:12px; max-width:480px; margin:2rem auto 0 auto;">
-            <button type="button" class="btn btn-primary" onclick="window.print()" style="min-height:60px; font-size:1.25rem; font-weight:900; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;">
-              <span>🖨️ พิมพ์รายงานสรุปผลเพื่อนำไปพบแพทย์ (A4)</span>
-            </button>
-            <button type="button" class="btn" onclick="restartPatientWizard()" style="min-height:54px; font-size:1.15rem; font-weight:800; border-radius:14px;">
-              🔄 เริ่มตรวจใหม่อีกครั้ง
-            </button>
-            <button type="button" class="btn" onclick="setViewMode('CLINICIAN')" style="min-height:50px; font-size:1.05rem; font-weight:700; border-color:var(--primary-bg); background:var(--bg-surface); color:var(--text-primary);">
-              👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่ (ดูค่า Telemetry &amp; LIS)
-            </button>
-          </div>
-        </div>
-      `;
       } catch (err) {
         console.error("Error inside renderPatientTrafficLightResult:", err);
         container.innerHTML = `
@@ -10596,6 +10838,23 @@
           </div>
         `;
       }
+    }
+
+    // Progressive Disclosure subtab switcher for Step 0
+    function switchStep0Tab(tabIndex) {
+      for (let i = 1; i <= 3; i++) {
+        const p = document.getElementById(`step0SubPanel-${i}`);
+        const b = document.getElementById(`step0TabBtn-${i}`);
+        if (p) p.style.display = (i === tabIndex) ? "block" : "none";
+        if (b) {
+          if (i === tabIndex) {
+            b.classList.add("active", "btn-primary");
+          } else {
+            b.classList.remove("active", "btn-primary");
+          }
+        }
+      }
+      scrollWizCardIntoView("step-0");
     }
 
     function restartPatientWizard() {
