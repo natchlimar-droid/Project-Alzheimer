@@ -1972,10 +1972,8 @@
             🔒 ยืนยันผลการนึกคำเอง และเปิดตัวเลือกขั้นที่ 2 ➔
           </button>
 
-          <div id="freeRecallLockedBanner" style="display:none; margin-top:0.85rem; padding:0.65rem 1rem; border-radius:10px; background:var(--status-low-surface); border:2px solid var(--status-low-border); align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-            <div style="font-weight:800; color:var(--status-low-text); font-size:1.05rem;" id="lockedRecallSummaryText">
-              🔒 บันทึกและล็อคคะแนน Free Recall แล้ว: 3/3 คำ
-            </div>
+          <div id="freeRecallLockedBanner" hidden aria-hidden="true" style="display:none; margin-top:0.85rem; padding:0.65rem 1rem; border-radius:10px; background:var(--status-low-surface); border:2px solid var(--status-low-border); align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+            <div style="font-weight:800; color:var(--status-low-text); font-size:1.05rem;" id="lockedRecallSummaryText" aria-live="polite"></div>
             <button type="button" class="btn" onclick="unlockWizFreeRecall()" style="padding:0.35rem 0.75rem; font-size:0.88rem; min-height:38px; border-color:var(--border-subtle); background:var(--bg-card); color:var(--text-primary); font-weight:700;">
               🔓 ปลดล็อกแก้ไข
             </button>
@@ -2138,46 +2136,48 @@
 
       </div><!-- /#step0SubPanel-1 -->
 
-      <!-- Sub-Panel 2: 2Q Depression & ACB Scale -->
+      <!-- ==========================================
+           Sub-Panel 2: 2Q Depression & ACB Scale
+           ========================================== -->
       <div id="step0SubPanel-2" class="step0-subpanel" style="display:none;">
-        <!-- Enhancement 1: Depression Screening Gatekeeper (2Q) -->
-      <div class="card-box" id="gatekeeper2QCard" style="border-width:3px;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-          <div>
-            <h3 style="margin:0; font-size:1.3rem;">🛡️ ด่านคัดกรองภาวะซึมเศร้า (2Q Depression Screening Gatekeeper) *
-            </h3>
-            <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">ต้องตอบให้ครบทั้ง 2
-              ข้อก่อนเริ่มทำแบบทดสอบการรู้คิด เพื่อช่วยแพทย์แยกภาวะสมองเสื่อมเทียมจากโรคซึมเศร้า (Pseudodementia)</p>
+        
+        <!-- 2.1 Depression Screening Gatekeeper (2Q) Card -->
+        <div class="card-box" id="gatekeeper2QCard" style="border-width:3px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h3 style="margin:0; font-size:1.3rem;">🛡️ ด่านคัดกรองภาวะซึมเศร้า (2Q Depression Screening Gatekeeper) *</h3>
+              <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
+                ต้องตอบให้ครบทั้ง 2 ข้อก่อนเริ่มทำแบบทดสอบการรู้คิด เพื่อช่วยแพทย์แยกภาวะสมองเสื่อมเทียมจากโรคซึมเศร้า (Pseudodementia)
+              </p>
+            </div>
+            <button type="button" class="btn btn-tts"
+              onclick="speakThai('แบบคัดกรองภาวะซึมเศร้า 2 คำถาม ข้อที่ 1 ใน 2 สัปดาห์ที่ผ่านมา รู้สึกหดหู่ เศร้า หรือท้อแท้สิ้นหวังหรือไม่ ข้อที่ 2 ใน 2 สัปดาห์ที่ผ่านมา รู้สึกเบื่อ ไม่มีความสุข หรือไม่มีความสนใจในสิ่งที่เคยชอบทำหรือไม่', this)">
+              🔊 ฟังคำถาม 2Q
+            </button>
           </div>
-          <button type="button" class="btn btn-tts"
-            onclick="speakThai('แบบคัดกรองภาวะซึมเศร้า 2 คำถาม ข้อที่ 1 ใน 2 สัปดาห์ที่ผ่านมา รู้สึกหดหู่ เศร้า หรือท้อแท้สิ้นหวังหรือไม่ ข้อที่ 2 ใน 2 สัปดาห์ที่ผ่านมา รู้สึกเบื่อ ไม่มีความสุข หรือไม่มีความสนใจในสิ่งที่เคยชอบทำหรือไม่', this)">
-            🔊 ฟังคำถาม 2Q
-          </button>
-        </div>
-        <div id="twoQContainer" style="margin-top:1rem;"></div>
-        <div id="twoQStatusBanner" style="margin-top:0.75rem; font-weight:800;" role="status" aria-live="polite"></div>
-      </div>
+          <div id="twoQContainer" style="margin-top:1rem;"></div>
+          <div id="twoQStatusBanner" style="margin-top:0.75rem; font-weight:800;" role="status" aria-live="polite"></div>
+        </div><!-- /#gatekeeper2QCard -->
 
-      <!-- Enhancement 4: Anticholinergic Cognitive Burden (ACB Scale) Medication Checklist -->
-      <div class="card-box" id="acbMedicationCard" style="border-width:3px;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-          <div>
-            <h3 style="margin:0; font-size:1.3rem;">💊 การคัดกรองยากลุ่มเสี่ยงที่มีฤทธิ์ต้านโคลิเนอร์จิก
-              (Anticholinergic Cognitive Burden — ACB Scale)</h3>
-            <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
-              ตรวจสอบรายการยาที่ผู้ป่วยรับประทานเป็นประจำ ซึ่งมีฤทธิ์ยับยั้งสารสื่อประสาท Acetylcholine
-              และทำให้เกิดอาการสมองตื้อ สับสน หรือความจำถดถอยชั่วคราว (Drug-Induced Cognitive Impairment: เกณฑ์รวม
-              <code>ACB &gt;= 3</code>)
-            </p>
+        <!-- 2.2 Anticholinergic Cognitive Burden (ACB Scale) Card -->
+        <div class="card-box" id="acbMedicationCard" style="border-width:3px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h3 style="margin:0; font-size:1.3rem;">💊 การคัดกรองยากลุ่มเสี่ยงที่มีฤทธิ์ต้านโคลิเนอร์จิก (Anticholinergic Cognitive Burden — ACB Scale)</h3>
+              <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
+                ตรวจสอบรายการยาที่ผู้ป่วยรับประทานเป็นประจำ ซึ่งมีฤทธิ์ยับยั้งสารสื่อประสาท Acetylcholine และทำให้เกิดอาการสมองตื้อ สับสน หรือความจำถดถอยชั่วคราว (Drug-Induced Cognitive Impairment: เกณฑ์รวม <code>ACB &gt;= 3</code>)
+              </p>
+            </div>
+            <button type="button" class="btn btn-tts"
+              onclick="speakThai('โปรดเลือกกลุ่มยาที่ผู้รับการประเมินรับประทานเป็นประจำ เช่น ยาแก้แพ้รุ่นเก่า ยาช่วยนอนหลับ หรือยาลดอาการกระเพาะปัสสาวะไวเกิน เพื่อประเมินผลข้างเคียงของยาต่อความจำ', this)">
+              🔊 ฟังคำแนะนำเรื่องยา
+            </button>
           </div>
-          <button type="button" class="btn btn-tts"
-            onclick="speakThai('โปรดเลือกกลุ่มยาที่ผู้รับการประเมินรับประทานเป็นประจำ เช่น ยาแก้แพ้รุ่นเก่า ยาช่วยนอนหลับ หรือยาลดอาการกระเพาะปัสสาวะไวเกิน เพื่อประเมินผลข้างเคียงของยาต่อความจำ', this)">
-            🔊 ฟังคำแนะนำเรื่องยา
-          </button>
-        </div>
-        <div id="acbMedicationsContainer" style="margin-top:1rem;"></div>
-        <div id="acbStatusBanner" style="margin-top:0.75rem; font-weight:800;" role="status" aria-live="polite"></div>
-      </div>
+          <div id="acbMedicationsContainer" style="margin-top:1rem;"></div>
+          <div id="acbStatusBanner" style="margin-top:0.75rem; font-weight:800;" role="status" aria-live="polite"></div>
+        </div><!-- /#acbMedicationCard -->
+
+        <!-- 2.3 Sub-Panel 2 Navigation Bar -->
         <div class="step0-nav-bar" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
           <button type="button" class="btn" onclick="switchStep0Tab(1)" style="font-weight:700;">
             ⬅️ ย้อนกลับไป ข้อมูลผู้ป่วย
@@ -2185,64 +2185,69 @@
           <button type="button" class="btn btn-primary" onclick="switchStep0Tab(3)" style="font-weight:800; min-height:50px; padding:0.75rem 1.5rem;">
             ถัดไป: ติดตามผล &amp; เคสจำลอง ➔
           </button>
-        </div>
-      </div>
+        </div><!-- /.step0-nav-bar -->
 
-      <!-- Sub-Panel 3: Longitudinal Tracking & Presets -->
+      </div><!-- /#step0SubPanel-2 -->
+
+      <!-- ==========================================
+           Sub-Panel 3: Longitudinal Tracking & Presets
+           ========================================== -->
       <div id="step0SubPanel-3" class="step0-subpanel" style="display:none;">
-        <!-- Enhancement 3: Longitudinal Session Linkage -->
-      <div class="card-box clinician-only">
-        <h3 style="margin-top:0; font-size:1.3rem;">📈 การติดตามผลระยะยาว (Longitudinal Tracking)</h3>
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label" for="currentSessionIdInput">รหัสเซสชันปัจจุบัน (session_id)</label>
-            <input type="text" id="currentSessionIdInput" class="input-control" readonly />
-            <span class="field-hint">สร้างอัตโนมัติ ใช้เป็น previous_session_id ในการประเมินครั้งถัดไป</span>
+        
+        <!-- 3.1 Longitudinal Session Linkage Card -->
+        <div class="card-box clinician-only">
+          <h3 style="margin-top:0; font-size:1.3rem;">📈 การติดตามผลระยะยาว (Longitudinal Tracking)</h3>
+          <div class="form-grid">
+            <div class="field-group">
+              <label class="field-label" for="currentSessionIdInput">รหัสเซสชันปัจจุบัน (session_id)</label>
+              <input type="text" id="currentSessionIdInput" class="input-control" readonly />
+              <span class="field-hint">สร้างอัตโนมัติ ใช้เป็น previous_session_id ในการประเมินครั้งถัดไป</span>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="previousSessionSelect">เซสชันก่อนหน้า (previous_session_id)</label>
+              <select id="previousSessionSelect" class="input-control" onchange="onPreviousSessionChange()">
+                <option value="">— ประเมินครั้งแรก (ไม่มีข้อมูลก่อนหน้า) —</option>
+              </select>
+              <span class="field-hint">ใช้คำนวณอัตราการเปลี่ยนแปลง (Δ-Decline Rate) ต่อปี</span>
+            </div>
           </div>
-          <div class="field-group">
-            <label class="field-label" for="previousSessionSelect">เซสชันก่อนหน้า (previous_session_id)</label>
-            <select id="previousSessionSelect" class="input-control" onchange="onPreviousSessionChange()">
-              <option value="">— ประเมินครั้งแรก (ไม่มีข้อมูลก่อนหน้า) —</option>
-            </select>
-            <span class="field-hint">ใช้คำนวณอัตราการเปลี่ยนแปลง (Δ-Decline Rate) ต่อปี</span>
-          </div>
-        </div>
-        <div id="previousSessionPreview" style="margin-top:0.75rem; font-weight:600; color:var(--text-secondary);">
-        </div>
-      </div>
+          <div id="previousSessionPreview" style="margin-top:0.75rem; font-weight:600; color:var(--text-secondary);"></div>
+        </div><!-- /.card-box clinician-only -->
 
-      <div class="card-box" id="quickScenarioPresetCard" data-alt-id="clinicalScenarioPresetsCard">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
-          <div>
-            <h3 style="margin-top:0; font-size:1.3rem;">⚡ โหลดเคสจำลองทางคลินิก (Quick Clinical Scenario Presets)</h3>
-            <p style="margin-top:0; color:var(--text-secondary);">คลิกปุ่มด้านล่างเพื่อจำลองข้อมูลครบทุกโมดูล (AD8 +
-              Mini-Cog + Speech + Visual-Motor + ACB Medication + Lab Biomarkers) และดูผลลัพธ์การจัดลำดับความเสี่ยงทันที
-              หรือกดปุ่ม <strong>"เริ่มทำแบบประเมินทีละขั้นตอน"</strong> ด้านล่าง
-            </p>
+        <!-- 3.2 Quick Clinical Scenario Presets Card -->
+        <div class="card-box" id="quickScenarioPresetCard" data-alt-id="clinicalScenarioPresetsCard">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
+            <div>
+              <h3 style="margin-top:0; font-size:1.3rem;">⚡ โหลดเคสจำลองทางคลินิก (Quick Clinical Scenario Presets)</h3>
+              <p style="margin-top:0; color:var(--text-secondary);">
+                คลิกปุ่มด้านล่างเพื่อจำลองข้อมูลครบทุกโมดูล (AD8 + Mini-Cog + Speech + Visual-Motor + ACB Medication + Lab Biomarkers) และดูผลลัพธ์การจัดลำดับความเสี่ยงทันที หรือกดปุ่ม <strong>"เริ่มทำแบบประเมินทีละขั้นตอน"</strong> ด้านล่าง
+              </p>
+            </div>
           </div>
-        </div>
-        <div id="presetStatusBanner" style="display:none; margin:0.6rem 0 1rem 0; padding:0.75rem 1rem; border-radius:8px; font-weight:800; font-size:1.05rem; border:2px solid var(--status-low-border); background:var(--status-low-surface); color:var(--status-low-text);" role="status" aria-live="polite"></div>
-        <div class="form-grid">
-          <button type="button" class="btn preset-scenario-btn" id="presetBtn_REVERSIBLE" onclick="loadFullClinicalScenario('REVERSIBLE')">
-            🟠 เคสที่ 1: ภาวะพร่องวิตามิน B12 + ไทรอยด์ต่ำ (Reversible Flag)
-          </button>
-          <button type="button" class="btn preset-scenario-btn" id="presetBtn_ALZHEIMERS" onclick="loadFullClinicalScenario('ALZHEIMERS')">
-            🟣 เคสที่ 2: อัลไซเมอร์ความเสี่ยงสูงมาก (p-tau217 Positive + APOE ε3/ε4)
-          </button>
-          <button type="button" class="btn preset-scenario-btn" id="presetBtn_HIGH_VASCULAR" onclick="loadFullClinicalScenario('HIGH_VASCULAR')">
-            🔴 เคสที่ 3: ความเสี่ยงสูง + ปัจจัยหลอดเลือดและไตเสื่อม (High Risk)
-          </button>
-          <button type="button" class="btn preset-scenario-btn" id="presetBtn_LOW_HEALTHY" onclick="loadFullClinicalScenario('LOW_HEALTHY')">
-            🟢 เคสที่ 4: ผู้สูงอายุสุขภาพสมองและผลเลือดปกติ (Low Risk)
-          </button>
-          <button type="button" class="btn preset-scenario-btn" id="presetBtn_DEPRESSION_LONGITUDINAL" onclick="loadFullClinicalScenario('DEPRESSION_LONGITUDINAL')">
-            🔵 เคสที่ 5: 2Q บวก (Pseudodementia) + ถดถอยเร็วเทียบครั้งก่อน (Δ-Decline)
-          </button>
-          <button type="button" class="btn preset-scenario-btn" id="presetBtn_ACB_DRUG_SPEECH_TREMOR" onclick="loadFullClinicalScenario('ACB_DRUG_SPEECH_TREMOR')">
-            💊 เคสที่ 6: ยากลุ่มเสี่ยง ACB สูง (CPM + Amitriptyline) + มือสั่นพาร์กินสัน + เสียงพูด MCI
-          </button>
-        </div>
-      </div>
+          <div id="presetStatusBanner" style="display:none; margin:0.6rem 0 1rem 0; padding:0.75rem 1rem; border-radius:8px; font-weight:800; font-size:1.05rem; border:2px solid var(--status-low-border); background:var(--status-low-surface); color:var(--status-low-text);" role="status" aria-live="polite"></div>
+          <div class="form-grid">
+            <button type="button" class="btn preset-scenario-btn" id="presetBtn_REVERSIBLE" onclick="loadFullClinicalScenario('REVERSIBLE')">
+              🟠 เคสที่ 1: ภาวะพร่องวิตามิน B12 + ไทรอยด์ต่ำ (Reversible Flag)
+            </button>
+            <button type="button" class="btn preset-scenario-btn" id="presetBtn_ALZHEIMERS" onclick="loadFullClinicalScenario('ALZHEIMERS')">
+              🟣 เคสที่ 2: อัลไซเมอร์ความเสี่ยงสูงมาก (p-tau217 Positive + APOE ε3/ε4)
+            </button>
+            <button type="button" class="btn preset-scenario-btn" id="presetBtn_HIGH_VASCULAR" onclick="loadFullClinicalScenario('HIGH_VASCULAR')">
+              🔴 เคสที่ 3: ความเสี่ยงสูง + ปัจจัยหลอดเลือดและไตเสื่อม (High Risk)
+            </button>
+            <button type="button" class="btn preset-scenario-btn" id="presetBtn_LOW_HEALTHY" onclick="loadFullClinicalScenario('LOW_HEALTHY')">
+              🟢 เคสที่ 4: ผู้สูงอายุสุขภาพสมองและผลเลือดปกติ (Low Risk)
+            </button>
+            <button type="button" class="btn preset-scenario-btn" id="presetBtn_DEPRESSION_LONGITUDINAL" onclick="loadFullClinicalScenario('DEPRESSION_LONGITUDINAL')">
+              🔵 เคสที่ 5: 2Q บวก (Pseudodementia) + ถดถอยเร็วเทียบครั้งก่อน (Δ-Decline)
+            </button>
+            <button type="button" class="btn preset-scenario-btn" id="presetBtn_ACB_DRUG_SPEECH_TREMOR" onclick="loadFullClinicalScenario('ACB_DRUG_SPEECH_TREMOR')">
+              💊 เคสที่ 6: ยากลุ่มเสี่ยง ACB สูง (CPM + Amitriptyline) + มือสั่นพาร์กินสัน + เสียงพูด MCI
+            </button>
+          </div>
+        </div><!-- /#quickScenarioPresetCard -->
+
+        <!-- 3.3 Sub-Panel 3 Navigation Bar -->
         <div class="step0-nav-bar" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
           <button type="button" class="btn" onclick="switchStep0Tab(2)" style="font-weight:700;">
             ⬅️ ย้อนกลับไป 2Q &amp; ยา ACB
@@ -2250,8 +2255,9 @@
           <button type="button" class="btn btn-primary" id="startCognitiveBtn" onclick="proceedFromGatekeeper()" style="font-weight:900; min-height:54px; font-size:1.15rem; padding:0.85rem 2rem;">
             เริ่มทำแบบประเมิน โมดูลที่ 1 (AD8) ➡️
           </button>
-        </div>
-      </div>
+        </div><!-- /.step0-nav-bar -->
+
+      </div><!-- /#step0SubPanel-3 -->
     </section>
 
     <!-- ======================================================================
@@ -5585,6 +5591,16 @@
       updateSpeechConsentUI();
       syncSpeechInputsFromForm();
       syncPseudonymVaults();
+
+      // Reset Free Recall locked state
+      const lockBanner = document.getElementById("freeRecallLockedBanner");
+      if (lockBanner) {
+        lockBanner.style.display = "none";
+        lockBanner.setAttribute("hidden", "");
+        lockBanner.setAttribute("aria-hidden", "true");
+      }
+      const summaryText = document.getElementById("lockedRecallSummaryText");
+      if (summaryText) summaryText.textContent = "";
 
       goToStep(0);
       showToast("เริ่มต้นเซสชันใหม่สำหรับผู้ป่วยรายใหม่เรียบร้อย (ค่าเริ่มต้นทั้งหมดเป็น null)", "success");
@@ -10795,6 +10811,16 @@
       updateSpeechConsentUI();
       syncSpeechInputsFromForm();
       syncPseudonymVaults();
+
+      // Reset Free Recall locked state
+      const lockBanner = document.getElementById("freeRecallLockedBanner");
+      if (lockBanner) {
+        lockBanner.style.display = "none";
+        lockBanner.setAttribute("hidden", "");
+        lockBanner.setAttribute("aria-hidden", "true");
+      }
+      const summaryText = document.getElementById("lockedRecallSummaryText");
+      if (summaryText) summaryText.textContent = "";
       renderAuditTrailTable();
       renderWordRegistration();
       initCdtCanvas();
@@ -11322,7 +11348,13 @@
       const confirmBtn = document.getElementById("confirmFreeRecallBtn");
       if (confirmBtn) confirmBtn.style.display = "none";
       const lockBanner = document.getElementById("freeRecallLockedBanner");
-      if (lockBanner) lockBanner.style.display = "none";
+      if (lockBanner) {
+        lockBanner.style.display = "none";
+        lockBanner.setAttribute("hidden", "");
+        lockBanner.setAttribute("aria-hidden", "true");
+      }
+      const summaryText = document.getElementById("lockedRecallSummaryText");
+      if (summaryText) summaryText.textContent = "";
       const cuedSec = document.getElementById("wizCuedRecognitionSection");
       if (cuedSec) cuedSec.style.display = "none";
 
@@ -11388,7 +11420,11 @@
 
       const lockBanner = document.getElementById("freeRecallLockedBanner");
       const summaryText = document.getElementById("lockedRecallSummaryText");
-      if (lockBanner) lockBanner.style.display = "flex";
+      if (lockBanner) {
+        lockBanner.style.display = "flex";
+        lockBanner.removeAttribute("hidden");
+        lockBanner.setAttribute("aria-hidden", "false");
+      }
       if (summaryText) summaryText.textContent = `🔒 บันทึกและล็อคคะแนน Free Recall แล้ว: ${appState.freeRecallScore}/3 คำ`;
 
       // Open Cued Recognition choices section
@@ -11419,7 +11455,13 @@
         if (btn) btn.disabled = false;
       }
       const lockBanner = document.getElementById("freeRecallLockedBanner");
-      if (lockBanner) lockBanner.style.display = "none";
+      if (lockBanner) {
+        lockBanner.style.display = "none";
+        lockBanner.setAttribute("hidden", "");
+        lockBanner.setAttribute("aria-hidden", "true");
+      }
+      const summaryText = document.getElementById("lockedRecallSummaryText");
+      if (summaryText) summaryText.textContent = "";
 
       const cuedSec = document.getElementById("wizCuedRecognitionSection");
       if (cuedSec) cuedSec.style.display = "none";
