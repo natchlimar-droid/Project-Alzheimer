@@ -2078,9 +2078,7 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Pre-Test Validity Gatekeeper (Delirium, Sensory, Acute Sedative, Infection/Pain, Literacy) -->
+      </div><!-- /card-box Demographics -->
       <div class="card-box" id="preTestValidityCard" style="border-width:3px; border-color:var(--status-high-border);">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
           <div>
@@ -5142,16 +5140,104 @@
       document.getElementById("fontSizeBtn").textContent = `🔠 ขนาดอักษร: ${appState.fontSizePx}px`;
     }
 
-    /* Dual Persona View Mode Switcher (Supports silent initial render) */
+    /* State Synchronization: Seamlessly transfer Senior Wizard inputs to Clinician Workspace */
+    function syncStateToClinicianView() {
+      try {
+        // 1. Demographics & Normative Baseline
+        const ageEl = document.getElementById("patientAgeInput");
+        if (ageEl && appState.age) ageEl.value = appState.age;
+        const eduEl = document.getElementById("patientEduInput");
+        if (eduEl && appState.yearsOfEducation !== undefined && appState.yearsOfEducation !== null) {
+          eduEl.value = appState.yearsOfEducation;
+        }
+
+        // 2. 2Q Depression Responses
+        if (typeof render2QQuestions === "function") {
+          render2QQuestions();
+        }
+
+        // 3. AD8 Informant Responses & Badge
+        if (Array.isArray(appState.ad8Responses)) {
+          let yesCount = 0;
+          appState.ad8Responses.forEach((ans, idx) => {
+            const rYes = document.getElementById(`ad8_${idx}_yes`);
+            const rNo = document.getElementById(`ad8_${idx}_no`);
+            const rNa = document.getElementById(`ad8_${idx}_na`);
+            if (ans === "YES") {
+              if (rYes) rYes.checked = true;
+              yesCount++;
+            } else if (ans === "NO") {
+              if (rNo) rNo.checked = true;
+            } else if (ans === "NA") {
+              if (rNa) rNa.checked = true;
+            }
+          });
+          const badge = document.getElementById("ad8LiveScoreBadge");
+          if (badge) badge.textContent = `${yesCount} / 8`;
+        }
+
+        // 4. Delayed Recall & CDT Kinematics Mirroring
+        const recallScore = appState.freeRecallScore ?? appState.delayedRecallScore;
+        if (recallScore !== null && recallScore !== undefined) {
+          const recallRadio = document.getElementById(`recallScore_${recallScore}`);
+          if (recallRadio) recallRadio.checked = true;
+          if (typeof setDirectRecallScore === "function") setDirectRecallScore(recallScore);
+        }
+        if (appState.cdtTelemetry && appState.cdtTelemetry.imageDataUrl) {
+          const mainCanvas = document.getElementById("cdtCanvas");
+          if (mainCanvas) {
+            const mainCtx = mainCanvas.getContext("2d");
+            const img = new Image();
+            img.onload = () => {
+              mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+              mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
+            };
+            img.src = appState.cdtTelemetry.imageDataUrl;
+          }
+        }
+
+        // 5. Ensure Step 0 subpanel 1 is cleanly displayed
+        switchStep0Tab(1);
+
+        // 6. Background Risk Stratification Report Update
+        if (typeof renderRiskStratificationReport === "function") {
+          try {
+            renderRiskStratificationReport();
+          } catch (rErr) {
+            console.warn("Stratification background update:", rErr);
+          }
+        }
+      } catch (err) {
+        console.error("Error in syncStateToClinicianView:", err);
+      }
+    }
+
+    /* Dual Persona View Mode Switcher (Supports silent initial render & Screen Reader Accessibility) */
     function setViewMode(mode, showNotification = true) {
       appState.viewMode = mode;
       const btnClinician = document.getElementById("btnModeClinician");
       const btnPatient = document.getElementById("btnModePatient");
       const hint = document.getElementById("viewModeHintText");
       const tourSwitchBtn = document.getElementById("tourModeSwitchBtn");
+      const seniorWiz = document.getElementById("seniorPatientWizard");
+      const clinicianWs = document.getElementById("clinicianWorkspace");
+      const stepNav = document.querySelector(".step-nav");
 
       if (mode === "PATIENT") {
         document.body.classList.add("patient-mode");
+        if (seniorWiz) {
+          seniorWiz.setAttribute("aria-hidden", "false");
+          seniorWiz.removeAttribute("hidden");
+        }
+        if (clinicianWs) {
+          clinicianWs.setAttribute("aria-hidden", "true");
+          clinicianWs.setAttribute("hidden", "");
+        }
+        if (stepNav) {
+          stepNav.setAttribute("aria-hidden", "true");
+          stepNav.setAttribute("hidden", "");
+        }
+
         if (btnPatient) {
           btnPatient.classList.add("active");
           btnPatient.setAttribute("aria-checked", "true");
@@ -5172,6 +5258,19 @@
         }
       } else {
         document.body.classList.remove("patient-mode");
+        if (seniorWiz) {
+          seniorWiz.setAttribute("aria-hidden", "true");
+          seniorWiz.setAttribute("hidden", "");
+        }
+        if (clinicianWs) {
+          clinicianWs.setAttribute("aria-hidden", "false");
+          clinicianWs.removeAttribute("hidden");
+        }
+        if (stepNav) {
+          stepNav.setAttribute("aria-hidden", "false");
+          stepNav.removeAttribute("hidden");
+        }
+
         syncStateToClinicianView();
         if (btnClinician) {
           btnClinician.classList.add("active");
@@ -6073,7 +6172,7 @@
                       ${med.genericName}
                     </div>
                     <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.15rem;">
-                      <strong>${med.categoryTh || ""}</strong>${med.tradeNamesTh ? ` • <em>${med.tradeNamesTh}</em>` : ""} (${med.commonUseTh})
+                      ${med.tradeNamesTh ? `<strong style="color:var(--text-primary);">${med.tradeNamesTh}</strong> • ` : ""}${med.categoryTh ? `<em>${med.categoryTh}</em>` : ""}${med.commonUseTh ? ` (${med.commonUseTh})` : ""}
                     </div>
                   </div>
                   <button type="button" class="btn ${selected ? "btn-primary" : ""}" style="min-width:85px; font-size:0.85rem; padding:0.35rem 0.6rem;" onclick="toggleAcbMedication('${med.id}')">
@@ -8303,46 +8402,6 @@
       return input;
     }
 
-    
-    /* Synchronize Senior Patient Wizard inputs into Clinician Workspace */
-    function syncStateToClinicianView() {
-      // 1. Demographics & Normative fields
-      const ageEl = document.getElementById("patientAgeInput");
-      const eduEl = document.getElementById("patientEduInput");
-      if (ageEl && appState.age) ageEl.value = appState.age;
-      if (eduEl && appState.yearsOfEducation) eduEl.value = appState.yearsOfEducation;
-
-      // 2. 2Q Questions UI
-      if (typeof render2QQuestions === "function") render2QQuestions();
-
-      // 3. AD8 Questions UI
-      if (typeof renderAd8Questions === "function") renderAd8Questions();
-
-      // 4. Mini-Cog Recall
-      if (appState.delayedRecallScore !== null && typeof setDirectRecallScore === "function") {
-        setDirectRecallScore(appState.delayedRecallScore);
-      }
-
-      // 5. CDT Canvas preview
-      if (appState.cdtTelemetry && appState.cdtTelemetry.imageDataUrl) {
-        const mainCanvas = document.getElementById("cdtCanvas");
-        if (mainCanvas) {
-          const mainCtx = mainCanvas.getContext("2d");
-          const img = new Image();
-          img.onload = () => {
-            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-            mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
-          };
-          img.src = appState.cdtTelemetry.imageDataUrl;
-        }
-      }
-
-      // 6. Recalculate Clinical Dashboard & Radar Chart if data present
-      if (typeof renderRiskStratificationReport === "function") {
-        renderRiskStratificationReport();
-      }
-    }
-
     function renderRiskStratificationReport() {
       try {
         const input = buildAssessmentInput();
@@ -9490,10 +9549,27 @@
             resourceType: "Observation",
             id: "obs-ad8",
             status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "71485-7", display: "AD8 Dementia Screening Interview Total Score" }] },
+            code: {
+              coding: [
+                { system: "http://loinc.org", code: "72172-0", display: "AD8 Dementia Screening Interview Total Score" },
+                { system: "http://loinc.org", code: "71485-7", display: "Eight-item informant interview to differentiate aging and dementia total score" }
+              ]
+            },
             subject: { reference: `urn:uuid:${patientId}` },
             effectiveDateTime: timestampIso,
             valueInteger: inp.ad8Score
+          }
+        },
+        {
+          fullUrl: "urn:uuid:obs-minicog-total",
+          resource: {
+            resourceType: "Observation",
+            id: "obs-minicog-total",
+            status: "final",
+            code: { coding: [{ system: "http://loinc.org", code: "72133-2", display: "Mini-Cog Total Score" }] },
+            subject: { reference: `urn:uuid:${patientId}` },
+            effectiveDateTime: timestampIso,
+            valueInteger: (inp.delayedRecallScore ?? 0) + (inp.cdtResult === "NORMAL" ? 2 : 0)
           }
         },
         {
@@ -9520,6 +9596,22 @@
             valueString: inp.cdtResult,
             extension: [
               { url: "http://example.org/fhir/StructureDefinition/cdt-source-type", valueString: appState.cdtTelemetry?.sourceType || "SCREEN_DRAWING" }
+            ]
+          }
+        },
+        {
+          fullUrl: "urn:uuid:obs-phq2",
+          resource: {
+            resourceType: "Observation",
+            id: "obs-phq2",
+            status: "final",
+            code: { coding: [{ system: "http://loinc.org", code: "55758-7", display: "Patient Health Questionnaire 2-item (PHQ-2) total score" }] },
+            subject: { reference: `urn:uuid:${patientId}` },
+            effectiveDateTime: timestampIso,
+            valueInteger: (appState.depression2Q?.q1_depressed_mood ? 1 : 0) + (appState.depression2Q?.q2_anhedonia ? 1 : 0),
+            component: [
+              { code: { coding: [{ system: "http://loinc.org", code: "44255-8", display: "PHQ-2 Item 1: Depressed mood" }] }, valueBoolean: !!appState.depression2Q?.q1_depressed_mood },
+              { code: { coding: [{ system: "http://loinc.org", code: "44250-9", display: "PHQ-2 Item 2: Anhedonia" }] }, valueBoolean: !!appState.depression2Q?.q2_anhedonia }
             ]
           }
         }
@@ -9631,6 +9723,13 @@
           subject: { reference: `urn:uuid:${patientId}` },
           effectiveDateTime: timestampIso,
           conclusion: out.primaryRecommendationTh || "Complete Cognitive Screening",
+          result: [
+            { reference: "urn:uuid:obs-ad8", display: "AD8 Dementia Screening Score" },
+            { reference: "urn:uuid:obs-minicog-total", display: "Mini-Cog Total Score" },
+            { reference: "urn:uuid:obs-minicog-recall", display: "Mini-Cog Word Recall Score" },
+            { reference: "urn:uuid:obs-minicog-clock", display: "Mini-Cog Clock Drawing Score" },
+            { reference: "urn:uuid:obs-phq2", display: "PHQ-2 Depression Score" }
+          ],
           extension: [
             { url: "http://example.org/fhir/StructureDefinition/cognitive-axis", valueString: out.axes?.cognitiveAxis },
             { url: "http://example.org/fhir/StructureDefinition/screening-composite-index", valueInteger: out.screeningCompositeIndex }
@@ -10325,13 +10424,33 @@
       "พัดลม": "🪭", "ดอกกุหลาบ": "🌹", "เรือใบ": "⛵"
     };
 
+    function populateWizRecallChoicesGrid() {
+      const grid = document.getElementById("wizRecallChoicesGrid");
+      if (!grid) return;
+      const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
+      const targetWords = (wordSet && wordSet.words) ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
+      const distractorPool = (wordSet && wordSet.distractors) ? wordSet.distractors : ["ส้ม", "โต๊ะ", "ธนบัตร"];
+      const distractorWords = distractorPool.slice(0, 3);
+      const allChoices = [...targetWords, ...distractorWords].sort(() => Math.random() - 0.5);
+
+      grid.innerHTML = allChoices.map(w => {
+        const isSelected = selectedWizRecallWords.includes(w);
+        return `
+          <button type="button" class="btn patient-choice-btn ${isSelected ? "selected" : ""}" id="wizWordChoice_${w}" onclick="toggleWizWordChoice('${w}')" style="justify-content:center; text-align:center; min-height:64px; font-size:1.35rem; font-weight:800; border-width:3px; border-radius:14px; display:flex; align-items:center; gap:0.5rem; ${isSelected ? "border-color:var(--primary-bg); background-color:var(--primary-bg); color:var(--primary-text);" : ""}">
+            <span style="font-size:1.6rem;">${WIZ_WORD_ICONS[w] || "📌"}</span>
+            <span>${w}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
     function setupWizMiniCog() {
       document.getElementById("wizMiniCogSub-Words").style.display = "block";
       document.getElementById("wizMiniCogSub-Cdt").style.display = "none";
       document.getElementById("wizMiniCogSub-Recall").style.display = "none";
 
       const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
-      const words = wordSet.words;
+      const words = (wordSet && wordSet.words) ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
 
       const grid = document.getElementById("wizWordCardsGrid");
       if (grid) {
@@ -10342,6 +10461,7 @@
           </div>
         `).join("");
       }
+      populateWizRecallChoicesGrid();
     }
 
     function speakWizWords() {
@@ -10377,7 +10497,16 @@
     function initWizCdtCanvas() {
       const canvas = document.getElementById("wizCdtCanvas");
       if (!canvas) return;
+      
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      const baseWidth = 460;
+      const baseHeight = 460;
+      
+      canvas.width = Math.round(baseWidth * dpr);
+      canvas.height = Math.round(baseHeight * dpr);
+      
       wizCdtCtx = canvas.getContext("2d");
+      wizCdtCtx.scale(dpr, dpr);
       wizCdtCtx.lineWidth = 4;
       wizCdtCtx.lineCap = "round";
       wizCdtCtx.lineJoin = "round";
@@ -10385,13 +10514,13 @@
 
       // Clear with pure white
       wizCdtCtx.fillStyle = "#FFFFFF";
-      wizCdtCtx.fillRect(0, 0, canvas.width, canvas.height);
+      wizCdtCtx.fillRect(0, 0, baseWidth, baseHeight);
       canvas.style.touchAction = "none";
 
       function getTouchPos(evt) {
         const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
+        const scaleX = baseWidth / (rect.width || baseWidth);
+        const scaleY = baseHeight / (rect.height || baseHeight);
         const clientX = (evt.touches && evt.touches.length > 0) ? evt.touches[0].clientX : evt.clientX;
         const clientY = (evt.touches && evt.touches.length > 0) ? evt.touches[0].clientY : evt.clientY;
 
@@ -10460,8 +10589,12 @@
     function clearWizCdtCanvas() {
       const canvas = document.getElementById("wizCdtCanvas");
       if (canvas && wizCdtCtx) {
+        wizCdtCtx.save();
+        wizCdtCtx.setTransform(1, 0, 0, 1, 0, 0);
         wizCdtCtx.fillStyle = "#FFFFFF";
         wizCdtCtx.fillRect(0, 0, canvas.width, canvas.height);
+        wizCdtCtx.restore();
+
         if (!appState.cdtTelemetry) appState.cdtTelemetry = {};
         appState.cdtTelemetry.undoCount = (appState.cdtTelemetry.undoCount || 0) + 1;
         appState.cdtTelemetry.penLiftsCount = 0;
@@ -10508,7 +10641,7 @@
       document.getElementById("wizMiniCogSub-Recall").style.display = "block";
 
       const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
-      const targetWords = wordSet ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
+      const targetWords = (wordSet && wordSet.words) ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
       const distractorPool = (wordSet && wordSet.distractors) ? wordSet.distractors : ["ส้ม", "โต๊ะ", "ธนบัตร"];
       const distractorWords = distractorPool.slice(0, 3);
       const allChoices = [...targetWords, ...distractorWords].sort(() => Math.random() - 0.5);
@@ -10516,6 +10649,15 @@
       selectedWizRecallWords = [];
       appState.freeRecallScore = null;
       appState.cuedRecognitionScore = null;
+
+      // Initialize Cued Recognition Guessing Telemetry
+      appState.recallTelemetry = {
+        screenShownMs: performance.now(),
+        initialTapLatencyMs: null,
+        distractorErrors: 0,
+        revisions: 0,
+        totalDurationMs: 0
+      };
 
       // Reset Free Recall prompt buttons
       for (let s = 0; s <= 3; s++) {
@@ -10539,15 +10681,7 @@
         countBadge.style.color = "var(--text-secondary)";
       }
 
-      const grid = document.getElementById("wizRecallChoicesGrid");
-      if (grid) {
-        grid.innerHTML = allChoices.map(w => `
-          <button type="button" class="btn patient-choice-btn" id="wizWordChoice_${w}" onclick="toggleWizWordChoice('${w}')" style="justify-content:center; text-align:center; min-height:64px; font-size:1.35rem; font-weight:800; border-width:3px; border-radius:14px; display:flex; align-items:center; gap:0.5rem;">
-            <span style="font-size:1.6rem;">${WIZ_WORD_ICONS[w] || "📌"}</span>
-            <span>${w}</span>
-          </button>
-        `).join("");
-      }
+      populateWizRecallChoicesGrid();
       scrollWizCardIntoView("wizMiniCogSub-Recall");
     }
 
@@ -10593,9 +10727,20 @@
 
     function toggleWizWordChoice(word) {
       const btn = document.getElementById(`wizWordChoice_${word}`);
+      if (!appState.recallTelemetry) {
+        appState.recallTelemetry = { screenShownMs: performance.now(), initialTapLatencyMs: null, distractorErrors: 0, revisions: 0, totalDurationMs: 0 };
+      }
+      if (!appState.recallTelemetry.initialTapLatencyMs) {
+        appState.recallTelemetry.initialTapLatencyMs = Math.round(performance.now() - appState.recallTelemetry.screenShownMs);
+      }
+
+      const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
+      const targetWords = (wordSet && wordSet.words) ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
+
       const idx = selectedWizRecallWords.indexOf(word);
       if (idx > -1) {
         selectedWizRecallWords.splice(idx, 1);
+        appState.recallTelemetry.revisions = (appState.recallTelemetry.revisions || 0) + 1;
         if (btn) {
           btn.classList.remove("selected");
           btn.style.borderColor = "";
@@ -10607,6 +10752,12 @@
           showToast("สามารถเลือกได้สูงสุด 3 คำค่ะ (หากต้องการเปลี่ยนคำ ให้แตะยกเลิกคำเดิมก่อนนะคะ)", "warning");
           return;
         }
+
+        // Track distractor selection (False Recognition indicator)
+        if (!targetWords.includes(word)) {
+          appState.recallTelemetry.distractorErrors = (appState.recallTelemetry.distractorErrors || 0) + 1;
+        }
+
         selectedWizRecallWords.push(word);
         if (btn) {
           btn.classList.add("selected");
@@ -10625,13 +10776,17 @@
     function finishPatientAssessment() {
       try {
         const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
-        const targetWords = wordSet ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
+        const targetWords = (wordSet && wordSet.words) ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
         let cuedScore = 0;
         const selected = Array.isArray(selectedWizRecallWords) ? selectedWizRecallWords : [];
         targetWords.forEach(w => {
           if (selected.includes(w)) cuedScore++;
         });
         appState.cuedRecognitionScore = cuedScore;
+
+        if (appState.recallTelemetry) {
+          appState.recallTelemetry.totalDurationMs = Math.round(performance.now() - appState.recallTelemetry.screenShownMs);
+        }
 
         // If user didn't explicitly tap free recall buttons, default free recall to cued score
         if (appState.freeRecallScore === null || appState.freeRecallScore === undefined) {
@@ -10648,6 +10803,8 @@
         } catch (reportErr) {
           console.warn("Clinician report background sync:", reportErr);
         }
+
+        recordAuditLog("SENIOR_WIZARD_COMPLETED", `Finished senior assessment: freeScore=${appState.freeRecallScore}, cuedScore=${cuedScore}, distractorErrors=${appState.recallTelemetry?.distractorErrors || 0}`);
       } catch (err) {
         console.warn("finishPatientAssessment pre-calc error:", err);
       }
@@ -10719,6 +10876,66 @@
             </div>
           `;
         }
+
+        // False Recognition Distractor Insight
+        if (appState.recallTelemetry && appState.recallTelemetry.distractorErrors > 0) {
+          memoryInsightHtml += `
+            <div style="background:#FFFBEB; border:2px solid #FCD34D; border-radius:12px; padding:1rem; margin-top:0.75rem; text-align:left; color:#92400E;">
+              <div style="font-weight:900; font-size:1.1rem; margin-bottom:0.25rem;">🔍 การวิเคราะห์การจำคำลวง (False Recognition Telemetry):</div>
+              <p style="margin:0; font-size:1rem; line-height:1.5;">
+                มีการแตะเลือกคำศัพท์นอกรายการ ${appState.recallTelemetry.distractorErrors} ครั้ง รูปแบบนี้บ่งชี้ว่าระบบดึงข้อมูลในสมองทำงานไม่สัมพันธ์กับการบันทึก (Storage Encoding Deficit) ซึ่งเป็นสัญญาณสนับสนุนที่แพทย์ใช้ประกอบการแยกประเภทรอยโรค
+              </p>
+            </div>
+          `;
+        }
+
+        // Normative Demographic Cohort Definition
+        const age = appState.age || 71;
+        const edu = appState.yearsOfEducation ?? 12;
+        let cohortAgeText = "อายุ 60–74 ปี";
+        if (age < 60) cohortAgeText = "อายุต่ำกว่า 60 ปี";
+        else if (age >= 75) cohortAgeText = "อายุ 75 ปีขึ้นไป";
+
+        let cohortEduText = "มัธยมศึกษา (7-12 ปี)";
+        if (edu <= 6) cohortEduText = "ประถมศึกษา (<= 6 ปี)";
+        else if (edu > 12) cohortEduText = "อุดมศึกษา / ปริญญา (> 12 ปี)";
+
+        let percentileText = "อยู่ในเกณฑ์ปกติ (Percentile > 50th)";
+        let barColor = "#10B981";
+        let barPercent = 85;
+        if (tier === "HIGH" || tier === "CRITICAL") {
+          percentileText = "ต่ำกว่าเกณฑ์เฉลี่ยกลุ่มประชากร (Percentile < 16th)";
+          barColor = "#EF4444";
+          barPercent = 18;
+        } else if (tier === "MODERATE") {
+          percentileText = "เริ่มต่ำกว่าเกณฑ์เฉลี่ย (Percentile 16th – 50th)";
+          barColor = "#F59E0B";
+          barPercent = 42;
+        }
+
+        const normativeHtml = `
+          <div style="background:var(--bg-card); border:2px solid var(--border-subtle); border-radius:14px; padding:1.25rem; margin-bottom:1.5rem; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+              <span style="font-weight:900; font-size:1.15rem; color:var(--text-primary);">
+                📊 การเปรียบเทียบกับกลุ่มประชากรไทย (Thai Normative Reference):
+              </span>
+              <span style="font-size:0.9rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:8px; background:var(--bg-elevated); border:1px solid var(--border-subtle);">
+                กลุ่ม: ${cohortAgeText} • ${cohortEduText}
+              </span>
+            </div>
+            <p style="font-size:1rem; color:var(--text-secondary); margin:0 0 0.75rem 0; line-height:1.5;">
+              คะแนนความจำและมิติสัมพันธ์ของคุณ <strong>${percentileText}</strong> เมื่อเทียบกับเกณฑ์มาตรฐานประชากรไทยในช่วงอายุและระดับการศึกษาเดียวกัน
+            </p>
+            <div style="width:100%; height:16px; background:var(--border-subtle); border-radius:8px; overflow:hidden; position:relative;">
+              <div style="width:${barPercent}%; height:100%; background:${barColor}; border-radius:8px; transition:width 0.8s ease;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-secondary); margin-top:0.35rem; font-weight:700;">
+              <span>เสี่ยงบกพร่อง (&lt; P16)</span>
+              <span>ค่าเฉลี่ยประชากร (P50)</span>
+              <span>ปกติสมวัย (P50-P95)</span>
+            </div>
+          </div>
+        `;
 
         if (tier === "HIGH" || tier === "CRITICAL" || (ad8Score >= 4 && freeScore === 0)) {
           lightColor = "red";
@@ -10795,6 +11012,9 @@
                 <div style="font-size:0.85rem; color:var(--text-secondary);">บันทึก Kinematics แล้ว</div>
               </div>
             </div>
+
+            <!-- Thai Normative Cohort Comparison -->
+            ${normativeHtml}
 
             ${actionBoxHtml}
 
