@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>ระบบคัดกรองความเสี่ยงภาวะสมองรู้คิดบกพร่องและอัลไซเมอร์เบื้องต้น (Multimodal Cognitive Screening & Biomarker
     Triage)</title>
   <!-- Google Fonts: Sarabun for optimal Thai readability (with system fallback) -->
@@ -1407,6 +1407,155 @@
       transition: width 0.35s ease;
     }
 
+    /* ==========================================================================
+       MOBILE FIT & RESPONSIVE FIX (Viewport: 360px - 640px)
+       Zero horizontal scroll, responsive typography & touch-safe clock canvas
+       ========================================================================== */
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    #wizCdtCanvas,
+    #cdtCanvas {
+      touch-action: none !important;
+      max-width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1 / 1 !important;
+      display: block !important;
+      margin: 0 auto !important;
+    }
+
+    @media screen and (max-width: 640px) {
+      :root {
+        --base-font-size: 16px;
+      }
+
+      .patient-wiz-container {
+        padding: 0.5rem 0.35rem !important;
+        max-width: 100% !important;
+      }
+
+      .card-box {
+        padding: 1.25rem 0.85rem !important;
+        border-radius: 14px !important;
+        margin-bottom: 1rem !important;
+      }
+
+      /* View Mode Bar Mobile Fit */
+      .view-mode-bar {
+        padding: 0.4rem !important;
+        gap: 0.35rem !important;
+      }
+      .view-mode-btn {
+        font-size: 0.82rem !important;
+        padding: 0.45rem 0.6rem !important;
+      }
+
+      /* Step Progress Header */
+      #patientWizStepTitle {
+        font-size: 1.05rem !important;
+      }
+      #patientWizProgressBadge {
+        font-size: 0.82rem !important;
+        padding: 0.2rem 0.55rem !important;
+      }
+
+      /* Card-by-Card Headings & Examples */
+      #patientCardQTitle {
+        font-size: 1.25rem !important;
+        line-height: 1.45 !important;
+        margin-bottom: 0.5rem !important;
+      }
+      #patientCardQExample {
+        font-size: 0.98rem !important;
+        line-height: 1.5 !important;
+        margin-bottom: 1.25rem !important;
+      }
+      #patientCardQBadge {
+        font-size: 0.88rem !important;
+        padding: 0.25rem 0.65rem !important;
+      }
+
+      /* Choice Buttons Sizing on Mobile */
+      .patient-choice-btn {
+        min-height: 56px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 1.05rem !important;
+        gap: 0.75rem !important;
+        border-radius: 12px !important;
+      }
+      .patient-choice-btn span[style*="font-size:2rem"],
+      .patient-choice-btn span[style*="font-size: 2rem"] {
+        font-size: 1.45rem !important;
+      }
+      .patient-choice-btn div div:first-child {
+        font-size: 1.1rem !important;
+      }
+      .patient-choice-btn div div:last-child {
+        font-size: 0.82rem !important;
+        line-height: 1.35 !important;
+      }
+
+      /* Mini-Cog Word Presentation Grid */
+      #wizWordCardsGrid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+        margin-bottom: 1.25rem !important;
+      }
+      #wizWordCardsGrid > div {
+        padding: 0.85rem 0.4rem !important;
+        border-radius: 12px !important;
+      }
+      #wizWordCardsGrid > div > div:first-child {
+        font-size: 2rem !important;
+        margin-bottom: 0.35rem !important;
+      }
+      #wizWordCardsGrid > div > div:last-child {
+        font-size: 1.2rem !important;
+      }
+
+      /* Clock Canvas Box */
+      #wizMiniCogSub-Cdt .btn {
+        min-height: 48px !important;
+        font-size: 1rem !important;
+      }
+
+      /* Mini-Cog Recall Choices Grid */
+      #wizRecallChoicesGrid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 1.5rem !important;
+      }
+      #wizRecallChoicesGrid .patient-choice-btn {
+        min-height: 54px !important;
+        font-size: 1.1rem !important;
+        padding: 0.6rem 0.75rem !important;
+      }
+
+      /* Step 4 Result Screen Mobile Optimization */
+      #patientTrafficLightCardContent h2 {
+        font-size: 1.45rem !important;
+        line-height: 1.35 !important;
+      }
+      #patientTrafficLightCardContent p {
+        font-size: 1rem !important;
+      }
+      #patientTrafficLightCardContent button {
+        min-height: 52px !important;
+        font-size: 1.05rem !important;
+      }
+    }
+
+    @media screen and (max-width: 380px) {
+      #wizWordCardsGrid {
+        grid-template-columns: repeat(1, 1fr) !important;
+      }
+      #wizRecallChoicesGrid {
+        grid-template-columns: repeat(1, 1fr) !important;
+      }
+    }
+
   </style>
 </head>
 
@@ -1692,14 +1841,14 @@
 
       <!-- 2 Giant Choice Buttons (Height >= 64px, Gap >= 16px) -->
       <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:2rem;">
-        <button type="button" class="btn patient-choice-btn" onclick="handlePatientCardChoice('YES')" style="border-color:#EF4444; color:#B91C1C;">
+        <button type="button" class="btn patient-choice-btn" onclick="handlePatientCardChoice('YES', event)" style="border-color:#EF4444; color:#B91C1C;">
           <span style="font-size:2rem; line-height:1;">⚠️</span>
           <div>
             <div style="font-size:1.35rem; font-weight:900;">มีการเปลี่ยนแปลง (ใช่ / เริ่มมีปัญหา)</div>
             <div style="font-size:0.95rem; font-weight:600; color:var(--text-secondary); margin-top:0.2rem;">เริ่มสังเกตเห็นความผิดปกติหรือถดถอยจากเดิม</div>
           </div>
         </button>
-        <button type="button" class="btn patient-choice-btn" onclick="handlePatientCardChoice('NO')" style="border-color:#10B981; color:#047857;">
+        <button type="button" class="btn patient-choice-btn" onclick="handlePatientCardChoice('NO', event)" style="border-color:#10B981; color:#047857;">
           <span style="font-size:2rem; line-height:1;">✅</span>
           <div>
             <div style="font-size:1.35rem; font-weight:900;">ไม่มีการเปลี่ยนแปลง (ปกติ / ทำได้ดี)</div>
@@ -1709,10 +1858,10 @@
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-        <button type="button" class="btn" id="patientCardPrevBtn" onclick="handlePatientCardPrev()" style="min-height:50px; font-size:1.05rem;">
+        <button type="button" class="btn" id="patientCardPrevBtn" onclick="handlePatientCardPrev(event)" style="min-height:50px; font-size:1.05rem;">
           ⬅ ข้อก่อนหน้า
         </button>
-        <button type="button" class="btn" onclick="handlePatientCardChoice('NA')" style="min-height:50px; font-size:0.98rem; color:var(--text-secondary);">
+        <button type="button" class="btn" onclick="handlePatientCardChoice('NA', event)" style="min-height:50px; font-size:0.98rem; color:var(--text-secondary);">
           ❓ ไม่แน่ใจ / ข้ามข้อนี้
         </button>
       </div>
@@ -9937,13 +10086,27 @@
     let currentWizCardIndex = 0;
     let selectedWizRecallWords = [];
 
+    /* Smooth non-jumping scroll helper for patient wizard */
+    function scrollWizCardIntoView(elementId = "patientScreen-2") {
+      const el = document.getElementById(elementId) || document.getElementById("seniorPatientWizard");
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // If card top is already in a comfortable reading range (between 15px and 160px from viewport top)
+      if (rect.top >= 15 && rect.top <= 160) {
+        return; // Already in view, do nothing to prevent disorienting jumps!
+      }
+      const headerOffset = 65;
+      const targetY = window.pageYOffset + rect.top - headerOffset;
+      window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
+    }
+
     function startPatientWizard() {
       document.getElementById("patientScreen-0").style.display = "none";
       document.getElementById("patientScreen-1").style.display = "block";
       document.getElementById("patientWizProgressHeader").style.display = "block";
       updateWizProgress(1, "ขั้นตอนที่ 1: ข้อมูลเบื้องต้น", 25);
       showWizProfileSub(1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollWizCardIntoView("patientScreen-1");
     }
 
     function updateWizProgress(stepNum, title, percent) {
@@ -9986,7 +10149,7 @@
       updateWizProgress(2, "ขั้นตอนที่ 2: สังเกตความจำในชีวิตประจำวัน", 50);
       currentWizCardIndex = 0;
       renderActivePatientCard();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollWizCardIntoView("patientScreen-2");
     }
 
     function renderActivePatientCard() {
@@ -10003,8 +10166,8 @@
       if (exEl) exEl.textContent = q.example;
       if (prevBtn) prevBtn.style.visibility = (currentWizCardIndex === 0) ? "hidden" : "visible";
 
-      // Auto scroll smoothly to card top
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Non-jumping smart scroll to keep active question comfortably in view
+      scrollWizCardIntoView("patientScreen-2");
     }
 
     function speakActivePatientCardQuestion() {
@@ -10014,7 +10177,8 @@
       }
     }
 
-    function handlePatientCardChoice(choice) {
+    function handlePatientCardChoice(choice, evt) {
+      if (evt && evt.preventDefault) evt.preventDefault();
       const q = wizCardQuestions[currentWizCardIndex];
       if (!q) return;
 
@@ -10044,11 +10208,12 @@
         document.getElementById("patientScreen-3").style.display = "block";
         updateWizProgress(3, "ขั้นตอนที่ 3: ทดสอบความจำและวาดนาฬิกา", 75);
         setupWizMiniCog();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        scrollWizCardIntoView("patientScreen-3");
       }
     }
 
-    function handlePatientCardPrev() {
+    function handlePatientCardPrev(evt) {
+      if (evt && evt.preventDefault) evt.preventDefault();
       if (currentWizCardIndex > 0) {
         currentWizCardIndex--;
         renderActivePatientCard();
@@ -10057,6 +10222,7 @@
         document.getElementById("patientScreen-1").style.display = "block";
         showWizProfileSub(3);
         updateWizProgress(1, "ขั้นตอนที่ 1: ข้อมูลเบื้องต้น", 25);
+        scrollWizCardIntoView("patientScreen-1");
       }
     }
 
@@ -10100,7 +10266,7 @@
       document.getElementById("wizMiniCogSub-Words").style.display = "none";
       document.getElementById("wizMiniCogSub-Cdt").style.display = "block";
       initWizCdtCanvas();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollWizCardIntoView("wizMiniCogSub-Cdt");
     }
 
     let wizCdtDrawing = false;
@@ -10118,13 +10284,15 @@
       // Clear with pure white
       wizCdtCtx.fillStyle = "#FFFFFF";
       wizCdtCtx.fillRect(0, 0, canvas.width, canvas.height);
+      canvas.style.touchAction = "none";
 
-      function getPos(e) {
+      function getTouchPos(evt) {
         const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
+        const clientX = (evt.touches && evt.touches.length > 0) ? evt.touches[0].clientX : evt.clientX;
+        const clientY = (evt.touches && evt.touches.length > 0) ? evt.touches[0].clientY : evt.clientY;
+
         return {
           x: (clientX - rect.left) * scaleX,
           y: (clientY - rect.top) * scaleY
@@ -10132,22 +10300,23 @@
       }
 
       function startDraw(e) {
+        if (e.cancelable) e.preventDefault();
         wizCdtDrawing = true;
-        const pos = getPos(e);
+        const pos = getTouchPos(e);
         wizCdtCtx.beginPath();
         wizCdtCtx.moveTo(pos.x, pos.y);
-        if (e.cancelable && e.type.startsWith('touch')) e.preventDefault();
       }
 
       function draw(e) {
         if (!wizCdtDrawing) return;
-        const pos = getPos(e);
+        if (e.cancelable) e.preventDefault();
+        const pos = getTouchPos(e);
         wizCdtCtx.lineTo(pos.x, pos.y);
         wizCdtCtx.stroke();
-        if (e.cancelable && e.type.startsWith('touch')) e.preventDefault();
       }
 
-      function stopDraw() {
+      function stopDraw(e) {
+        if (wizCdtDrawing && e && e.cancelable) e.preventDefault();
         wizCdtDrawing = false;
       }
 
@@ -10218,7 +10387,7 @@
           </button>
         `).join("");
       }
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollWizCardIntoView("wizMiniCogSub-Recall");
     }
 
     function toggleWizWordChoice(word) {
@@ -10281,7 +10450,7 @@
       if (s4) s4.style.display = "block";
       updateWizProgress(4, "ขั้นตอนที่ 4: สรุปผลสุขภาพความจำสำหรับประชาชน", 100);
       renderPatientTrafficLightResult();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollWizCardIntoView("patientScreen-4");
     }
 
     /* ------------------------------------------------------------------------
@@ -10431,7 +10600,7 @@
       document.getElementById("patientScreen-4").style.display = "none";
       document.getElementById("patientScreen-0").style.display = "block";
       document.getElementById("patientWizProgressHeader").style.display = "none";
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollWizCardIntoView("patientScreen-0");
       showToast("รีเซ็ตแบบประเมินเรียบร้อยค่ะ", "info");
     }
 
