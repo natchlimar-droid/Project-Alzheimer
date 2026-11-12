@@ -1628,7 +1628,7 @@
         <a href="dashboard.html" class="btn" style="font-weight:800; border-color:#0d9488; background:#0f766e; color:#FFFFFF; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;" aria-label="เปิดหน้าระบบฐานข้อมูลและ ML Triage">
           📊 NeuroRegistry &amp; ML
         </a>
-        <a href="https://github.com/natchlimar-droid/Project-Alzhimer" target="_blank" rel="noopener noreferrer" class="btn" style="font-weight:800; border-color:#334155; background:#1E293B; color:#FFFFFF; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;" aria-label="ดูซอร์สโค้ดและเอกสารบน GitHub Repository">
+        <a href="https://github.com/natchlimar-droid/Project-Alzheimer" target="_blank" rel="noopener noreferrer" class="btn" style="font-weight:800; border-color:#334155; background:#1E293B; color:#FFFFFF; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;" aria-label="ดูซอร์สโค้ดและเอกสารบน GitHub Repository">
           <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="vertical-align:text-bottom;">
             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
           </svg>
@@ -2051,76 +2051,82 @@
 
       <!-- Sub-Panel 1: Demographics & Pre-test Validity -->
       <div id="step0SubPanel-1" class="step0-subpanel" style="display:block;">
-        <div class="card-box">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label" for="patientNameInput">ชื่อ-นามสกุล (ผู้รับการประเมิน)</label>
-            <input type="text" id="patientNameInput" class="input-control" value="คุณสมชาย ใจดี (HN-690412)"
-              oninput="syncDemographics()" />
-            <span class="field-hint clinician-only">แยกเก็บใน PII Schema และแปลงเป็นรหัสแฝง (Pseudonymized Token) อัตโนมัติ</span>
+        
+        <!-- 1.1 Patient Demographics Card -->
+        <div class="card-box" id="patientDemographicsCard">
+          <div class="form-grid">
+            <div class="field-group">
+              <label class="field-label" for="patientNameInput">ชื่อ-นามสกุล (ผู้รับการประเมิน)</label>
+              <input type="text" id="patientNameInput" class="input-control" value="คุณสมชาย ใจดี (HN-690412)"
+                oninput="syncDemographics()" />
+              <span class="field-hint clinician-only">แยกเก็บใน PII Schema และแปลงเป็นรหัสแฝง (Pseudonymized Token) อัตโนมัติ</span>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="patientNationalIdInput">เลขประจำตัวประชาชน / HN (ไม่บังคับ)</label>
+              <input type="text" id="patientNationalIdInput" class="input-control" value="1-1005-00124-89-1"
+                oninput="syncDemographics()" />
+              <span class="field-hint clinician-only">เข้ารหัสทางเดียว (Salted Hash) เพื่อสร้าง Tokenized Key: <strong
+                  id="livePseudonymTokenBadge">PSN-...</strong></span>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="patientAgeInput">อายุ (ปี) *</label>
+              <input type="number" id="patientAgeInput" class="input-control" min="40" max="110" value="71"
+                onchange="syncDemographics()" />
+              <span class="field-hint clinician-only">เกณฑ์ปรับเวลา Visual-Motor อัตโนมัติหากอายุตั้งแต่ 75 ปีขึ้นไป</span>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="patientEduInput">จำนวนปีที่ได้รับการศึกษาในระบบ (ปี) *</label>
+              <input type="number" id="patientEduInput" class="input-control" min="0" max="30" value="12"
+                onchange="syncDemographics()" />
+              <span class="field-hint">เช่น ประถมศึกษา = 6 ปี, มัธยมศึกษา = 12 ปี, ปริญญาตรี = 16 ปี</span>
+            </div>
           </div>
-          <div class="field-group">
-            <label class="field-label" for="patientNationalIdInput">เลขประจำตัวประชาชน / HN (ไม่บังคับ)</label>
-            <input type="text" id="patientNationalIdInput" class="input-control" value="1-1005-00124-89-1"
-              oninput="syncDemographics()" />
-            <span class="field-hint clinician-only">เข้ารหัสทางเดียว (Salted Hash) เพื่อสร้าง Tokenized Key: <strong
-                id="livePseudonymTokenBadge">PSN-...</strong></span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="patientAgeInput">อายุ (ปี) *</label>
-            <input type="number" id="patientAgeInput" class="input-control" min="40" max="110" value="71"
-              onchange="syncDemographics()" />
-            <span class="field-hint clinician-only">เกณฑ์ปรับเวลา Visual-Motor อัตโนมัติหากอายุตั้งแต่ 75 ปีขึ้นไป</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="patientEduInput">จำนวนปีที่ได้รับการศึกษาในระบบ (ปี) *</label>
-            <input type="number" id="patientEduInput" class="input-control" min="0" max="30" value="12"
-              onchange="syncDemographics()" />
-            <span class="field-hint">เช่น ประถมศึกษา = 6 ปี, มัธยมศึกษา = 12 ปี, ปริญญาตรี = 16 ปี</span>
-          </div>
-        </div>
 
-        <!-- Non-Literate Alternative Pathway Toggle -->
-        <div style="margin-top:1.25rem; padding:1rem; border-radius:var(--radius-md); border:2px dashed var(--border-subtle); background:var(--bg-elevated);">
-          <label style="display:flex; align-items:center; gap:0.75rem; font-weight:800; font-size:1.1rem; cursor:pointer;">
-            <input type="checkbox" id="nonLiterateToggle" style="width:24px; height:24px;" onchange="toggleNonLiteratePathway(this.checked)" />
-            <span>♿ ผู้รับการประเมินไม่รู้หนังสือ / ไม่คล่องภาษาไทย (Non-Literate Alternative Pathway)</span>
-          </label>
-          <p style="margin:0.35rem 0 0 2rem; font-size:0.95rem; color:var(--text-secondary);">
-            เปิดใช้เส้นทางประเมินทางเลือก: ข้ามการวาดนาฬิกาและแบบทดสอบ Visual-Motor โดยใช้ <strong>Animal Naming Verbal Fluency</strong> (บอกชื่อสัตว์ 1 นาที เกณฑ์ &lt; 10 ตัว) ร่วมกับ Word Recall และ AD8 แทน
-          </p>
-          <div id="animalNamingContainer" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-subtle);">
-            <div class="form-grid">
-              <div class="field-group">
-                <label class="field-label" for="animalNamingInput">จำนวนสัตว์ที่บอกได้ใน 1 นาที (Animal Naming Category Fluency)</label>
-                <input type="number" id="animalNamingInput" class="input-control" placeholder="เช่น 12 (ปกติ >= 10 ตัว/นาที)" onchange="syncDemographics()" />
-                <span class="field-hint">เกณฑ์คนไทย: &lt; 10 ตัวใน 1 นาที บ่งชี้ภาวะบกพร่องด้าน Semantic Fluency / Executive Function</span>
+          <!-- Non-Literate Alternative Pathway Toggle -->
+          <div style="margin-top:1.25rem; padding:1rem; border-radius:var(--radius-md); border:2px dashed var(--border-subtle); background:var(--bg-elevated);">
+            <label style="display:flex; align-items:center; gap:0.75rem; font-weight:800; font-size:1.1rem; cursor:pointer;">
+              <input type="checkbox" id="nonLiterateToggle" style="width:24px; height:24px;" onchange="toggleNonLiteratePathway(this.checked)" />
+              <span>♿ ผู้รับการประเมินไม่รู้หนังสือ / ไม่คล่องภาษาไทย (Non-Literate Alternative Pathway)</span>
+            </label>
+            <p style="margin:0.35rem 0 0 2rem; font-size:0.95rem; color:var(--text-secondary);">
+              เปิดใช้เส้นทางประเมินทางเลือก: ข้ามการวาดนาฬิกาและแบบทดสอบ Visual-Motor โดยใช้ <strong>Animal Naming Verbal Fluency</strong> (บอกชื่อสัตว์ 1 นาที เกณฑ์ &lt; 10 ตัว) ร่วมกับ Word Recall และ AD8 แทน
+            </p>
+            <div id="animalNamingContainer" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-subtle);">
+              <div class="form-grid">
+                <div class="field-group">
+                  <label class="field-label" for="animalNamingInput">จำนวนสัตว์ที่บอกได้ใน 1 นาที (Animal Naming Category Fluency)</label>
+                  <input type="number" id="animalNamingInput" class="input-control" placeholder="เช่น 12 (ปกติ >= 10 ตัว/นาที)" onchange="syncDemographics()" />
+                  <span class="field-hint">เกณฑ์คนไทย: &lt; 10 ตัวใน 1 นาที บ่งชี้ภาวะบกพร่องด้าน Semantic Fluency / Executive Function</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div><!-- /card-box Demographics -->
-      <div class="card-box" id="preTestValidityCard" style="border-width:3px; border-color:var(--status-high-border);">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-          <div>
-            <h3 style="margin:0; font-size:1.3rem;">🛑 ด่านตรวจสอบความพร้อมก่อนเริ่มทดสอบ (Pre-Test Validity Gatekeeper)</h3>
-            <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
-              คัดกรองข้อห้ามหรืออุปสรรคทางกายภาพที่ทำให้ผลการทดสอบการรู้คิดแปลผลไม่ได้ หากมีข้อใดข้อหนึ่ง <strong>ไม่ควรเริ่มทำแบบทดสอบ</strong>
-            </p>
+        </div><!-- /#patientDemographicsCard -->
+
+        <!-- 1.2 Pre-Test Validity Gatekeeper Card -->
+        <div class="card-box" id="preTestValidityCard" style="border-width:3px; border-color:var(--status-high-border);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h3 style="margin:0; font-size:1.3rem;">🛑 ด่านตรวจสอบความพร้อมก่อนเริ่มทดสอบ (Pre-Test Validity Gatekeeper)</h3>
+              <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
+                คัดกรองข้อห้ามหรืออุปสรรคทางกายภาพที่ทำให้ผลการทดสอบการรู้คิดแปลผลไม่ได้ หากมีข้อใดข้อหนึ่ง <strong>ไม่ควรเริ่มทำแบบทดสอบ</strong>
+              </p>
+            </div>
+            <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary" onclick="open4ATModal()" aria-label="เปิดเครื่องมือประเมิน Delirium 4AT">
+                🩺 ประเมิน 4AT Delirium
+              </button>
+              <button type="button" class="btn btn-tts"
+                onclick="speakThai('ด่านตรวจสอบความพร้อมก่อนเริ่มทดสอบ โปรดตรวจสอบว่าผู้รับการประเมินมีภาวะเพ้อเฉียบพลัน ปัญหาการมองเห็นหรือการได้ยินรุนแรง ได้รับยานอนหลับ หรือเจ็บป่วยรุนแรงเฉียบพลันหรือไม่', this)">
+                🔊 ฟังคำแนะนำ
+              </button>
+            </div>
           </div>
-          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-            <button type="button" class="btn btn-primary" onclick="open4ATModal()" aria-label="เปิดเครื่องมือประเมิน Delirium 4AT">
-              🩺 ประเมิน 4AT Delirium
-            </button>
-            <button type="button" class="btn btn-tts"
-              onclick="speakThai('ด่านตรวจสอบความพร้อมก่อนเริ่มทดสอบ โปรดตรวจสอบว่าผู้รับการประเมินมีภาวะเพ้อเฉียบพลัน ปัญหาการมองเห็นหรือการได้ยินรุนแรง ได้รับยานอนหลับ หรือเจ็บป่วยรุนแรงเฉียบพลันหรือไม่', this)">
-              🔊 ฟังคำแนะนำ
-            </button>
-          </div>
-        </div>
-        <div id="preTestValidityContainer" style="margin-top:1rem; display:flex; flex-direction:column; gap:0.6rem;"></div>
-        <div id="preTestValidityAlert" style="margin-top:0.75rem; font-weight:800; display:none; padding:0.75rem; border-radius:8px; background:var(--status-high-surface); color:var(--status-high-text); border:2px solid var(--status-high-border);" role="alert"></div>
-      </div>
+          <div id="preTestValidityContainer" style="margin-top:1rem; display:flex; flex-direction:column; gap:0.6rem;"></div>
+          <div id="preTestValidityAlert" style="margin-top:0.75rem; font-weight:800; display:none; padding:0.75rem; border-radius:8px; background:var(--status-high-surface); color:var(--status-high-text); border:2px solid var(--status-high-border);" role="alert"></div>
+        </div><!-- /#preTestValidityCard -->
+
+        <!-- 1.3 Sub-Panel Navigation Bar -->
         <div class="step0-nav-bar" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
           <button type="button" class="btn" onclick="proceedFromGatekeeper()" style="font-weight:700;">
             ข้ามไปทำแบบประเมิน AD8 ทันที ➔
@@ -2128,8 +2134,9 @@
           <button type="button" class="btn btn-primary" onclick="switchStep0Tab(2)" style="font-weight:800; min-height:50px; padding:0.75rem 1.5rem;">
             ถัดไป: คัดกรองซึมเศร้า &amp; ยา ACB ➔
           </button>
-        </div>
-      </div>
+        </div><!-- /.step0-nav-bar -->
+
+      </div><!-- /#step0SubPanel-1 -->
 
       <!-- Sub-Panel 2: 2Q Depression & ACB Scale -->
       <div id="step0SubPanel-2" class="step0-subpanel" style="display:none;">
@@ -7562,10 +7569,15 @@
 
       function getCanvasPoint(e) {
         const rect = canvas.getBoundingClientRect();
+        // Dynamic scale calculation guarantees pixel-perfect drawing across all responsive viewports & DPR
         const scaleX = baseWidth / (rect.width || baseWidth);
         const scaleY = baseHeight / (rect.height || baseHeight);
-        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
-        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        if (e.touches && e.touches.length > 0) {
+          clientX = e.touches[0].clientX;
+          clientY = e.touches[0].clientY;
+        }
         return {
           x: (clientX - rect.left) * scaleX,
           y: (clientY - rect.top) * scaleY
@@ -7574,6 +7586,9 @@
 
       function startStroke(e) {
         if (e.cancelable) e.preventDefault();
+        if (e.pointerId !== undefined && typeof canvas.setPointerCapture === "function") {
+          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+        }
         const now = performance.now();
         if (cdtFirstStrokeStartMs === null) {
           cdtFirstStrokeStartMs = now;
@@ -7619,6 +7634,9 @@
       function endStroke(e) {
         if (!currentStroke) return;
         if (e && e.cancelable) e.preventDefault();
+        if (e && e.pointerId !== undefined && typeof canvas.releasePointerCapture === "function") {
+          try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+        }
         cdtStrokes.push(currentStroke);
         currentStroke = null;
         cdtLastStrokeEndMs = performance.now();
@@ -7634,14 +7652,21 @@
         syncCdtTelemetryDisplay();
       }
 
-      canvas.addEventListener("mousedown", startStroke);
-      canvas.addEventListener("mousemove", moveStroke);
-      window.addEventListener("mouseup", endStroke);
+      if (window.PointerEvent) {
+        canvas.addEventListener("pointerdown", startStroke, { passive: false });
+        canvas.addEventListener("pointermove", moveStroke, { passive: false });
+        canvas.addEventListener("pointerup", endStroke, { passive: false });
+        canvas.addEventListener("pointercancel", endStroke, { passive: false });
+      } else {
+        canvas.addEventListener("mousedown", startStroke);
+        canvas.addEventListener("mousemove", moveStroke);
+        window.addEventListener("mouseup", endStroke);
 
-      canvas.addEventListener("touchstart", startStroke, { passive: false });
-      canvas.addEventListener("touchmove", moveStroke, { passive: false });
-      canvas.addEventListener("touchend", endStroke, { passive: false });
-      canvas.addEventListener("touchcancel", endStroke, { passive: false });
+        canvas.addEventListener("touchstart", startStroke, { passive: false });
+        canvas.addEventListener("touchmove", moveStroke, { passive: false });
+        canvas.addEventListener("touchend", endStroke, { passive: false });
+        canvas.addEventListener("touchcancel", endStroke, { passive: false });
+      }
 
       simulateNormalClockDrawing();
     }
@@ -11118,10 +11143,15 @@
 
       function getTouchPos(evt) {
         const rect = canvas.getBoundingClientRect();
+        // Dynamic scale calculation guarantees pixel-perfect drawing across all responsive viewports & DPR
         const scaleX = baseWidth / (rect.width || baseWidth);
         const scaleY = baseHeight / (rect.height || baseHeight);
-        const clientX = (evt.touches && evt.touches.length > 0) ? evt.touches[0].clientX : evt.clientX;
-        const clientY = (evt.touches && evt.touches.length > 0) ? evt.touches[0].clientY : evt.clientY;
+        let clientX = evt.clientX;
+        let clientY = evt.clientY;
+        if (evt.touches && evt.touches.length > 0) {
+          clientX = evt.touches[0].clientX;
+          clientY = evt.touches[0].clientY;
+        }
 
         return {
           x: (clientX - rect.left) * scaleX,
@@ -11131,6 +11161,9 @@
 
       function startDraw(e) {
         if (e.cancelable) e.preventDefault();
+        if (e.pointerId !== undefined && typeof canvas.setPointerCapture === "function") {
+          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+        }
         wizCdtDrawing = true;
         const pos = getTouchPos(e);
         wizCdtCtx.beginPath();
@@ -11169,20 +11202,31 @@
       function stopDraw(e) {
         if (wizCdtDrawing) {
           if (e && e.cancelable) e.preventDefault();
+          if (e && e.pointerId !== undefined && typeof canvas.releasePointerCapture === "function") {
+            try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+          }
           wizCdtDrawing = false;
           appState.cdtTelemetry.penLiftsCount = (appState.cdtTelemetry.penLiftsCount || 0) + 1;
         }
       }
 
-      canvas.onmousedown = startDraw;
-      canvas.onmousemove = draw;
-      canvas.onmouseup = stopDraw;
-      canvas.onmouseleave = stopDraw;
+      // Modern PointerEvents API handles touch, stylus, and mouse with zero lag & precise coordinate scaling
+      if (window.PointerEvent) {
+        canvas.addEventListener("pointerdown", startDraw, { passive: false });
+        canvas.addEventListener("pointermove", draw, { passive: false });
+        canvas.addEventListener("pointerup", stopDraw, { passive: false });
+        canvas.addEventListener("pointercancel", stopDraw, { passive: false });
+      } else {
+        canvas.onmousedown = startDraw;
+        canvas.onmousemove = draw;
+        canvas.onmouseup = stopDraw;
+        canvas.onmouseleave = stopDraw;
 
-      canvas.addEventListener("touchstart", startDraw, { passive: false });
-      canvas.addEventListener("touchmove", draw, { passive: false });
-      canvas.addEventListener("touchend", stopDraw, { passive: false });
-      canvas.addEventListener("touchcancel", stopDraw, { passive: false });
+        canvas.addEventListener("touchstart", startDraw, { passive: false });
+        canvas.addEventListener("touchmove", draw, { passive: false });
+        canvas.addEventListener("touchend", stopDraw, { passive: false });
+        canvas.addEventListener("touchcancel", stopDraw, { passive: false });
+      }
     }
 
     function clearWizCdtCanvas() {
@@ -11445,6 +11489,53 @@
       }
     }
 
+    function syncAssessmentToRegistry() {
+      try {
+        const pId = appState.pseudonymToken || ("PSN-" + Math.floor(1000 + Math.random() * 9000));
+        const ad8 = countAd8Yes();
+        const freeScore = (appState.freeRecallScore !== null && appState.freeRecallScore !== undefined) ? appState.freeRecallScore : (appState.delayedRecallScore ?? 3);
+        const cdtPoints = appState.cdtResult === "NORMAL" ? 2 : 0;
+        const minicog = Math.max(0, Math.min(5, freeScore + cdtPoints));
+        const acbScore = (typeof evaluateAnticholinergicBurden === "function") 
+          ? evaluateAnticholinergicBurden(appState.acbMedicationIds || []).acbTotalScore 
+          : 0;
+        const q2Score = ((appState.depression2Q?.q1_depressed_mood ? 1 : 0) + (appState.depression2Q?.q2_anhedonia ? 1 : 0));
+        const trailSec = appState.trailTelemetry?.totalCompletionTimeMs 
+          ? Math.max(20, Math.round(appState.trailTelemetry.totalCompletionTimeMs / 1000)) 
+          : 55;
+        const fluencyCount = appState.animalNamingCount || 14;
+
+        const newRecord = {
+          id: pId,
+          date: new Date().toISOString().split("T")[0],
+          age: appState.age || 71,
+          education: appState.yearsOfEducation ?? 12,
+          q2: q2Score,
+          acb: acbScore,
+          ad8: ad8,
+          minicog: minicog,
+          trailLatency: trailSec,
+          fluency: fluencyCount,
+          notes: `ประเมินสด (Free Recall ${freeScore}/3, CDT ${appState.cdtResult || "NORMAL"}, AD8 ${ad8}/8)`
+        };
+
+        const keys = ["project_alzheimer_registry_v1", "project_alzhimer_registry_v1"];
+        keys.forEach(k => {
+          try {
+            const raw = localStorage.getItem(k);
+            const list = raw ? JSON.parse(raw) : [];
+            if (Array.isArray(list)) {
+              const filtered = list.filter(item => item && item.id !== pId);
+              filtered.unshift(newRecord);
+              localStorage.setItem(k, JSON.stringify(filtered.slice(0, 100)));
+            }
+          } catch (err) {}
+        });
+      } catch (e) {
+        console.warn("Registry sync failed:", e);
+      }
+    }
+
     function finishPatientAssessment() {
       try {
         const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
@@ -11474,6 +11565,13 @@
           renderRiskStratificationReport();
         } catch (reportErr) {
           console.warn("Clinician report background sync:", reportErr);
+        }
+
+        // Automatic synchronization to Clinical NeuroRegistry & ML Triage
+        try {
+          syncAssessmentToRegistry();
+        } catch (syncErr) {
+          console.warn("Registry auto-sync error:", syncErr);
         }
 
         recordAuditLog("SENIOR_WIZARD_COMPLETED", `Finished senior assessment: freeScore=${appState.freeRecallScore}, cuedScore=${cuedScore}, distractorErrors=${appState.recallTelemetry?.distractorErrors || 0}`);

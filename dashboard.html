@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบฐานข้อมูล วิเคราะห์ความเสี่ยง & ML Triage - Project-Alzhimer</title>
+    <title>ระบบฐานข้อมูล วิเคราะห์ความเสี่ยง & ML Triage - Project-Alzheimer</title>
     <!-- Google Fonts: Prompt & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,7 +94,7 @@
                             <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">NeuroRegistry & ML Triage</h1>
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
                                 <span class="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
-                                Project-Alzhimer Sync
+                                Project-Alzheimer Sync
                             </span>
                         </div>
                         <p class="text-xs text-slate-500">ระบบคลังข้อมูลผู้เข้ารับการคัดกรอง (AD8 • Mini-Cog • Visual-Motor • ACB) และวิเคราะห์ความเสี่ยงด้วย ML</p>
@@ -102,7 +102,12 @@
                 </div>
 
                 <!-- Right Controls: Sync Link & Quick Export -->
-                <div class="flex items-center gap-2 self-end md:self-auto">
+                <div class="flex items-center gap-2 self-end md:self-auto flex-wrap">
+                    <a href="https://github.com/natchlimar-droid/Project-Alzheimer" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-900 border border-slate-700 rounded-lg transition shadow-sm">
+                        <i data-lucide="github" class="w-3.5 h-3.5"></i>
+                        <span>GitHub Repo</span>
+                    </a>
                     <a href="index.html" 
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition">
                         <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
@@ -807,7 +812,7 @@
             { id: "PSN-1618", date: "2026-11-04", age: 76, education: 4, q2: 1, acb: 2, ad8: 4, minicog: 2, trailLatency: 91, fluency: 10, notes: "นึกคำศัพท์ชื่อสัตว์ได้ช้า วาดเข็มนาฬิกาผิด" },
             { id: "PSN-1642", date: "2026-11-07", age: 63, education: 16, q2: 0, acb: 0, ad8: 0, minicog: 5, trailLatency: 35, fluency: 23, notes: "ปกติ" },
             { id: "PSN-1679", date: "2026-11-10", age: 83, education: 4, q2: 2, acb: 3, ad8: 7, minicog: 1, trailLatency: 151, fluency: 6, notes: "มีอาการหลงทิศทางเวลาออกนอกบ้านคนเดียว" },
-            { id: "PSN-1705", date: "2026-11-12", age: 75, education: 6, q2: 0, acb: 3, ad8: 3, minicog: 3, trailLatency: 76, fluency: 12, notes: "เคสล่าสุดจาก Project-Alzhimer รอติดตามผล" }
+            { id: "PSN-1705", date: "2026-11-12", age: 75, education: 6, q2: 0, acb: 3, ad8: 3, minicog: 3, trailLatency: 76, fluency: 12, notes: "เคสล่าสุดจาก Project-Alzheimer รอติดตามผล" }
         ];
 
         // Global State
@@ -992,16 +997,49 @@
         // 3. DATA PERSISTENCE & MANAGEMENT
         // =========================================================================
         function initApp() {
-            const saved = localStorage.getItem('project_alzhimer_registry_v1');
+            // Read from new key first, then fallback to legacy key
+            const saved = localStorage.getItem('project_alzheimer_registry_v1') || localStorage.getItem('project_alzhimer_registry_v1');
             if (saved) {
                 try {
-                    patients = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    patients = Array.isArray(parsed) && parsed.length > 0 ? parsed : JSON.parse(JSON.stringify(INITIAL_SYNTHETIC_DATA));
                 } catch (e) {
                     patients = JSON.parse(JSON.stringify(INITIAL_SYNTHETIC_DATA));
                 }
             } else {
                 patients = JSON.parse(JSON.stringify(INITIAL_SYNTHETIC_DATA));
             }
+
+            // Sync any recent live evaluations from Project-Alzheimer main screening session
+            try {
+                const sessionRaw = localStorage.getItem('cogScreen.sessions.v1');
+                if (sessionRaw) {
+                    const sessionList = JSON.parse(sessionRaw);
+                    if (Array.isArray(sessionList)) {
+                        sessionList.forEach(s => {
+                            if (s && s.session_id && !patients.some(p => p.id === s.session_id)) {
+                                const freeRecall = s.delayedRecallScore ?? 3;
+                                const cdtPts = s.cdtResult === 'NORMAL' ? 2 : 0;
+                                patients.unshift({
+                                    id: s.session_id,
+                                    date: (s.assessedAtIso || new Date().toISOString()).split('T')[0],
+                                    age: s.age || 72,
+                                    education: s.yearsOfEducation || 12,
+                                    q2: 0,
+                                    acb: 0,
+                                    ad8: s.ad8Score ?? 0,
+                                    minicog: Math.min(5, freeRecall + cdtPts),
+                                    trailLatency: s.visualMotorTimeMs ? Math.round(s.visualMotorTimeMs / 1000) : 55,
+                                    fluency: 14,
+                                    notes: `Sync จากแบบประเมินหลัก (ผลรวม Mini-Cog ${freeRecall + cdtPts}/5)`
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch(sErr) {}
+
+            saveToLocalStorage();
 
             // Generate initial loss history curve for baseline model
             mlModel.lossHistory = Array.from({ length: 20 }, (_, idx) => ({
@@ -1032,7 +1070,9 @@
         }
 
         function saveToLocalStorage() {
-            localStorage.setItem('project_alzhimer_registry_v1', JSON.stringify(patients));
+            const dataStr = JSON.stringify(patients);
+            localStorage.setItem('project_alzheimer_registry_v1', dataStr);
+            localStorage.setItem('project_alzhimer_registry_v1', dataStr);
         }
 
         function resetDemoData() {
@@ -1651,7 +1691,7 @@
                         minicog: Number(item.minicog) || 3,
                         trailLatency: Number(item.trailLatency) || 65,
                         fluency: Number(item.fluency) || 12,
-                        notes: item.notes || "Imported from Project-Alzhimer"
+                        notes: item.notes || "Imported from Project-Alzheimer"
                     };
                     clean.riskProb = predictRiskML(clean);
                     clean.riskLevel = getRiskCategory(clean.riskProb).code;
@@ -1674,13 +1714,13 @@
             const headers = ["id", "date", "age", "education", "q2", "acb", "ad8", "minicog", "trailLatency", "fluency", "riskProb", "riskLevel", "notes"];
             const rows = patients.map(p => headers.map(h => `"${(p[h] ?? '').toString().replace(/"/g, '""')}"`).join(','));
             const csvContent = "\uFEFF" + [headers.join(','), ...rows].join('\n');
-            downloadBlob(csvContent, `Project-Alzhimer-Registry-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
+            downloadBlob(csvContent, `Project-Alzheimer-Registry-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
             showToast("ส่งออกรายงาน CSV เรียบร้อยแล้ว", "success");
         }
 
         function exportJSON() {
             const jsonContent = JSON.stringify(patients, null, 2);
-            downloadBlob(jsonContent, `Project-Alzhimer-Data-${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+            downloadBlob(jsonContent, `Project-Alzheimer-Data-${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
             showToast("ส่งออกไฟล์ JSON เรียบร้อยแล้ว", "success");
         }
 
