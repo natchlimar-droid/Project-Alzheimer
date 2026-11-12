@@ -1188,6 +1188,153 @@
       color: var(--status-high-text);
       border: 2px solid var(--status-high-border);
     }
+  
+    /* ==========================================================================
+       Mobile Viewport Optimization (Screen Width <= 640px / 375px)
+       Reduces top banners vertical footprint by > 50% above the fold
+       ========================================================================== */
+    .portfolio-tour-banner {
+      background: linear-gradient(135deg, #0F172A, #1E293B);
+      color: #F8FAFC;
+      border-bottom: 3px solid var(--primary-bg);
+      padding: 0.85rem 1.25rem;
+    }
+    .portfolio-tour-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .tour-banner-intro {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+      min-width: 300px;
+    }
+    .tour-banner-intro .tour-icon {
+      font-size: 1.75rem;
+      line-height: 1;
+    }
+    .tour-banner-intro .tour-text {
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+    .tour-banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .tour-close-btn {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      line-height: 1;
+    }
+    .tour-close-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 640px) {
+      .samd-banner {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        line-height: 1.3;
+      }
+      .samd-badge {
+        padding: 0.1rem 0.4rem;
+        font-size: 0.72rem;
+        margin-right: 0.3rem;
+      }
+      .portfolio-tour-banner {
+        padding: 0.45rem 0.65rem !important;
+      }
+      .tour-banner-intro {
+        display: none !important; /* Hide verbose explanatory paragraph on mobile */
+      }
+      .tour-banner-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr auto auto;
+        gap: 0.35rem !important;
+        align-items: center;
+      }
+      .tour-banner-actions .btn {
+        padding: 0.35rem 0.45rem !important;
+        font-size: 0.78rem !important;
+        text-align: center;
+        justify-content: center;
+        min-height: 38px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .app-header {
+        padding: 0.5rem 0.75rem;
+      }
+      .brand-title {
+        font-size: 1.15rem;
+        line-height: 1.25;
+      }
+      .brand-subtitle {
+        font-size: 0.82rem;
+        margin-top: 0.15rem;
+      }
+      .a11y-controls {
+        gap: 0.35rem;
+        margin-top: 0.35rem;
+      }
+      .a11y-controls .btn {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.8rem;
+        min-height: 36px;
+      }
+      .view-mode-bar {
+        padding: 0.4rem 0.65rem;
+      }
+      .view-mode-bar-inner {
+        gap: 0.4rem;
+      }
+      .mode-toggle-pill-group {
+        width: 100%;
+        display: flex;
+      }
+      .mode-toggle-btn {
+        flex: 1;
+        padding: 0.45rem 0.5rem;
+        font-size: 0.85rem;
+        justify-content: center;
+        text-align: center;
+      }
+      #viewModeHintText {
+        font-size: 0.82rem !important;
+        line-height: 1.35;
+        margin-top: 0.2rem;
+      }
+      .step-nav {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.35rem;
+        padding: 0.35rem 0.65rem;
+      }
+      .step-tab {
+        min-height: 48px;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.82rem;
+      }
+      .step-tab .step-num {
+        font-size: 0.7rem;
+      }
+    }
+
   </style>
 </head>
 
@@ -1221,31 +1368,31 @@
     <!-- ========================================================================
        Portfolio Guided Tour Banner (First Impression for Reviewers & Evaluators)
        ======================================================================== -->
-  <div id="portfolioTourBanner" class="no-print" style="background:linear-gradient(135deg, #0F172A, #1E293B); color:#F8FAFC; border-bottom:3px solid var(--primary-bg); padding:0.85rem 1.25rem;">
-    <div style="max-width:1280px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-      <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:320px;">
-        <span style="font-size:1.75rem; line-height:1;">👋</span>
-        <div style="font-size:0.98rem; line-height:1.5;">
+  <div id="portfolioTourBanner" class="no-print portfolio-tour-banner">
+    <div class="portfolio-tour-inner">
+      <div class="tour-banner-intro">
+        <span class="tour-icon">👋</span>
+        <div class="tour-text">
           <strong>สำหรับผู้เยี่ยมชม Portfolio:</strong> สามารถกดปุ่ม <strong>[⚡ โหลดเคสจำลอง]</strong> เพื่อทดสอบผลลัพธ์การคัดกรอง หรือสลับเป็น <strong>[👨‍⚕️ โหมดเจ้าหน้าที่]</strong> เพื่อดูระบบ Telemetry, Stroke Latency &amp; EMR Export ได้ทันที
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
-        <button type="button" class="btn" style="background:linear-gradient(135deg, #2563EB, #1D4ED8); color:#FFF; font-weight:800; font-size:0.92rem; padding:0.45rem 1rem; border:1px solid #3B82F6; box-shadow:0 2px 6px rgba(37,99,235,0.4); display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;" onclick="scrollToQuickPresets()" title="เลื่อนหน้าจอลงไปที่ส่วน Quick Clinical Scenario Presets ทันที">
-          <span>⚡ โหลดเคสจำลอง (ไปที่ Presets ⬇)</span>
+      <div class="tour-banner-actions">
+        <button type="button" class="btn" style="background:linear-gradient(135deg, #2563EB, #1D4ED8); color:#FFF; font-weight:800; border:1px solid #3B82F6; box-shadow:0 2px 6px rgba(37,99,235,0.4); display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;" onclick="scrollToQuickPresets()" title="เลื่อนหน้าจอลงไปที่ส่วน Quick Clinical Scenario Presets ทันที">
+          <span>⚡ เคสจำลอง ⬇</span>
         </button>
-        <button type="button" class="btn" id="tourModeSwitchBtn" style="background:#059669; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#10B981;" onclick="toggleTourViewMode()">
-          👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่
+        <button type="button" class="btn" id="tourModeSwitchBtn" style="background:#059669; color:#FFF; font-weight:800; border-color:#10B981;" onclick="toggleTourViewMode()" title="สลับโหมดการแสดงผล">
+          👨‍⚕️ สลับโหมด
         </button>
-        <button type="button" class="btn" style="background:#475569; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#64748B;" onclick="openSystemArchitectureModal()">
-          📐 สถาปัตยกรรมระบบ
+        <button type="button" class="btn" style="background:#475569; color:#FFF; font-weight:800; border-color:#64748B;" onclick="openSystemArchitectureModal()" title="ดูสถาปัตยกรรมระบบและแนวคิดการตัดสินใจ">
+          📐 สถาปัตยกรรม
         </button>
-        <a href="https://github.com/natchlimar-droid/Project-Alzhimer" target="_blank" rel="noopener noreferrer" class="btn" style="background:#0F172A; color:#F8FAFC; font-weight:800; font-size:0.9rem; padding:0.45rem 0.85rem; border:1px solid #475569; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;" title="เปิดดูซอร์สโค้ดและเอกสาร README บน GitHub">
+        <a href="https://github.com/natchlimar-droid/Project-Alzhimer" target="_blank" rel="noopener noreferrer" class="btn" style="background:#0F172A; color:#F8FAFC; font-weight:800; border:1px solid #475569; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;" title="เปิดดูซอร์สโค้ดและเอกสาร README บน GitHub">
           <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="vertical-align:text-bottom;">
             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
           </svg>
           <span>GitHub</span>
         </a>
-        <button type="button" style="background:transparent; border:none; color:#94A3B8; font-size:1.3rem; cursor:pointer; padding:0.2rem 0.5rem;" onclick="dismissTourBanner()" title="ปิดแถบแนะนำ">
+        <button type="button" class="tour-close-btn" onclick="dismissTourBanner()" title="ปิดแถบแนะนำสำหรับผู้เยี่ยมชม" aria-label="ปิดแถบแนะนำ">
           ✕
         </button>
       </div>
@@ -4445,12 +4592,14 @@
       document.getElementById("fontSizeBtn").textContent = `🔠 ขนาดอักษร: ${appState.fontSizePx}px`;
     }
 
-    /* Dual Persona View Mode Switcher */
-    function setViewMode(mode) {
+    /* Dual Persona View Mode Switcher (Supports silent initial render) */
+    function setViewMode(mode, showNotification = true) {
       appState.viewMode = mode;
       const btnClinician = document.getElementById("btnModeClinician");
       const btnPatient = document.getElementById("btnModePatient");
       const hint = document.getElementById("viewModeHintText");
+      const tourSwitchBtn = document.getElementById("tourModeSwitchBtn");
+
       if (mode === "PATIENT") {
         document.body.classList.add("patient-mode");
         if (btnPatient) {
@@ -4464,7 +4613,13 @@
         if (hint) {
           hint.innerHTML = "🟢 <strong>โหมดผู้สูงอายุ / ผู้รับการประเมิน:</strong> ซ่อนศัพท์เทคนิคและตัวเลข Telemetry เพื่อลดความเครียด (Test Anxiety) ตัวหนังสือและปุ่มขนาดใหญ่พิเศษ";
         }
-        showToast("สลับเข้าสู่โหมดผู้สูงอายุ (ซ่อน Telemetry เพื่อลดความเครียด)", "info");
+        if (tourSwitchBtn) {
+          tourSwitchBtn.innerHTML = "👨‍⚕️ สลับโหมด";
+          tourSwitchBtn.title = "สลับเป็นโหมดบุคลากรทางการแพทย์";
+        }
+        if (showNotification) {
+          showToast("สลับเข้าสู่โหมดผู้สูงอายุ (ซ่อน Telemetry เพื่อลดความเครียด)", "info");
+        }
       } else {
         document.body.classList.remove("patient-mode");
         if (btnClinician) {
@@ -4478,11 +4633,13 @@
         if (hint) {
           hint.innerHTML = "👨‍⚕️ <strong>โหมดเจ้าหน้าที่:</strong> แสดงข้อมูล Telemetry ครบถ้วน, ผลแล็บ LIS, Audit Trail, และระบบส่งต่อ EMR";
         }
-        showToast("สลับเข้าสู่โหมดบุคลากรทางการแพทย์ (แสดงข้อมูลครบถ้วน)", "info");
-      }
-      const tourSwitchBtn = document.getElementById("tourModeSwitchBtn");
-      if (tourSwitchBtn) {
-        tourSwitchBtn.innerHTML = (mode === "PATIENT") ? "👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่" : "👤 สลับเป็นโหมดประชาชน";
+        if (tourSwitchBtn) {
+          tourSwitchBtn.innerHTML = "👤 สลับโหมด";
+          tourSwitchBtn.title = "สลับเป็นโหมดผู้สูงอายุ / ผู้รับการประเมิน";
+        }
+        if (showNotification) {
+          showToast("สลับเข้าสู่โหมดบุคลากรทางการแพทย์ (แสดงข้อมูลครบถ้วน)", "info");
+        }
       }
       recordAuditLog("VIEW_MODE_CHANGED", `Switched interface view mode to: ${mode}`);
     }
@@ -8394,8 +8551,13 @@
        ======================================================================== */
     function dismissTourBanner() {
       const banner = document.getElementById("portfolioTourBanner");
-      if (banner) banner.style.display = "none";
-      showToast("ซ่อนแถบแนะนำสำหรับผู้เยี่ยมชมเรียบร้อย", "info");
+      if (banner) {
+        banner.style.display = "none";
+        try {
+          sessionStorage.setItem("portfolioBannerDismissed", "true");
+        } catch(e) {}
+      }
+      showToast("ซ่อนแถบแนะนำเรียบร้อย (คลิกปุ่มสถาปัตยกรรมระบบเพื่อดูรายละเอียดได้เสมอ)", "info");
     }
 
     function toggleTourViewMode() {
@@ -9293,6 +9455,17 @@
        Initialize App on DOMContentLoaded
        ------------------------------------------------------------------------ */
     window.addEventListener("DOMContentLoaded", () => {
+      // 1. Explicitly enforce Patient mode and sync all hint texts and toggle states
+      setViewMode("PATIENT", false);
+
+      // 2. Check if user previously dismissed the tour banner in this session
+      try {
+        if (sessionStorage.getItem("portfolioBannerDismissed") === "true") {
+          const banner = document.getElementById("portfolioTourBanner");
+          if (banner) banner.style.display = "none";
+        }
+      } catch(e) {}
+
       appState.sessionId = generateSessionId();
       const sesEl = document.getElementById("currentSessionIdInput");
       if (sesEl) sesEl.value = appState.sessionId;
