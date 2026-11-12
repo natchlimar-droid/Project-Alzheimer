@@ -1298,6 +1298,9 @@
         font-size: 0.8rem;
         min-height: 36px;
       }
+      .toolbar-text-desktop {
+        display: none !important;
+      }
       .view-mode-bar {
         padding: 0.4rem 0.65rem;
       }
@@ -1644,16 +1647,16 @@
         </button>
         <button type="button" class="btn" id="themeToggleBtn" onclick="toggleContrastTheme()"
           aria-label="สลับโหมดสีความคมชัดสูง">
-          🌓 โหมดสี: พื้นสว่าง (WCAG AAA)
+          🌓 <span class="toolbar-text-desktop">โหมดสี: </span>พื้นสว่าง<span class="toolbar-text-desktop"> (WCAG AAA)</span>
         </button>
         <button type="button" class="btn" onclick="cycleFontSize()" id="fontSizeBtn" aria-label="ปรับขนาดตัวอักษร">
-          🔠 ขนาดอักษร: 19px
+          🔠 <span class="toolbar-text-desktop">ขนาดอักษร: </span>19px
         </button>
         <button type="button" class="btn clinician-only" onclick="runAndShowSelfTests()" aria-label="ตรวจสอบความถูกต้องของอัลกอริทึม">
-          🧪 ผลทดสอบระบบ (Unit Tests)
+          🧪 <span class="toolbar-text-desktop">ผลทดสอบระบบ </span>(Tests)
         </button>
         <button type="button" class="btn clinician-only" onclick="resetAllApplicationDataAndCache()" aria-label="รีเซ็ตข้อมูลและล้างแคช">
-          🧹 รีเซ็ตระบบ / ล้างแคช
+          🧹 รีเซ็ต<span class="toolbar-text-desktop">ระบบ / ล้างแคช</span>
         </button>
       </div>
     </div>
@@ -1964,10 +1967,23 @@
           <div id="freeRecallStatusHint" style="font-size:0.95rem; font-weight:700; color:var(--text-secondary); text-align:center;">
             (แตะเลือก 0, 1, 2 หรือ 3 คำตามที่นึกได้จริง)
           </div>
+
+          <button type="button" class="btn btn-primary" id="confirmFreeRecallBtn" onclick="confirmWizFreeRecallLock()" style="display:none; width:100%; min-height:52px; font-weight:800; font-size:1.15rem; border-radius:12px; margin-top:0.85rem; box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+            🔒 ยืนยันผลการนึกคำเอง และเปิดตัวเลือกขั้นที่ 2 ➔
+          </button>
+
+          <div id="freeRecallLockedBanner" style="display:none; margin-top:0.85rem; padding:0.65rem 1rem; border-radius:10px; background:var(--status-low-surface); border:2px solid var(--status-low-border); align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+            <div style="font-weight:800; color:var(--status-low-text); font-size:1.05rem;" id="lockedRecallSummaryText">
+              🔒 บันทึกและล็อคคะแนน Free Recall แล้ว: 3/3 คำ
+            </div>
+            <button type="button" class="btn" onclick="unlockWizFreeRecall()" style="padding:0.35rem 0.75rem; font-size:0.88rem; min-height:38px; border-color:var(--border-subtle); background:var(--bg-card); color:var(--text-primary); font-weight:700;">
+              🔓 ปลดล็อกแก้ไข
+            </button>
+          </div>
         </div>
 
-        <!-- Step 3.3B: Cued Recognition (Choices Grid) -->
-        <div style="margin-bottom:1.5rem;">
+        <!-- Step 3.3B: Cued Recognition (Choices Grid) — Hidden until Free Recall is confirmed -->
+        <div id="wizCuedRecognitionSection" style="display:none; margin-bottom:1.5rem;">
           <div style="font-size:1.25rem; font-weight:900; color:var(--text-primary); margin-bottom:0.35rem;">
             🔍 ขั้นที่ 2: แตะเลือกคำศัพท์จากรายการด้านล่าง (Cued Recognition)
           </div>
@@ -2021,7 +2037,7 @@
       </div>
 
       <!-- Step 0 Progressive Disclosure Stepper Bar -->
-      <div class="step0-progressive-stepper clinician-only" style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
+      <div class="step0-progressive-stepper" id="step0ProgressiveStepper" style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
         <button type="button" class="btn step0-tab-btn active btn-primary" id="step0TabBtn-1" onclick="switchStep0Tab(1)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
           <span>👤 1. ข้อมูลผู้ป่วย &amp; ความพร้อม</span>
         </button>
@@ -2105,7 +2121,7 @@
         <div id="preTestValidityContainer" style="margin-top:1rem; display:flex; flex-direction:column; gap:0.6rem;"></div>
         <div id="preTestValidityAlert" style="margin-top:0.75rem; font-weight:800; display:none; padding:0.75rem; border-radius:8px; background:var(--status-high-surface); color:var(--status-high-text); border:2px solid var(--status-high-border);" role="alert"></div>
       </div>
-        <div class="clinician-only" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
+        <div class="step0-nav-bar" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
           <button type="button" class="btn" onclick="proceedFromGatekeeper()" style="font-weight:700;">
             ข้ามไปทำแบบประเมิน AD8 ทันที ➔
           </button>
@@ -2155,7 +2171,7 @@
         <div id="acbMedicationsContainer" style="margin-top:1rem;"></div>
         <div id="acbStatusBanner" style="margin-top:0.75rem; font-weight:800;" role="status" aria-live="polite"></div>
       </div>
-        <div class="clinician-only" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
+        <div class="step0-nav-bar" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
           <button type="button" class="btn" onclick="switchStep0Tab(1)" style="font-weight:700;">
             ⬅️ ย้อนกลับไป ข้อมูลผู้ป่วย
           </button>
@@ -2220,7 +2236,7 @@
           </button>
         </div>
       </div>
-        <div class="clinician-only" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
+        <div class="step0-nav-bar" style="display:flex; justify-content:space-between; gap:12px; margin-top:1.5rem; flex-wrap:wrap;">
           <button type="button" class="btn" onclick="switchStep0Tab(2)" style="font-weight:700;">
             ⬅️ ย้อนกลับไป 2Q &amp; ยา ACB
           </button>
@@ -4481,14 +4497,44 @@
           delayedRecallScore,
           cdtResult,
           cuedRecognitionScore,
+          memoryMechanismType: "INCOMPLETE",
+          differentialDiagnosisTh: "ข้อมูลแบบประเมิน Mini-Cog ยังไม่ครบถ้วน",
           interpretation: "แบบประเมิน Mini-Cog ไม่สมบูรณ์ (ยังไม่ได้ระบุ Free Recall หรือผลวาดนาฬิกา)"
         };
       }
+      // Borson Gold Standard: delayedRecallScore strictly represents Step 1 (Free Recall: 0–3 pts)
       const clampedRecall = Math.max(0, Math.min(3, Math.round(delayedRecallScore)));
       const cdtPoints = cdtResult === "NORMAL" ? 2 : 0;
+      // Borson Scoring: Free Recall (0-3) + CDT (0 or 2) = Total 0–5 (NEVER add cued recognition to total)
       const totalScore = clampedRecall + cdtPoints;
-      // Borson criteria: totalScore < 3 indicates cognitive impairment
+      // Borson criteria: totalScore < 3 indicates cognitive impairment (Screen-Positive)
       const isPositive = totalScore < 3;
+
+      // Differential Memory Mechanism Analysis (Step 1 Free Recall vs Step 2 Cued Recognition)
+      let memoryMechanismType = "CONCORDANT_NORMAL";
+      let differentialDiagnosisTh = "";
+      const validCued = (cuedRecognitionScore !== undefined && cuedRecognitionScore !== null)
+        ? Math.max(0, Math.min(3, Math.round(cuedRecognitionScore)))
+        : null;
+
+      if (validCued !== null) {
+        if (clampedRecall <= 1 && validCued >= 2) {
+          memoryMechanismType = "RETRIEVAL_DEFICIT";
+          differentialDiagnosisTh = `ภาวะดึงข้อมูลบกพร่อง (Retrieval Deficit Pattern: Free Recall ${clampedRecall}/3 คำ, Cued Recognition ${validCued}/3 คำ) — บ่งชี้ว่าเนื้อเยื่อสมองยังบันทึกรหัสความจำได้ (Storage Intact) แต่มีอุปสรรคในการค้นคืนข้อมูลหรือสมาธิ ซึ่งมักสัมพันธ์กับภาวะซึมเศร้าแฝง, ผลข้างเคียงจากยาต้านโคลิเนอร์จิก (ACB), ภาวะเครียด/นอนไม่หลับ หรือพยาธิสภาพของหลอดเลือดสมองส่วนลึก (Subcortical/Vascular)`;
+        } else if (clampedRecall <= 1 && validCued <= 1) {
+          memoryMechanismType = "ENCODING_STORAGE_DEFICIT";
+          differentialDiagnosisTh = `ภาวะบันทึกข้อมูลบกพร่อง (Encoding / Storage Deficit Pattern: Free Recall ${clampedRecall}/3 คำ, Cued Recognition ${validCued}/3 คำ) — บกพร่องทั้งแบบนึกเองและแบบมีตัวช่วย บ่งชี้ความผิดปกติในการเข้ารหัสและบันทึกความจำระยะสั้นของสมองส่วนฮิปโปแคมปัส (Hippocampal Amnestic Pattern) ซึ่งเป็นสัญญาณเตือนจำเพาะของโรคอัลไซเมอร์ระยะแรก (Amnestic MCI / Early AD)`;
+        } else if (clampedRecall > validCued) {
+          memoryMechanismType = "RECOGNITION_PARADOX";
+          differentialDiagnosisTh = `ความขัดแย้งของผลความจำ (Recognition Paradox: Free Recall ${clampedRecall}/3 คำ > Cued Recognition ${validCued}/3 คำ) — นึกคำเองได้มากกว่าการชี้เลือกตัวช่วย อาจเกิดจากความสับสนในตัวเลือกลวง (Distractor Interference) หรือความคลาดเคลื่อนในการกด ระบบคงคะแนน Free Recall (${clampedRecall}/3) เป็นเกณฑ์หลักตามมาตรฐานสากล`;
+        } else {
+          memoryMechanismType = "CONCORDANT_NORMAL";
+          differentialDiagnosisTh = `ความจำระยะสั้นสมบูรณ์ดี (Concordant Memory: Free Recall ${clampedRecall}/3 คำ, Recognition ${validCued}/3 คำ)`;
+        }
+      } else {
+        memoryMechanismType = clampedRecall >= 2 ? "CONCORDANT_NORMAL" : (clampedRecall === 0 ? "UNSPECIFIED_MEMORY_IMPAIRMENT" : "MILD_MEMORY_DECLINE");
+        differentialDiagnosisTh = clampedRecall >= 2 ? "ความจำระยะสั้นอยู่ในเกณฑ์ปกติ" : "พบความบกพร่องในการทบทวนความจำระยะสั้น (ยังไม่ได้ทำ Cued Recognition)";
+      }
 
       let interpretation = "";
       if (clampedRecall === 0) {
@@ -4503,11 +4549,24 @@
         interpretation = "ผลการประเมิน Mini-Cog อยู่ในเกณฑ์ปกติสมบูรณ์ (5/5 คะแนน)";
       }
 
-      if (cuedRecognitionScore !== undefined && cuedRecognitionScore !== null && cuedRecognitionScore > clampedRecall) {
-        interpretation += ` [หมายเหตุเสริม: Recognition ได้ ${cuedRecognitionScore}/3 คำ ดีกว่า Free Recall บ่งชี้ปัญหาการค้นคืนข้อมูล (Retrieval Deficit)]`;
+      if (memoryMechanismType === "RETRIEVAL_DEFICIT") {
+        interpretation += ` [หมายเหตุเสริม: Recognition ได้ ${validCued}/3 คำ ดีกว่า Free Recall บ่งชี้ปัญหาการค้นคืนข้อมูล (Retrieval Deficit)]`;
+      } else if (memoryMechanismType === "ENCODING_STORAGE_DEFICIT") {
+        interpretation += ` [หมายเหตุเสริม: บกพร่องทั้ง Free Recall และ Recognition บ่งชี้ Storage / Encoding Deficit ของสมองฮิปโปแคมปัส]`;
+      } else if (memoryMechanismType === "RECOGNITION_PARADOX") {
+        interpretation += ` [หมายเหตุเสริม: Recognition Paradox — คง Free Recall ${clampedRecall}/3 คะแนน]`;
       }
 
-      return { totalScore, isPositive, delayedRecallScore: clampedRecall, cdtResult, cuedRecognitionScore, interpretation };
+      return {
+        totalScore,
+        isPositive,
+        delayedRecallScore: clampedRecall,
+        cdtResult,
+        cuedRecognitionScore: validCued,
+        memoryMechanismType,
+        differentialDiagnosisTh,
+        interpretation
+      };
     }
 
     function evaluateVisualMotorTaskExperimental(timeMs, errors, age, yearsOfEducation, baselineTouchLatencyMs) {
@@ -5553,6 +5612,9 @@
       const legacyStep5 = document.getElementById("step-5");
       if (legacyStep5) legacyStep5.classList.remove("active");
 
+      if (stepIndex === 0) {
+        switchStep0Tab(1);
+      }
       if (stepIndex === 2 && !appState.wordsLocked) {
         startFiveSecondWordLock();
       }
@@ -6366,6 +6428,17 @@
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.6rem;">
             ${g.list.map(med => {
               const selected = appState.acbMedicationIds.includes(med.id);
+              const trade = (med.tradeNamesTh || med.tradeName || med.brandName || "").trim();
+              const category = (med.categoryTh || med.category || "").trim();
+              const commonUse = (med.commonUseTh || med.commonUse || "").trim();
+              let descParts = [];
+              if (trade && trade !== "undefined") descParts.push(`<strong style="color:var(--text-primary);">${trade}</strong>`);
+              if (category && category !== "undefined") descParts.push(`<em>${category}</em>`);
+              let descHtml = descParts.join(" • ");
+              if (commonUse && commonUse !== "undefined") {
+                descHtml += (descHtml ? ` (${commonUse})` : commonUse);
+              }
+              if (!descHtml) descHtml = "ยากลุ่มเสี่ยงต่อการรู้คิด (Anticholinergic Burden)";
               return `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; padding:0.6rem; border-radius:6px; border:2px solid ${selected ? "var(--status-high-border)" : "var(--border-strong)"}; background:${selected ? "var(--status-high-surface)" : "var(--bg-card)"};">
                   <div style="flex:1;">
@@ -6374,7 +6447,7 @@
                       ${med.genericName}
                     </div>
                     <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.15rem;">
-                      ${med.tradeNamesTh ? `<strong style="color:var(--text-primary);">${med.tradeNamesTh}</strong> • ` : ""}${med.categoryTh ? `<em>${med.categoryTh}</em>` : ""}${med.commonUseTh ? ` (${med.commonUseTh})` : ""}
+                      ${descHtml}
                     </div>
                   </div>
                   <button type="button" class="btn ${selected ? "btn-primary" : ""}" style="min-width:85px; font-size:0.85rem; padding:0.35rem 0.6rem;" onclick="toggleAcbMedication('${med.id}')">
@@ -10704,6 +10777,7 @@
       renderTrailBoard();
       updateTrailTelemetryUI();
       clearAllLabInputs();
+      switchStep0Tab(1);
       updateNetworkStatusUI();
       window.addEventListener("online", updateNetworkStatusUI);
       window.addEventListener("offline", updateNetworkStatusUI);
@@ -11188,6 +11262,7 @@
       for (let s = 0; s <= 3; s++) {
         const btn = document.getElementById(`freeRecallBtn_${s}`);
         if (btn) {
+          btn.disabled = false;
           btn.classList.remove("selected");
           btn.style.backgroundColor = "";
           btn.style.color = "";
@@ -11199,6 +11274,13 @@
         freeHint.textContent = "(แตะเลือก 0, 1, 2 หรือ 3 คำตามที่นึกได้จริง)";
         freeHint.style.color = "var(--text-secondary)";
       }
+
+      const confirmBtn = document.getElementById("confirmFreeRecallBtn");
+      if (confirmBtn) confirmBtn.style.display = "none";
+      const lockBanner = document.getElementById("freeRecallLockedBanner");
+      if (lockBanner) lockBanner.style.display = "none";
+      const cuedSec = document.getElementById("wizCuedRecognitionSection");
+      if (cuedSec) cuedSec.style.display = "none";
 
       const countBadge = document.getElementById("wizRecallCountBadge");
       if (countBadge) {
@@ -11229,25 +11311,90 @@
         }
       }
 
+      const confirmBtn = document.getElementById("confirmFreeRecallBtn");
+      if (confirmBtn) {
+        confirmBtn.style.display = "block";
+        confirmBtn.innerHTML = `🔒 ยืนยันผลการนึกคำเอง (${score}/3 คำ) และเปิดตัวเลือกขั้นที่ 2 ➔`;
+      }
+
       const hint = document.getElementById("freeRecallStatusHint");
       if (hint) {
         if (score === 3) {
-          hint.textContent = "✅ จำได้เองครบทั้ง 3 คำ (Free Recall เต็ม 3/3)!";
+          hint.textContent = "✅ จำได้เองครบทั้ง 3 คำ (Free Recall เต็ม 3/3)! โปรดกดปุ่มยืนยันด้านล่าง";
           hint.style.color = "var(--status-low-text)";
-          // Auto-select the 3 target words in choices grid if not already selected
-          const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
-          if (wordSet && wordSet.words) {
-            wordSet.words.forEach(w => {
-              if (!selectedWizRecallWords.includes(w) && selectedWizRecallWords.length < 3) {
-                toggleWizWordChoice(w);
-              }
-            });
-          }
         } else {
-          hint.textContent = `บันทึกแล้ว: จำได้เอง ${score} คำ (ให้แตะเลือกยืนยันในขั้นที่ 2 ด้านล่างได้เลยค่ะ)`;
+          hint.textContent = `ระบุแล้ว: จำได้เอง ${score}/3 คำ • โปรดกดปุ่มยืนยันด้านล่างเพื่อเปิดตัวเลือกขั้นที่ 2`;
           hint.style.color = "var(--text-primary)";
         }
       }
+    }
+
+    function confirmWizFreeRecallLock() {
+      if (appState.freeRecallScore === null || appState.freeRecallScore === undefined) {
+        showToast("กรุณาเลือกจำนวนคำที่นึกได้เอง (0-3 คำ) ก่อนกดยืนยันค่ะ", "warning");
+        return;
+      }
+      // Lock Free Recall buttons to prevent retroactive tampering
+      for (let s = 0; s <= 3; s++) {
+        const btn = document.getElementById(`freeRecallBtn_${s}`);
+        if (btn) btn.disabled = true;
+      }
+      const confirmBtn = document.getElementById("confirmFreeRecallBtn");
+      if (confirmBtn) confirmBtn.style.display = "none";
+
+      const lockBanner = document.getElementById("freeRecallLockedBanner");
+      const summaryText = document.getElementById("lockedRecallSummaryText");
+      if (lockBanner) lockBanner.style.display = "flex";
+      if (summaryText) summaryText.textContent = `🔒 บันทึกและล็อคคะแนน Free Recall แล้ว: ${appState.freeRecallScore}/3 คำ`;
+
+      // Open Cued Recognition choices section
+      const cuedSec = document.getElementById("wizCuedRecognitionSection");
+      if (cuedSec) cuedSec.style.display = "block";
+
+      populateWizRecallChoicesGrid();
+
+      // If user got 3/3 free recall, auto-select the 3 targets for convenience
+      if (appState.freeRecallScore === 3) {
+        const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
+        if (wordSet && wordSet.words) {
+          selectedWizRecallWords = [];
+          wordSet.words.forEach(w => {
+            toggleWizWordChoice(w);
+          });
+        }
+      }
+
+      scrollWizCardIntoView("wizCuedRecognitionSection");
+      showToast("บันทึกคะแนน Free Recall เรียบร้อย เปิดตัวเลือกขั้นที่ 2 แล้วค่ะ", "success");
+    }
+
+    function unlockWizFreeRecall() {
+      // Re-enable Free Recall buttons
+      for (let s = 0; s <= 3; s++) {
+        const btn = document.getElementById(`freeRecallBtn_${s}`);
+        if (btn) btn.disabled = false;
+      }
+      const lockBanner = document.getElementById("freeRecallLockedBanner");
+      if (lockBanner) lockBanner.style.display = "none";
+
+      const cuedSec = document.getElementById("wizCuedRecognitionSection");
+      if (cuedSec) cuedSec.style.display = "none";
+
+      const confirmBtn = document.getElementById("confirmFreeRecallBtn");
+      if (confirmBtn) {
+        confirmBtn.style.display = "block";
+        confirmBtn.innerHTML = `🔒 ยืนยันผลการนึกคำเอง (${appState.freeRecallScore ?? 0}/3 คำ) และเปิดตัวเลือกขั้นที่ 2 ➔`;
+      }
+
+      // Reset cued selections upon unlock
+      selectedWizRecallWords = [];
+      const countBadge = document.getElementById("wizRecallCountBadge");
+      if (countBadge) {
+        countBadge.textContent = "(เลือกแล้ว 0 จาก 3 คำ)";
+        countBadge.style.color = "var(--text-secondary)";
+      }
+
+      showToast("ปลดล็อคแล้ว สามารถแก้ไขจำนวนคำที่นึกได้เองค่ะ", "info");
     }
 
     function toggleWizWordChoice(word) {
@@ -11364,14 +11511,18 @@
         
         // Safely extract risk tier from payload output or fallback to clinical rules
         let tier = "LOW";
-        if (lastAssessmentPayload && lastAssessmentPayload.output && lastAssessmentPayload.output.riskTier) {
-          tier = lastAssessmentPayload.output.riskTier;
-        } else if (lastAssessmentPayload && lastAssessmentPayload.riskTier) {
-          tier = lastAssessmentPayload.riskTier;
-        } else if (ad8Score >= 4 || freeScore === 0) {
+        const cogAxis = lastAssessmentPayload?.output?.axes?.cognitiveAxis || "";
+        const isDepressed = lastAssessmentPayload?.output?.axes?.affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE";
+        const isRev = (lastAssessmentPayload?.output?.axes?.reversibleAxis || []).length > 0;
+        
+        if (cogAxis.includes("DEMENTIA") || cogAxis === "EMERGENCY_ACUTE_DECLINE" || ad8Score >= 4 || freeScore === 0) {
           tier = "HIGH";
-        } else if (ad8Score >= 2 || freeScore <= 1) {
+        } else if (cogAxis.includes("MCI") || isDepressed || isRev || ad8Score >= 2 || freeScore <= 1) {
           tier = "MODERATE";
+        } else if (lastAssessmentPayload?.output?.riskTier) {
+          tier = lastAssessmentPayload.output.riskTier;
+        } else {
+          tier = "LOW";
         }
 
         let lightColor = "green"; // green, yellow, red
@@ -11495,6 +11646,10 @@
             </div>
           `;
         } else {
+          lightColor = "green";
+          title = "สุขภาพความจำอยู่ในเกณฑ์ปกติสมวัย";
+          subtitle = "ไม่พบสัญญาณความเสี่ยงของภาวะสมองเสื่อมจากการประเมินเบื้องต้น";
+          badgeHtml = '<span style="background:#10B981; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🟢 ความจำสมวัย (เกณฑ์ปกติ)</span>';
           actionBoxHtml = `
             <div style="background:#ECFDF5; border:2px solid #6EE7B7; border-radius:14px; padding:1.25rem; color:#065F46; margin:1.5rem 0; text-align:left;">
               <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">🥗 คำแนะนำการส่งเสริมสุขภาพสมอง:</div>
@@ -11575,6 +11730,7 @@
 
     // Progressive Disclosure subtab switcher for Step 0
     function switchStep0Tab(tabIndex) {
+      if (!tabIndex || tabIndex < 1 || tabIndex > 3) tabIndex = 1;
       for (let i = 1; i <= 3; i++) {
         const p = document.getElementById(`step0SubPanel-${i}`);
         const b = document.getElementById(`step0TabBtn-${i}`);
