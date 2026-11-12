@@ -1230,8 +1230,8 @@
         </div>
       </div>
       <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
-        <button type="button" class="btn" style="background:#2563EB; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#3B82F6;" onclick="scrollToQuickPresets()">
-          ⚡ โหลดเคสจำลอง
+        <button type="button" class="btn" style="background:linear-gradient(135deg, #2563EB, #1D4ED8); color:#FFF; font-weight:800; font-size:0.92rem; padding:0.45rem 1rem; border:1px solid #3B82F6; box-shadow:0 2px 6px rgba(37,99,235,0.4); display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;" onclick="scrollToQuickPresets()" title="เลื่อนหน้าจอลงไปที่ส่วน Quick Clinical Scenario Presets ทันที">
+          <span>⚡ โหลดเคสจำลอง (ไปที่ Presets ⬇)</span>
         </button>
         <button type="button" class="btn" id="tourModeSwitchBtn" style="background:#059669; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#10B981;" onclick="toggleTourViewMode()">
           👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่
@@ -1239,6 +1239,12 @@
         <button type="button" class="btn" style="background:#475569; color:#FFF; font-weight:800; font-size:0.9rem; padding:0.45rem 0.9rem; border-color:#64748B;" onclick="openSystemArchitectureModal()">
           📐 สถาปัตยกรรมระบบ
         </button>
+        <a href="https://github.com/natchlimar-droid/Project-Alzhimer" target="_blank" rel="noopener noreferrer" class="btn" style="background:#0F172A; color:#F8FAFC; font-weight:800; font-size:0.9rem; padding:0.45rem 0.85rem; border:1px solid #475569; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;" title="เปิดดูซอร์สโค้ดและเอกสาร README บน GitHub">
+          <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="vertical-align:text-bottom;">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+          </svg>
+          <span>GitHub</span>
+        </a>
         <button type="button" style="background:transparent; border:none; color:#94A3B8; font-size:1.3rem; cursor:pointer; padding:0.2rem 0.5rem;" onclick="dismissTourBanner()" title="ปิดแถบแนะนำ">
           ✕
         </button>
@@ -1254,6 +1260,12 @@
           Biomarker-Informed Triage System</p>
       </div>
       <div class="a11y-controls" role="toolbar" aria-label="เครื่องมือช่วยการเข้าถึง">
+        <a href="https://github.com/natchlimar-droid/Project-Alzhimer" target="_blank" rel="noopener noreferrer" class="btn" style="font-weight:800; border-color:#334155; background:#1E293B; color:#FFFFFF; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none;" aria-label="ดูซอร์สโค้ดและเอกสารบน GitHub Repository">
+          <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="vertical-align:text-bottom;">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+          </svg>
+          <span>GitHub Repo</span>
+        </a>
         <button type="button" class="btn" onclick="openSystemArchitectureModal()" style="font-weight:800; border-color:var(--primary-bg); background:var(--bg-elevated); color:var(--text-primary);" aria-label="ดูสถาปัตยกรรมระบบและแนวคิดการออกแบบ">
           📐 สถาปัตยกรรมระบบ &amp; แนวคิดการออกแบบ
         </button>
@@ -1294,7 +1306,7 @@
         </div>
       </div>
       <div id="viewModeHintText" style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">
-        👨‍⚕️ <strong>โหมดเจ้าหน้าที่:</strong> แสดงข้อมูล Telemetry ครบถ้วน, ผลแล็บ LIS, Audit Trail, และระบบส่งต่อ EMR
+        🟢 <strong>โหมดผู้สูงอายุ / ผู้รับการประเมิน:</strong> ซ่อนศัพท์เทคนิคและตัวเลข Telemetry เพื่อลดความเครียด (Test Anxiety) ตัวหนังสือและปุ่มขนาดใหญ่พิเศษ
       </div>
     </div>
   </div>
@@ -1490,7 +1502,7 @@
         </div>
       </div>
 
-      <div class="card-box clinician-only" id="clinicalScenarioPresetsCard">
+      <div class="card-box" id="quickScenarioPresetCard" data-alt-id="clinicalScenarioPresetsCard">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
           <div>
             <h3 style="margin-top:0; font-size:1.3rem;">⚡ โหลดเคสจำลองทางคลินิก (Quick Clinical Scenario Presets)</h3>
@@ -3272,6 +3284,17 @@
             </ul>
           </div>
         </div>
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div style="font-size:0.92rem; color:var(--text-secondary);">
+            💻 ซอร์สโค้ด, Unit Tests, และเอกสารสถาปัตยกรรมฉบับเต็มถูกเผยแพร่บน GitHub
+          </div>
+          <a href="https://github.com/natchlimar-droid/Project-Alzhimer" target="_blank" rel="noopener noreferrer" class="btn" style="background:#24292F; color:#FFFFFF; font-weight:800; font-size:0.92rem; padding:0.5rem 1rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.45rem; text-decoration:none;">
+            <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="vertical-align:text-bottom;">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>
+            <span>เปิดดู GitHub Repository ↗</span>
+          </a>
+        </div>
       </div>
     </div>
   </dialog>
@@ -4456,6 +4479,10 @@
           hint.innerHTML = "👨‍⚕️ <strong>โหมดเจ้าหน้าที่:</strong> แสดงข้อมูล Telemetry ครบถ้วน, ผลแล็บ LIS, Audit Trail, และระบบส่งต่อ EMR";
         }
         showToast("สลับเข้าสู่โหมดบุคลากรทางการแพทย์ (แสดงข้อมูลครบถ้วน)", "info");
+      }
+      const tourSwitchBtn = document.getElementById("tourModeSwitchBtn");
+      if (tourSwitchBtn) {
+        tourSwitchBtn.innerHTML = (mode === "PATIENT") ? "👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่" : "👤 สลับเป็นโหมดประชาชน";
       }
       recordAuditLog("VIEW_MODE_CHANGED", `Switched interface view mode to: ${mode}`);
     }
@@ -8384,13 +8411,19 @@
 
     function scrollToQuickPresets() {
       goToStep(0);
-      const presetCard = document.getElementById("quickScenarioPresetCard");
+      const presetCard = document.getElementById("quickScenarioPresetCard") || document.getElementById("clinicalScenarioPresetsCard");
       if (presetCard) {
-        presetCard.scrollIntoView({ behavior: "smooth" });
-        presetCard.style.outline = "4px solid var(--primary-bg)";
-        setTimeout(() => { presetCard.style.outline = "none"; }, 2500);
+        presetCard.style.display = "block";
+        presetCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        presetCard.style.transition = "all 0.4s ease";
+        presetCard.style.outline = "4px solid #2563EB";
+        presetCard.style.boxShadow = "0 0 0 6px rgba(37,99,235,0.3), 0 12px 28px rgba(0,0,0,0.25)";
+        setTimeout(() => { 
+          presetCard.style.outline = "none";
+          presetCard.style.boxShadow = "";
+        }, 3000);
       }
-      showToast("เลือกเคสจำลองทางคลินิก 1 ใน 6 เคสด้านล่างเพื่อทดสอบระบบ", "info");
+      showToast("เลื่อนหน้าจอลงมายังเคสจำลองทางคลินิก (คลิกเลือก 1 ใน 6 เคสเพื่อทดสอบระบบทันที)", "info");
     }
 
     function openSystemArchitectureModal() {
