@@ -2015,17 +2015,6 @@
         </button>
       </div>
 
-      <!-- Patient Mode Friendly Welcome Card -->
-      <div class="card-box patient-only" style="background:var(--status-low-surface); border-color:var(--status-low-border); color:var(--status-low-text); margin-bottom:1.5rem;">
-        <h3 style="margin-top:0; font-size:1.4rem;">👋 ยินดีต้อนรับสู่แบบประเมินสุขภาพความจำ</h3>
-        <p style="margin-bottom:0.75rem; font-size:1.15rem; line-height:1.6;">
-          แบบทดสอบนี้จัดทำขึ้นเพื่อให้ผู้สูงอายุและครอบครัวสามารถตรวจเช็กการทำงานของสมองและความจำเบื้องต้นได้อย่างสบายใจ ค่อยๆ ตอบตามความเป็นจริงทีละข้อนะคะ
-        </p>
-        <div style="font-weight:700; font-size:1.05rem;">
-          💡 หากต้องการฟังเสียงอ่านข้อความ สามารถกดปุ่ม <strong>"🔊 ฟังคำแนะนำ"</strong> เพื่อฟังเสียงอ่านได้ทุกเมื่อค่ะ
-        </div>
-      
-
       <!-- Step 0 Progressive Disclosure Stepper Bar -->
       <div class="step0-progressive-stepper clinician-only" style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
         <button type="button" class="btn step0-tab-btn active btn-primary" id="step0TabBtn-1" onclick="switchStep0Tab(1)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
@@ -2041,9 +2030,7 @@
 
       <!-- Sub-Panel 1: Demographics & Pre-test Validity -->
       <div id="step0SubPanel-1" class="step0-subpanel" style="display:block;">
-        </div>
-
-      <div class="card-box">
+        <div class="card-box">
         <div class="form-grid">
           <div class="field-group">
             <label class="field-label" for="patientNameInput">ชื่อ-นามสกุล (ผู้รับการประเมิน)</label>
