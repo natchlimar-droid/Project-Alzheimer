@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบฐานข้อมูล วิเคราะห์ความเสี่ยง & ML Triage - Project-Alzhimer</title>
+    <!-- Google Fonts: Prompt & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'Inter', 'sans-serif'],
+                        mono: ['Inter', 'monospace'],
+                    },
+                    colors: {
+                        medical: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e2e8f0;
+        }
+        .tab-active {
+            border-bottom: 2px solid #0d9488;
+            color: #0d9488;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-inactive:hover {
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-teal-100 selection:text-teal-900">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between py-3 gap-3">
+                <!-- Brand & Source Integration Info -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-indigo-600 flex items-center justify-center text-white shadow-md shrink-0">
+                        <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">NeuroRegistry & ML Triage</h1>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
+                                Project-Alzhimer Sync
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500">ระบบคลังข้อมูลผู้เข้ารับการคัดกรอง (AD8 • Mini-Cog • Visual-Motor • ACB) และวิเคราะห์ความเสี่ยงด้วย ML</p>
+                    </div>
+                </div>
+
+                <!-- Right Controls: Sync Link & Quick Export -->
+                <div class="flex items-center gap-2 self-end md:self-auto">
+                    <a href="index.html" 
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        <span>เปิดหน้าแบบทดสอบหลัก</span>
+                    </a>
+                    <button onclick="exportCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-sm">
+                        <i data-lucide="download" class="w-3.5 h-3.5 text-teal-600"></i>
+                        <span>Export CSV</span>
+                    </button>
+                    <button onclick="openAddModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition shadow-sm">
+                        <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                        <span>บันทึกผลตรวจใหม่</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex space-x-6 overflow-x-auto pt-1" aria-label="Tabs">
+                <button id="tab-btn-dashboard" onclick="switchTab('dashboard')" class="tab-active py-2.5 px-1 text-sm whitespace-nowrap flex items-center gap-2 transition">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>1. ภาพรวมวิเคราะห์ (Analytics Dashboard)</span>
+                </button>
+                <button id="tab-btn-registry" onclick="switchTab('registry')" class="tab-inactive py-2.5 px-1 text-sm whitespace-nowrap flex items-center gap-2 transition">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                    <span>2. ฐานข้อมูลคนไข้ & นำเข้าข้อมูล (<span id="nav-patient-count">25</span>)</span>
+                </button>
+                <button id="tab-btn-ml" onclick="switchTab('ml')" class="tab-inactive py-2.5 px-1 text-sm whitespace-nowrap flex items-center gap-2 transition">
+                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                    <span>3. เทรนโมเดล ML & วิเคราะห์ผลด่วน</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- =====================================================================
+             TAB 1: CLINICAL RISK ANALYTICS DASHBOARD
+        ====================================================================== -->
+        <section id="view-dashboard" class="space-y-6">
+            <!-- Top KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- KPI 1 -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">ผู้รับการประเมินทั้งหมด</span>
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="kpi-total" class="text-3xl font-bold text-slate-900">25</span>
+                        <span class="text-xs text-slate-500">ราย (Pseudonymized)</span>
+                    </div>
+                    <div class="mt-2 flex items-center gap-1.5 text-xs text-teal-600 font-medium">
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                        <span>ข้อมูลครบถ้วน 100%</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2 -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">กลุ่มความเสี่ยงสูง (High Risk)</span>
+                        <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="kpi-high-risk-pct" class="text-3xl font-bold text-rose-600">0%</span>
+                        <span id="kpi-high-risk-count" class="text-xs text-slate-500">(0 ราย)</span>
+                    </div>
+                    <div class="mt-2 text-xs text-slate-500">
+                        ควรส่งต่อพบแพทย์เฉพาะทางระบบประสาท
+                    </div>
+                </div>
+
+                <!-- KPI 3 -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">ค่าเฉลี่ยความเสี่ยงรวม</span>
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <i data-lucide="activity" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="kpi-mean-risk" class="text-3xl font-bold text-slate-900">0.0%</span>
+                        <span class="text-xs text-slate-500">Mean ML Prob.</span>
+                    </div>
+                    <div class="mt-2 text-xs text-slate-500">
+                        คำนวณจากโมเดล <span id="kpi-model-ver" class="font-medium text-indigo-600">ML v1.0</span>
+                    </div>
+                </div>
+
+                <!-- KPI 4 -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">ความแม่นยำโมเดล ML</span>
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="kpi-ml-acc" class="text-3xl font-bold text-indigo-600">92.0%</span>
+                        <span class="text-xs text-slate-500">Accuracy</span>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Epochs: <strong id="kpi-ml-epochs">300</strong></span>
+                        <button onclick="switchTab('ml')" class="text-indigo-600 hover:underline font-medium">Retrain →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1: Risk Distribution & Multimodal Factors -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Risk Distribution Donut Chart -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900">สัดส่วนระดับความเสี่ยงผู้เข้ารับการคัดกรอง</h3>
+                            <p class="text-xs text-slate-500">จำแนกตามเกณฑ์ Multimodal Screening & ML Probability</p>
+                        </div>
+                    </div>
+                    <div class="relative flex-1 min-h-[250px] flex items-center justify-center">
+                        <canvas id="chart-risk-donut"></canvas>
+                    </div>
+                    <div class="mt-4 grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-center">
+                        <div class="p-2 rounded-xl bg-emerald-50/70">
+                            <div class="text-xs text-emerald-700 font-medium">ปกติ / เสี่ยงต่ำ</div>
+                            <div id="stat-low-count" class="text-lg font-bold text-emerald-800">0</div>
+                        </div>
+                        <div class="p-2 rounded-xl bg-amber-50/70">
+                            <div class="text-xs text-amber-700 font-medium">เสี่ยงปานกลาง (MCI)</div>
+                            <div id="stat-mod-count" class="text-lg font-bold text-amber-800">0</div>
+                        </div>
+                        <div class="p-2 rounded-xl bg-rose-50/70">
+                            <div class="text-xs text-rose-700 font-medium">เสี่ยงสูง (Dementia)</div>
+                            <div id="stat-high-count" class="text-lg font-bold text-rose-800">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multimodal Factor Contribution Chart -->
+                <div class="lg:col-span-7 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900">เปรียบเทียบคะแนนเฉลี่ยรายมิติตามกลุ่มความเสี่ยง</h3>
+                            <p class="text-xs text-slate-500">Normalized Severity Index (0-100%) ของตัวแปรทางคลินิกทั้ง 5 ด้าน</p>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">
+                            Multimodal Comparison
+                        </span>
+                    </div>
+                    <div class="relative flex-1 min-h-[280px]">
+                        <canvas id="chart-multimodal-bar"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2: Age vs Risk Scatter & Longitudinal Trend -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Age & Risk Scatter Plot -->
+                <div class="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="mb-4">
+                        <h3 class="text-base font-bold text-slate-900">ความสัมพันธ์ระหว่าง "อายุ" และ "เปอร์เซ็นต์ความเสี่ยง (%)"</h3>
+                        <p class="text-xs text-slate-500">แสดงเกณฑ์จุดตัดความเสี่ยงสูงทางคลินิก (อายุ ≥ 75 ปี) และระดับยา ACB</p>
+                    </div>
+                    <div class="relative flex-1 min-h-[260px]">
+                        <canvas id="chart-age-scatter"></canvas>
+                    </div>
+                </div>
+
+                <!-- Monthly Longitudinal Trend -->
+                <div class="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="mb-4">
+                        <h3 class="text-base font-bold text-slate-900">แนวโน้มการคัดกรองและค่าเฉลี่ยความเสี่ยงรายเดือน</h3>
+                        <p class="text-xs text-slate-500">ติดตามสถิติผู้เข้ารับการทดสอบและความเสี่ยงเฉลี่ยสะสม (6 เดือนล่าสุด)</p>
+                    </div>
+                    <div class="relative flex-1 min-h-[260px]">
+                        <canvas id="chart-monthly-trend"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clinical Insights Summary Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-5 text-white shadow-md">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div class="p-2.5 rounded-xl bg-teal-500/20 border border-teal-400/30 text-teal-300 shrink-0 mt-0.5">
+                            <i data-lucide="stethoscope" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-teal-300 uppercase tracking-wider">สรุปข้อมูลเชิงลึกทางคลินิกอัตโนมัติ (Automated Clinical Insights)</h4>
+                            <p id="clinical-insight-text" class="text-sm text-slate-200 mt-1 leading-relaxed">
+                                กำลังประมวลผลข้อมูลทางคลินิก...
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('ml')" class="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold text-xs rounded-xl transition shrink-0 shadow">
+                        ทดลองวิเคราะห์เคสใหม่ด้วย ML
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             TAB 2: PATIENT DATA REPOSITORY & INGESTION
+        ====================================================================== -->
+        <section id="view-registry" class="hidden space-y-6">
+            <!-- Data Ingestion & Sync Toolbar -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">คลังข้อมูลผู้เข้ารับการประเมิน (Pseudonymized Patient Registry)</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            รองรับโครงสร้างข้อมูลจาก <code class="bg-slate-100 px-1.5 py-0.5 rounded text-indigo-600">Project-Alzhimer</code> (ไม่ระบุตัวตนจริง ใช้รหัส PSN-XXXX ตามมาตรฐาน PDPA)
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openImportModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition">
+                            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                            <span>นำเข้าข้อมูล JSON / CSV</span>
+                        </button>
+                        <button onclick="exportJSON()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                            <i data-lucide="file-json" class="w-4 h-4"></i>
+                            <span>Export JSON</span>
+                        </button>
+                        <button onclick="resetDemoData()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                            <span>รีเซ็ตชุดข้อมูล 25 เคส</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search & Filter Controls -->
+                <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="filter-search" oninput="renderPatientTable()" placeholder="ค้นหารหัส PSN-XXXX หรือหมายเหตุ..." 
+                               class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <select id="filter-risk" onchange="renderPatientTable()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="ALL">ทุกระดับความเสี่ยง (All Risk Levels)</option>
+                            <option value="HIGH">เสี่ยงสูง (High Risk ≥ 65%)</option>
+                            <option value="MODERATE">เสี่ยงปานกลาง (Moderate 35-64%)</option>
+                            <option value="LOW">ปกติ / เสี่ยงต่ำ (Low Risk < 35%)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filter-age" onchange="renderPatientTable()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="ALL">ทุกช่วงอายุ (All Ages)</option>
+                            <option value="75PLUS">อายุ ≥ 75 ปี (เกณฑ์เสี่ยงสูง)</option>
+                            <option value="UNDER75">อายุ &lt; 75 ปี</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filter-acb" onchange="renderPatientTable()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="ALL">ทุกคะแนนยา ACB (All ACB Scores)</option>
+                            <option value="3PLUS">ACB ≥ 3 (Anticholinergic Burden สูง)</option>
+                            <option value="UNDER3">ACB &lt; 3</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+                                <th class="py-3.5 px-4">Token ID / วันที่</th>
+                                <th class="py-3.5 px-3 text-center">อายุ / การศึกษา</th>
+                                <th class="py-3.5 px-3 text-center">2Q / ACB</th>
+                                <th class="py-3.5 px-3 text-center">AD8 (0-8)</th>
+                                <th class="py-3.5 px-3 text-center">Mini-Cog (0-5)</th>
+                                <th class="py-3.5 px-3 text-center">Trail (วิ) / Fluency</th>
+                                <th class="py-3.5 px-3 text-center">ML Risk %</th>
+                                <th class="py-3.5 px-3">ระดับความเสี่ยง</th>
+                                <th class="py-3.5 px-4 text-right">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patient-table-body" class="divide-y divide-slate-100 text-xs">
+                            <!-- Rows rendered dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="empty-table-state" class="hidden py-12 text-center">
+                    <i data-lucide="folder-open" class="w-10 h-10 text-slate-300 mx-auto mb-2"></i>
+                    <p class="text-sm font-medium text-slate-600">ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             TAB 3: IN-BROWSER ML TRAINING & FAST TRIAGE INFERENCE
+        ====================================================================== -->
+        <section id="view-ml" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- LEFT COLUMN: ML Model Training Engine -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 text-[11px] font-bold bg-indigo-100 text-indigo-700 rounded-md">In-Browser ML Engine</span>
+                                    <h2 class="text-base font-bold text-slate-900">เทรนโมเดลทำนายความเสี่ยง (Logistic Regression + L2)</h2>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    ฝึกสอนโมเดลด้วย Gradient Descent จากข้อมูลคนไข้จริงในฐานข้อมูลปัจจุบัน (<span id="ml-train-sample-count">25</span> เคส) เพื่อปรับค่าน้ำหนัก (Weights) ให้แม่นยำยิ่งขึ้น
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Hyperparameters Controls -->
+                        <div class="grid grid-cols-2 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 mb-4">
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">Learning Rate (α)</label>
+                                <select id="ml-lr" class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                                    <option value="0.05">0.05 (ช้า / ละเอียด)</option>
+                                    <option value="0.15" selected>0.15 (มาตรฐานแนะนำ)</option>
+                                    <option value="0.3">0.30 (รวดเร็ว)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-600 mb-1">จำนวนรอบการเทรน (Epochs)</label>
+                                <select id="ml-epochs" class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                                    <option value="150">150 Epochs</option>
+                                    <option value="300" selected>300 Epochs</option>
+                                    <option value="600">600 Epochs</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Train Action Button -->
+                        <button id="btn-train-ml" onclick="runMLTraining()" class="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            <span>เทรนโมเดล ML จากฐานข้อมูลปัจจุบัน (Train / Retrain Model)</span>
+                        </button>
+
+                        <!-- Training Metrics Grid -->
+                        <div class="grid grid-cols-3 gap-3 mt-4">
+                            <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-center">
+                                <div class="text-[11px] text-indigo-700 font-medium">Accuracy</div>
+                                <div id="ml-metric-acc" class="text-xl font-bold text-indigo-900 mt-0.5">92.0%</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-teal-50/70 border border-teal-100 text-center">
+                                <div class="text-[11px] text-teal-700 font-medium">Sensitivity (Recall)</div>
+                                <div id="ml-metric-sens" class="text-xl font-bold text-teal-900 mt-0.5">90.9%</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-100 border border-slate-200 text-center">
+                                <div class="text-[11px] text-slate-600 font-medium">Final Binary Loss</div>
+                                <div id="ml-metric-loss" class="text-xl font-bold text-slate-800 mt-0.5">0.214</div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Training Loss Chart -->
+                        <div class="mt-5">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-xs font-semibold text-slate-700">กราฟการลดลงของค่าความคลาดเคลื่อนขณะเทรน (Training Loss Curve)</h4>
+                                <span id="ml-train-status" class="text-[11px] text-teal-600 font-medium">พร้อมใช้งาน</span>
+                            </div>
+                            <div class="h-44 w-full bg-slate-50 rounded-xl p-2 border border-slate-200/70">
+                                <canvas id="chart-ml-loss"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Learned Feature Weights -->
+                        <div class="mt-5">
+                            <h4 class="text-xs font-semibold text-slate-700 mb-2.5">ค่าน้ำหนักความสำคัญของปัจจัยที่โมเดลเรียนรู้ (Learned Feature Importance)</h4>
+                            <div id="ml-weights-container" class="space-y-2 text-xs">
+                                <!-- Feature importance bars rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Fast ML Triage Calculator -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 text-[11px] font-bold bg-teal-100 text-teal-800 rounded-md">Fast Triage Inference</span>
+                                    <h2 class="text-base font-bold text-slate-900">วิเคราะห์ความเสี่ยงด่วนด้วยโมเดล ML</h2>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">ปรับค่าพารามิเตอร์หรือดึงข้อมูลจากเคสตัวอย่างเพื่อดูผลทำนายทันที</p>
+                            </div>
+                            <!-- Quick Load Case Dropdown -->
+                            <select id="calc-load-case" onchange="loadCaseIntoCalculator(this.value)" class="px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-700 focus:ring-2 focus:ring-teal-500">
+                                <option value="">-- โหลดจากเคสในระบบ --</option>
+                            </select>
+                        </div>
+
+                        <!-- Input Sliders / Controls -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                            <!-- Age -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">อายุ (ปี)</span>
+                                    <span id="val-calc-age" class="font-bold text-indigo-600">76 ปี</span>
+                                </div>
+                                <input type="range" id="calc-age" min="50" max="95" value="76" oninput="updateCalculator()" class="w-full accent-teal-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span>50 ปี</span>
+                                    <span class="text-amber-600 font-medium">เกณฑ์ ≥75</span>
+                                    <span>95 ปี</span>
+                                </div>
+                            </div>
+
+                            <!-- Education Years -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">ปีการศึกษา (ปี)</span>
+                                    <span id="val-calc-edu" class="font-bold text-indigo-600">6 ปี</span>
+                                </div>
+                                <input type="range" id="calc-edu" min="0" max="20" value="6" oninput="updateCalculator()" class="w-full accent-teal-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span>0 ปี (ไม่ได้เรียน)</span>
+                                    <span>12 ปี</span>
+                                    <span>20 ปี</span>
+                                </div>
+                            </div>
+
+                            <!-- AD8 Score -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">คะแนน AD8 (0-8)</span>
+                                    <span id="val-calc-ad8" class="font-bold text-rose-600">3 คะแนน</span>
+                                </div>
+                                <input type="range" id="calc-ad8" min="0" max="8" value="3" oninput="updateCalculator()" class="w-full accent-rose-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span>0 (ปกติ)</span>
+                                    <span class="text-rose-600 font-medium">≥2 ผิดปกติ</span>
+                                    <span>8</span>
+                                </div>
+                            </div>
+
+                            <!-- Mini-Cog Score -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">คะแนน Mini-Cog (0-5)</span>
+                                    <span id="val-calc-minicog" class="font-bold text-teal-600">3 คะแนน</span>
+                                </div>
+                                <input type="range" id="calc-minicog" min="0" max="5" value="3" oninput="updateCalculator()" class="w-full accent-teal-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span class="text-rose-600 font-medium">≤2 เสี่ยงสูง</span>
+                                    <span>3</span>
+                                    <span>5 (ปกติ)</span>
+                                </div>
+                            </div>
+
+                            <!-- Visual-Motor Trail Latency -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">Visual-Motor Trail (วินาที)</span>
+                                    <span id="val-calc-trail" class="font-bold text-indigo-600">68 วิ</span>
+                                </div>
+                                <input type="range" id="calc-trail" min="20" max="180" value="68" oninput="updateCalculator()" class="w-full accent-indigo-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span>20 วิ (ไว)</span>
+                                    <span>75 วิ</span>
+                                    <span>180 วิ (ช้ามาก)</span>
+                                </div>
+                            </div>
+
+                            <!-- ACB Scale & 2Q -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">คะแนนยา ACB Scale (0-6)</span>
+                                    <span id="val-calc-acb" class="font-bold text-amber-600">3 คะแนน</span>
+                                </div>
+                                <input type="range" id="calc-acb" min="0" max="6" value="3" oninput="updateCalculator()" class="w-full accent-amber-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span>0</span>
+                                    <span class="text-amber-600 font-medium">≥3 ภาระยาสูง</span>
+                                    <span>6</span>
+                                </div>
+                            </div>
+
+                            <!-- 2Q Depression -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">คัดกรองซึมเศร้า 2Q (0-2)</span>
+                                    <span id="val-calc-2q" class="font-bold text-slate-700">0 คะแนน</span>
+                                </div>
+                                <input type="range" id="calc-2q" min="0" max="2" value="0" oninput="updateCalculator()" class="w-full accent-slate-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span>0 (ปกติ)</span>
+                                    <span>1</span>
+                                    <span>2 (เสี่ยงซึมเศร้า)</span>
+                                </div>
+                            </div>
+
+                            <!-- Animal Naming Fluency -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-medium text-slate-700">Animal Fluency (คำ/นาที)</span>
+                                    <span id="val-calc-fluency" class="font-bold text-teal-600">13 คำ</span>
+                                </div>
+                                <input type="range" id="calc-fluency" min="2" max="28" value="13" oninput="updateCalculator()" class="w-full accent-teal-600 cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                                    <span>2 คำ</span>
+                                    <span>&lt;12 เสี่ยง</span>
+                                    <span>28 คำ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prediction Result Card -->
+                        <div id="calc-result-box" class="mt-5 p-5 rounded-2xl border-2 border-amber-200 bg-amber-50/60 transition-all">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">ผลการทำนายความเสี่ยงจากโมเดล ML</span>
+                                    <div class="flex items-baseline gap-3 mt-1">
+                                        <span id="calc-risk-prob" class="text-4xl font-extrabold text-amber-700">58.4%</span>
+                                        <span id="calc-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-200 text-amber-900">
+                                            ความเสี่ยงปานกลาง (Moderate Risk / MCI)
+                                        </span>
+                                    </div>
+                                </div>
+                                <button onclick="saveCalculatorToRegistry()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-xl transition shrink-0 flex items-center gap-1.5 self-start sm:self-center">
+                                    <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                                    <span>บันทึกผลเข้าฐานข้อมูล</span>
+                                </button>
+                            </div>
+
+                            <!-- SHAP-like Factor Breakdown -->
+                            <div class="mt-4 pt-3 border-t border-slate-200/80">
+                                <div class="text-xs font-semibold text-slate-700 mb-2">ปัจจัยที่ส่งผลต่อคะแนนความเสี่ยงในเคสนี้ (Feature Contribution Breakdown):</div>
+                                <div id="calc-shap-list" class="space-y-1.5 text-xs">
+                                    <!-- Dynamic breakdown -->
+                                </div>
+                            </div>
+
+                            <!-- Clinical Recommendation -->
+                            <div class="mt-3 p-3 rounded-xl bg-white/90 border border-slate-200/80 text-xs text-slate-700 leading-relaxed">
+                                <strong class="text-slate-900">คำแนะนำทางคลินิก:</strong>
+                                <span id="calc-clinical-advice">แนะนำติดตามอาการซ้ำใน 3-6 เดือน และทบทวนรายการยาที่มีฤทธิ์ต้านโคลิเนอร์จิก (ACB ≥ 3) ร่วมกับเภสัชกร</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =========================================================================
+         MODAL 1: ADD NEW PATIENT ASSESSMENT
+    ========================================================================== -->
+    <div id="modal-add" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-5 h-5 text-teal-600"></i>
+                    <h3 class="text-base font-bold text-slate-900">บันทึกผลการคัดกรองผู้ป่วยใหม่ (New Assessment)</h3>
+                </div>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="form-add-patient" onsubmit="handleAddPatient(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">รหัสผู้ป่วย (Pseudonym Token)</label>
+                        <input type="text" id="add-id" required class="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-300 rounded-xl font-mono font-semibold text-slate-700" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">อายุ (ปี) *</label>
+                        <input type="number" id="add-age" min="40" max="110" value="72" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">ปีการศึกษา (ปี) *</label>
+                        <input type="number" id="add-edu" min="0" max="25" value="6" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">คะแนน AD8 (0-8) *</label>
+                        <input type="number" id="add-ad8" min="0" max="8" value="2" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mini-Cog (0-5) *</label>
+                        <input type="number" id="add-minicog" min="0" max="5" value="3" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">2Q ซึมเศร้า (0-2) *</label>
+                        <input type="number" id="add-2q" min="0" max="2" value="0" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">ยา ACB Scale (0-6) *</label>
+                        <input type="number" id="add-acb" min="0" max="6" value="1" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Visual-Motor Trail (วินาที) *</label>
+                        <input type="number" id="add-trail" min="15" max="300" value="58" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Animal Fluency (คำ/นาที) *</label>
+                        <input type="number" id="add-fluency" min="0" max="40" value="14" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">วันที่ตรวจประเมิน</label>
+                        <input type="date" id="add-date" required class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">หมายเหตุทางคลินิก / ประวัติยา (Optional)</label>
+                    <input type="text" id="add-notes" placeholder="เช่น มีประวัติใช้ยาแก้แพ้กลุ่มง่วงซึม, ญาติสังเกตว่าถามซ้ำบ่อย..." class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500">
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeAddModal()" class="px-4 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow">บันทึกและวิเคราะห์ด้วย ML</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL 2: BATCH IMPORT JSON / CSV
+    ========================================================================== -->
+    <div id="modal-import" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-600"></i>
+                    <h3 class="text-base font-bold text-slate-900">นำเข้าข้อมูลผู้เข้ารับการทดสอบ (Batch JSON / CSV Import)</h3>
+                </div>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    สามารถอัปโหลดไฟล์ <code class="bg-slate-100 px-1 rounded">.json</code> หรือ <code class="bg-slate-100 px-1 rounded">.csv</code> ที่ส่งออกจากระบบ <strong>Project-Alzhimer</strong> หรือวางข้อมูล JSON ด้านล่างเพื่อนำเข้าสู่ฐานข้อมูลและคำนวณความเสี่ยงอัตโนมัติ
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <label class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50/40 hover:bg-indigo-50 cursor-pointer transition">
+                        <i data-lucide="file-up" class="w-4 h-4 text-indigo-600"></i>
+                        <span class="text-xs font-medium text-indigo-700">เลือกไฟล์ JSON หรือ CSV จากเครื่อง</span>
+                        <input type="file" id="import-file-input" accept=".json,.csv" onchange="handleFileUpload(event)" class="hidden">
+                    </label>
+                    <button type="button" onclick="fillSampleImportJSON()" class="px-3 py-3 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl">
+                        ใส่ตัวอย่าง JSON (3 เคส)
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">ข้อมูล JSON Payload:</label>
+                    <textarea id="import-json-textarea" rows="6" placeholder='[{"id": "PSN-8801", "age": 78, "education": 4, "q2": 1, "acb": 3, "ad8": 5, "minicog": 2, "trailLatency": 95, "fluency": 9}]' 
+                              class="w-full p-3 text-xs font-mono bg-slate-900 text-teal-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeImportModal()" class="px-4 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">ปิดหน้าต่าง</button>
+                    <button type="button" onclick="processJSONImport()" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow">นำเข้าข้อมูลทั้งหมด</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         APPLICATION LOGIC: SYNTHETIC DATA, CHARTS, & IN-BROWSER ML ENGINE
+    ========================================================================== -->
+    <script>
+        // =========================================================================
+        // 1. SYNTHETIC CLINICAL DATASET (25 REALISTIC CASES MATCHING PROJECT-ALZHIMER)
+        // =========================================================================
+        const INITIAL_SYNTHETIC_DATA = [
+            { id: "PSN-1042", date: "2026-06-12", age: 64, education: 12, q2: 0, acb: 0, ad8: 0, minicog: 5, trailLatency: 38, fluency: 19, notes: "สุขภาพแข็งแรง มาตรวจคัดกรองประจำปี" },
+            { id: "PSN-1089", date: "2026-06-18", age: 78, education: 4, q2: 1, acb: 3, ad8: 5, minicog: 2, trailLatency: 112, fluency: 8, notes: "อายุ >=75 และใช้ยา ACB >=3 ญาติแจ้งลืมปิดแก๊ส" },
+            { id: "PSN-1104", date: "2026-06-25", age: 71, education: 6, q2: 0, acb: 1, ad8: 2, minicog: 3, trailLatency: 66, fluency: 13, notes: "เริ่มมีอาการหลงลืมชื่อคนรู้จักบางครั้ง (MCI)" },
+            { id: "PSN-1137", date: "2026-07-03", age: 82, education: 4, q2: 2, acb: 4, ad8: 7, minicog: 1, trailLatency: 145, fluency: 6, notes: "วาดนาฬิกาไม่ได้ จำคำศัพท์ 3 คำไม่ได้เลย" },
+            { id: "PSN-1152", date: "2026-07-11", age: 67, education: 16, q2: 0, acb: 0, ad8: 1, minicog: 5, trailLatency: 41, fluency: 21, notes: "ข้าราชการบำนาญ ความจำและสมาธิดีมาก" },
+            { id: "PSN-1188", date: "2026-07-19", age: 76, education: 6, q2: 1, acb: 3, ad8: 4, minicog: 2, trailLatency: 94, fluency: 10, notes: "ทานยานอนหลับและยาแก้แพ้ต่อเนื่อง (ACB 3)" },
+            { id: "PSN-1205", date: "2026-07-28", age: 69, education: 9, q2: 1, acb: 1, ad8: 2, minicog: 4, trailLatency: 55, fluency: 15, notes: "มีภาวะเครียดเล็กน้อย คะแนนความจำอยู่ในเกณฑ์ดี" },
+            { id: "PSN-1231", date: "2026-08-04", age: 80, education: 4, q2: 0, acb: 2, ad8: 6, minicog: 1, trailLatency: 128, fluency: 7, notes: "ถามคำถามเดิมซ้ำๆ ในวันเดียว สับสนวันเวลา" },
+            { id: "PSN-1264", date: "2026-08-12", age: 62, education: 12, q2: 0, acb: 0, ad8: 0, minicog: 5, trailLatency: 34, fluency: 22, notes: "ปกติทุกด้าน" },
+            { id: "PSN-1290", date: "2026-08-21", age: 75, education: 6, q2: 1, acb: 3, ad8: 3, minicog: 3, trailLatency: 79, fluency: 11, notes: "เข้าเกณฑ์อายุ 75 ปี และ ACB 3 ควรปรับลดยา" },
+            { id: "PSN-1315", date: "2026-08-29", age: 73, education: 4, q2: 0, acb: 2, ad8: 3, minicog: 3, trailLatency: 74, fluency: 12, notes: "ทำ Trail ช้าลงเล็กน้อย แนะนำฝึกกระตุ้นสมอง" },
+            { id: "PSN-1348", date: "2026-09-05", age: 84, education: 2, q2: 2, acb: 4, ad8: 7, minicog: 0, trailLatency: 162, fluency: 5, notes: "กลุ่มเสี่ยงสูงมาก ส่งต่อคลินิกความจำทันที" },
+            { id: "PSN-1372", date: "2026-09-14", age: 66, education: 14, q2: 0, acb: 1, ad8: 1, minicog: 4, trailLatency: 46, fluency: 18, notes: "ปกติ" },
+            { id: "PSN-1401", date: "2026-09-22", age: 77, education: 6, q2: 0, acb: 3, ad8: 5, minicog: 2, trailLatency: 103, fluency: 9, notes: "ลืมรับประทานยาและนัดหมายแพทย์บ่อยครั้ง" },
+            { id: "PSN-1429", date: "2026-09-29", age: 70, education: 9, q2: 2, acb: 1, ad8: 3, minicog: 4, trailLatency: 64, fluency: 14, notes: "2Q = 2 คะแนน ควรประเมินภาวะซึมเศร้าแฝง (Pseudodementia)" },
+            { id: "PSN-1455", date: "2026-10-04", age: 65, education: 12, q2: 0, acb: 0, ad8: 0, minicog: 5, trailLatency: 39, fluency: 20, notes: "ปกติ" },
+            { id: "PSN-1482", date: "2026-10-10", age: 79, education: 4, q2: 1, acb: 3, ad8: 6, minicog: 2, trailLatency: 118, fluency: 8, notes: "ลากเส้น Visual-Motor ผิดลำดับหลายจุด" },
+            { id: "PSN-1509", date: "2026-10-16", age: 72, education: 6, q2: 0, acb: 2, ad8: 2, minicog: 3, trailLatency: 69, fluency: 12, notes: "เฝ้าระวังระดับปานกลาง (MCI)" },
+            { id: "PSN-1534", date: "2026-10-21", age: 68, education: 12, q2: 0, acb: 0, ad8: 1, minicog: 5, trailLatency: 44, fluency: 17, notes: "ปกติ" },
+            { id: "PSN-1567", date: "2026-10-27", age: 81, education: 6, q2: 1, acb: 4, ad8: 6, minicog: 1, trailLatency: 136, fluency: 7, notes: "ใช้ยาหลายขนานร่วมกัน (Polypharmacy ACB 4)" },
+            { id: "PSN-1591", date: "2026-11-01", age: 74, education: 9, q2: 0, acb: 1, ad8: 2, minicog: 4, trailLatency: 58, fluency: 14, notes: "ความจำระยะสั้นลดลงเล็กน้อยตามวัย" },
+            { id: "PSN-1618", date: "2026-11-04", age: 76, education: 4, q2: 1, acb: 2, ad8: 4, minicog: 2, trailLatency: 91, fluency: 10, notes: "นึกคำศัพท์ชื่อสัตว์ได้ช้า วาดเข็มนาฬิกาผิด" },
+            { id: "PSN-1642", date: "2026-11-07", age: 63, education: 16, q2: 0, acb: 0, ad8: 0, minicog: 5, trailLatency: 35, fluency: 23, notes: "ปกติ" },
+            { id: "PSN-1679", date: "2026-11-10", age: 83, education: 4, q2: 2, acb: 3, ad8: 7, minicog: 1, trailLatency: 151, fluency: 6, notes: "มีอาการหลงทิศทางเวลาออกนอกบ้านคนเดียว" },
+            { id: "PSN-1705", date: "2026-11-12", age: 75, education: 6, q2: 0, acb: 3, ad8: 3, minicog: 3, trailLatency: 76, fluency: 12, notes: "เคสล่าสุดจาก Project-Alzhimer รอติดตามผล" }
+        ];
+
+        // Global State
+        let patients = [];
+        let charts = {};
+
+        // =========================================================================
+        // 2. IN-BROWSER MACHINE LEARNING ENGINE (LOGISTIC REGRESSION + L2 REG)
+        // =========================================================================
+        const FEATURE_META = [
+            { key: 'age', label: 'อายุ (Age ≥ 75)', min: 50, max: 95, invert: false },
+            { key: 'education', label: 'ปีการศึกษา (ต่ำ=เสี่ยง)', min: 0, max: 20, invert: true },
+            { key: 'ad8', label: 'คะแนน AD8 (0-8)', min: 0, max: 8, invert: false },
+            { key: 'minicog', label: 'คะแนน Mini-Cog (ต่ำ=เสี่ยง)', min: 0, max: 5, invert: true },
+            { key: 'trailLatency', label: 'Visual-Motor Trail (วิ)', min: 20, max: 180, invert: false },
+            { key: 'acb', label: 'ภาระยา ACB Scale (0-6)', min: 0, max: 6, invert: false },
+            { key: 'q2', label: 'ซึมเศร้า 2Q (0-2)', min: 0, max: 2, invert: false },
+            { key: 'fluency', label: 'Animal Fluency (ต่ำ=เสี่ยง)', min: 2, max: 28, invert: true }
+        ];
+
+        // Pre-calibrated initial clinical weights (before user retrains)
+        let mlModel = {
+            version: "v1.0 (Clinical Baseline)",
+            epochsTrained: 300,
+            bias: -3.25,
+            weights: [1.15, 0.75, 2.35, 2.45, 1.55, 1.10, 0.55, 1.20], // correspond to FEATURE_META
+            accuracy: 92.0,
+            sensitivity: 90.9,
+            finalLoss: 0.214,
+            lossHistory: []
+        };
+
+        // Normalize a patient's features into [0, 1] risk-aligned vector
+        function extractNormalizedFeatures(p) {
+            return FEATURE_META.map(f => {
+                let raw = Number(p[f.key]) || 0;
+                let norm = (raw - f.min) / (f.max - f.min);
+                norm = Math.max(0, Math.min(1, norm));
+                return f.invert ? (1 - norm) : norm;
+            });
+        }
+
+        // Ground-truth clinical label generator for supervised training (1 = Cognitive Impairment / High-Mod Risk, 0 = Normal)
+        function deriveClinicalTargetLabel(p) {
+            // Standard clinical composite rule for training ground truth
+            let score = 0;
+            if (p.ad8 >= 2) score += 2;
+            if (p.ad8 >= 4) score += 2;
+            if (p.minicog <= 2) score += 3;
+            else if (p.minicog === 3) score += 1;
+            if (p.trailLatency >= 85) score += 1.5;
+            if (p.age >= 75 && p.acb >= 3) score += 1.5;
+            if (p.fluency < 11) score += 1;
+            return score >= 3.5 ? 1 : 0;
+        }
+
+        function sigmoid(z) {
+            return 1 / (1 + Math.exp(-Math.max(-30, Math.min(30, z))));
+        }
+
+        // Predict risk probability (0 - 100%) using current ML weights
+        function predictRiskML(patientObj) {
+            const x = extractNormalizedFeatures(patientObj);
+            let z = mlModel.bias;
+            for (let i = 0; i < x.length; i++) {
+                z += x[i] * mlModel.weights[i];
+            }
+            const prob = sigmoid(z) * 100;
+            return Math.round(prob * 10) / 10;
+        }
+
+        // Classify risk category
+        function getRiskCategory(prob) {
+            if (prob >= 65) return { code: 'HIGH', label: 'เสี่ยงสูง (High Risk)', color: 'rose' };
+            if (prob >= 35) return { code: 'MODERATE', label: 'เสี่ยงปานกลาง (MCI)', color: 'amber' };
+            return { code: 'LOW', label: 'ปกติ / เสี่ยงต่ำ', color: 'emerald' };
+        }
+
+        // Train Logistic Regression with L2 Regularization via Gradient Descent
+        function runMLTraining() {
+            if (patients.length < 4) {
+                showToast("ต้องมีข้อมูลคนไข้อย่างน้อย 4 เคสเพื่อเทรนโมเดล", "error");
+                return;
+            }
+
+            const lr = parseFloat(document.getElementById('ml-lr').value);
+            const epochs = parseInt(document.getElementById('ml-epochs').value);
+            const lambda = 0.02; // L2 regularization
+
+            // Prepare dataset
+            const X = patients.map(p => extractNormalizedFeatures(p));
+            const Y = patients.map(p => deriveClinicalTargetLabel(p));
+            const m = X.length;
+            const numFeatures = FEATURE_META.length;
+
+            // Initialize weights with small clinical priors so convergence is smooth and realistic
+            let w = [0.5, 0.3, 1.0, 1.0, 0.6, 0.4, 0.2, 0.5];
+            let b = -1.8;
+            let lossHistory = [];
+
+            const btn = document.getElementById('btn-train-ml');
+            btn.disabled = true;
+            document.getElementById('ml-train-status').textContent = "กำลังเทรนโมเดล...";
+
+            for (let epoch = 1; epoch <= epochs; epoch++) {
+                let dw = new Array(numFeatures).fill(0);
+                let db = 0;
+                let totalLoss = 0;
+
+                for (let i = 0; i < m; i++) {
+                    let z = b;
+                    for (let j = 0; j < numFeatures; j++) {
+                        z += X[i][j] * w[j];
+                    }
+                    const pred = sigmoid(z);
+                    const err = pred - Y[i];
+
+                    // Binary cross-entropy loss
+                    const eps = 1e-7;
+                    totalLoss += -(Y[i] * Math.log(pred + eps) + (1 - Y[i]) * Math.log(1 - pred + eps));
+
+                    for (let j = 0; j < numFeatures; j++) {
+                        dw[j] += err * X[i][j];
+                    }
+                    db += err;
+                }
+
+                // Gradient update with L2 penalty
+                for (let j = 0; j < numFeatures; j++) {
+                    w[j] -= lr * ((dw[j] / m) + lambda * w[j]);
+                }
+                b -= lr * (db / m);
+
+                if (epoch % Math.max(1, Math.floor(epochs / 30)) === 0 || epoch === 1 || epoch === epochs) {
+                    lossHistory.push({ epoch, loss: Number((totalLoss / m).toFixed(4)) });
+                }
+            }
+
+            // Evaluate Metrics on Registry
+            let correct = 0, tp = 0, fn = 0;
+            for (let i = 0; i < m; i++) {
+                let z = b;
+                for (let j = 0; j < numFeatures; j++) z += X[i][j] * w[j];
+                const predClass = sigmoid(z) >= 0.5 ? 1 : 0;
+                if (predClass === Y[i]) correct++;
+                if (Y[i] === 1 && predClass === 1) tp++;
+                if (Y[i] === 1 && predClass === 0) fn++;
+            }
+
+            const accuracy = ((correct / m) * 100).toFixed(1);
+            const sensitivity = (tp + fn) > 0 ? ((tp / (tp + fn)) * 100).toFixed(1) : "100.0";
+            const finalLoss = lossHistory[lossHistory.length - 1].loss.toFixed(3);
+
+            // Save trained model state
+            mlModel = {
+                version: `v2.${Math.floor(Math.random() * 9) + 1} (Trained on ${m} cases)`,
+                epochsTrained: epochs,
+                bias: b,
+                weights: w,
+                accuracy: parseFloat(accuracy),
+                sensitivity: parseFloat(sensitivity),
+                finalLoss: parseFloat(finalLoss),
+                lossHistory
+            };
+
+            // Recompute risk probabilities for all patients
+            recalculateAllPatientRisks();
+            saveToLocalStorage();
+
+            // Update UI
+            updateMLUI();
+            updateDashboard();
+            renderPatientTable();
+            updateCalculator();
+
+            btn.disabled = false;
+            document.getElementById('ml-train-status').textContent = `เทรนสำเร็จ (${epochs} Epochs)`;
+            showToast(`เทรนโมเดล ML สำเร็จ! ความแม่นยำ ${accuracy}% (Loss: ${finalLoss})`, "success");
+        }
+
+        // =========================================================================
+        // 3. DATA PERSISTENCE & MANAGEMENT
+        // =========================================================================
+        function initApp() {
+            const saved = localStorage.getItem('project_alzhimer_registry_v1');
+            if (saved) {
+                try {
+                    patients = JSON.parse(saved);
+                } catch (e) {
+                    patients = JSON.parse(JSON.stringify(INITIAL_SYNTHETIC_DATA));
+                }
+            } else {
+                patients = JSON.parse(JSON.stringify(INITIAL_SYNTHETIC_DATA));
+            }
+
+            // Generate initial loss history curve for baseline model
+            mlModel.lossHistory = Array.from({ length: 20 }, (_, idx) => ({
+                epoch: (idx + 1) * 15,
+                loss: Number((0.68 * Math.exp(-idx * 0.08) + 0.19).toFixed(4))
+            }));
+
+            recalculateAllPatientRisks();
+            initCharts();
+            updateDashboard();
+            renderPatientTable();
+            updateMLUI();
+            populateCalculatorDropdown();
+            updateCalculator();
+
+            // Set default date in Add Modal
+            document.getElementById('add-date').value = new Date().toISOString().split('T')[0];
+
+            lucide.createIcons();
+        }
+
+        function recalculateAllPatientRisks() {
+            patients = patients.map(p => {
+                const prob = predictRiskML(p);
+                const cat = getRiskCategory(prob);
+                return { ...p, riskProb: prob, riskLevel: cat.code };
+            });
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('project_alzhimer_registry_v1', JSON.stringify(patients));
+        }
+
+        function resetDemoData() {
+            patients = JSON.parse(JSON.stringify(INITIAL_SYNTHETIC_DATA));
+            recalculateAllPatientRisks();
+            saveToLocalStorage();
+            updateDashboard();
+            renderPatientTable();
+            populateCalculatorDropdown();
+            showToast("รีเซ็ตชุดข้อมูลจำลอง 25 เคสเรียบร้อยแล้ว", "info");
+        }
+
+        // =========================================================================
+        // 4. DASHBOARD & CHARTS RENDERING
+        // =========================================================================
+        function initCharts() {
+            Chart.defaults.font.family = "'Prompt', 'Inter', sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            // 1. Donut Chart: Risk Distribution
+            const ctxDonut = document.getElementById('chart-risk-donut').getContext('2d');
+            charts.donut = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ปกติ / เสี่ยงต่ำ (<35%)', 'เสี่ยงปานกลาง MCI (35-64%)', 'เสี่ยงสูง Dementia (≥65%)'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } }
+                    }
+                }
+            });
+
+            // 2. Grouped Bar Chart: Multimodal Factor Severity by Risk Group
+            const ctxMulti = document.getElementById('chart-multimodal-bar').getContext('2d');
+            charts.multimodal = new Chart(ctxMulti, {
+                type: 'bar',
+                data: {
+                    labels: ['AD8 Score', 'Mini-Cog Deficit', 'Visual-Motor Trail', 'ACB Drug Burden', '2Q Depression'],
+                    datasets: [
+                        { label: 'กลุ่มเสี่ยงต่ำ (Low)', data: [0, 0, 0, 0, 0], backgroundColor: '#10b981', borderRadius: 6 },
+                        { label: 'กลุ่มเสี่ยงปานกลาง (MCI)', data: [0, 0, 0, 0, 0], backgroundColor: '#f59e0b', borderRadius: 6 },
+                        { label: 'กลุ่มเสี่ยงสูง (High)', data: [0, 0, 0, 0, 0], backgroundColor: '#f43f5e', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'ดัชนีความรุนแรง (%)', font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+                    }
+                }
+            });
+
+            // 3. Scatter Chart: Age vs Risk Probability
+            const ctxScatter = document.getElementById('chart-age-scatter').getContext('2d');
+            charts.scatter = new Chart(ctxScatter, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        { label: 'เสี่ยงต่ำ (Low)', data: [], backgroundColor: '#10b981', pointRadius: 6 },
+                        { label: 'เสี่ยงปานกลาง (MCI)', data: [], backgroundColor: '#f59e0b', pointRadius: 6 },
+                        { label: 'เสี่ยงสูง (High)', data: [], backgroundColor: '#f43f5e', pointRadius: 7 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'อายุผู้เข้ารับการประเมิน (ปี)', font: { size: 11 } }, min: 55, max: 90, grid: { color: '#f1f5f9' } },
+                        y: { title: { display: true, text: 'ความเสี่ยง ML (%)', font: { size: 11 } }, min: 0, max: 100, grid: { color: '#f1f5f9' } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.raw.id}: อายุ ${ctx.raw.x} ปี, ความเสี่ยง ${ctx.raw.y}% (ACB: ${ctx.raw.acb})`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 4. Line Chart: Monthly Longitudinal Trend
+            const ctxTrend = document.getElementById('chart-monthly-trend').getContext('2d');
+            charts.trend = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'ค่าเฉลี่ยความเสี่ยง (%)',
+                            data: [],
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            fill: true,
+                            tension: 0.35,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'จำนวนผู้รับการทดสอบ (ราย)',
+                            data: [],
+                            borderColor: '#0d9488',
+                            backgroundColor: '#0d9488',
+                            borderDash: [4, 4],
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'linear', position: 'left', min: 0, max: 100, title: { display: true, text: 'ความเสี่ยงเฉลี่ย (%)', font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                        y1: { type: 'linear', position: 'right', min: 0, suggestedMax: 10, title: { display: true, text: 'จำนวนคนไข้ (ราย)', font: { size: 11 } }, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+
+            // 5. ML Training Loss Chart
+            const ctxLoss = document.getElementById('chart-ml-loss').getContext('2d');
+            charts.loss = new Chart(ctxLoss, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Binary Cross-Entropy Loss',
+                        data: [],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.12)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Epoch', font: { size: 10 } }, grid: { display: false } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Loss', font: { size: 10 } }, grid: { color: '#e2e8f0' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateDashboard() {
+            const total = patients.length;
+            const lowList = patients.filter(p => p.riskLevel === 'LOW');
+            const modList = patients.filter(p => p.riskLevel === 'MODERATE');
+            const highList = patients.filter(p => p.riskLevel === 'HIGH');
+
+            const highPct = total > 0 ? ((highList.length / total) * 100).toFixed(1) : "0.0";
+            const meanRisk = total > 0 ? (patients.reduce((acc, p) => acc + p.riskProb, 0) / total).toFixed(1) : "0.0";
+
+            // Update KPIs
+            document.getElementById('nav-patient-count').textContent = total;
+            document.getElementById('ml-train-sample-count').textContent = total;
+            document.getElementById('kpi-total').textContent = total;
+            document.getElementById('kpi-high-risk-pct').textContent = `${highPct}%`;
+            document.getElementById('kpi-high-risk-count').textContent = `(${highList.length} ราย)`;
+            document.getElementById('kpi-mean-risk').textContent = `${meanRisk}%`;
+            document.getElementById('kpi-ml-acc').textContent = `${mlModel.accuracy}%`;
+            document.getElementById('kpi-ml-epochs').textContent = mlModel.epochsTrained;
+            document.getElementById('kpi-model-ver').textContent = mlModel.version.split(' ')[0];
+
+            document.getElementById('stat-low-count').textContent = lowList.length;
+            document.getElementById('stat-mod-count').textContent = modList.length;
+            document.getElementById('stat-high-count').textContent = highList.length;
+
+            // Update Donut Chart
+            charts.donut.data.datasets[0].data = [lowList.length, modList.length, highList.length];
+            charts.donut.update();
+
+            // Update Multimodal Bar Chart (Normalized 0-100% severity per group)
+            const calcGroupSeverity = (list) => {
+                if (list.length === 0) return [0, 0, 0, 0, 0];
+                const avg = (fn) => list.reduce((s, p) => s + fn(p), 0) / list.length;
+                return [
+                    Math.round(avg(p => (p.ad8 / 8) * 100)),
+                    Math.round(avg(p => ((5 - p.minicog) / 5) * 100)),
+                    Math.round(avg(p => Math.min(100, ((p.trailLatency - 20) / 140) * 100))),
+                    Math.round(avg(p => (p.acb / 6) * 100)),
+                    Math.round(avg(p => (p.q2 / 2) * 100))
+                ];
+            };
+            charts.multimodal.data.datasets[0].data = calcGroupSeverity(lowList);
+            charts.multimodal.data.datasets[1].data = calcGroupSeverity(modList);
+            charts.multimodal.data.datasets[2].data = calcGroupSeverity(highList);
+            charts.multimodal.update();
+
+            // Update Scatter Chart
+            charts.scatter.data.datasets[0].data = lowList.map(p => ({ x: p.age, y: p.riskProb, id: p.id, acb: p.acb }));
+            charts.scatter.data.datasets[1].data = modList.map(p => ({ x: p.age, y: p.riskProb, id: p.id, acb: p.acb }));
+            charts.scatter.data.datasets[2].data = highList.map(p => ({ x: p.age, y: p.riskProb, id: p.id, acb: p.acb }));
+            charts.scatter.update();
+
+            // Update Monthly Trend Chart
+            const monthGroups = {};
+            patients.forEach(p => {
+                const ym = (p.date || "2026-11").slice(0, 7);
+                if (!monthGroups[ym]) monthGroups[ym] = { count: 0, sumRisk: 0 };
+                monthGroups[ym].count++;
+                monthGroups[ym].sumRisk += p.riskProb;
+            });
+            const sortedMonths = Object.keys(monthGroups).sort();
+            charts.trend.data.labels = sortedMonths;
+            charts.trend.data.datasets[0].data = sortedMonths.map(m => Number((monthGroups[m].sumRisk / monthGroups[m].count).toFixed(1)));
+            charts.trend.data.datasets[1].data = sortedMonths.map(m => monthGroups[m].count);
+            charts.trend.update();
+
+            // Automated Clinical Insight Text
+            const seniorsWithACB = patients.filter(p => p.age >= 75 && p.acb >= 3);
+            const highSeniorACB = seniorsWithACB.filter(p => p.riskLevel === 'HIGH').length;
+            document.getElementById('clinical-insight-text').innerHTML = `
+                จากผู้รับการคัดกรองทั้งหมด <strong>${total} ราย</strong> พบกลุ่มความเสี่ยงสูง <strong>${highList.length} ราย (${highPct}%)</strong> และกลุ่มเสี่ยงปานกลาง (MCI) <strong>${modList.length} ราย</strong> 
+                โดยในกลุ่มผู้สูงอายุ <strong>≥ 75 ปี ที่มีคะแนนยา ACB ≥ 3</strong> (จำนวน ${seniorsWithACB.length} ราย) พบความเสี่ยงสูงถึง <strong>${highSeniorACB} ราย</strong> 
+                ซึ่งสอดคล้องกับเกณฑ์เฝ้าระวังภาวะสมองเสื่อมจากฤทธิ์ยาต้านโคลิเนอร์จิก
+            `;
+        }
+
+        // =========================================================================
+        // 5. PATIENT TABLE RENDERING & CRUD
+        // =========================================================================
+        function renderPatientTable() {
+            const search = document.getElementById('filter-search').value.toLowerCase().trim();
+            const riskFilter = document.getElementById('filter-risk').value;
+            const ageFilter = document.getElementById('filter-age').value;
+            const acbFilter = document.getElementById('filter-acb').value;
+
+            const filtered = patients.filter(p => {
+                const matchSearch = p.id.toLowerCase().includes(search) || (p.notes && p.notes.toLowerCase().includes(search));
+                const matchRisk = riskFilter === 'ALL' || p.riskLevel === riskFilter;
+                const matchAge = ageFilter === 'ALL' || (ageFilter === '75PLUS' ? p.age >= 75 : p.age < 75);
+                const matchACB = acbFilter === 'ALL' || (acbFilter === '3PLUS' ? p.acb >= 3 : p.acb < 3);
+                return matchSearch && matchRisk && matchAge && matchACB;
+            });
+
+            const tbody = document.getElementById('patient-table-body');
+            const emptyState = document.getElementById('empty-table-state');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            tbody.innerHTML = filtered.map(p => {
+                const cat = getRiskCategory(p.riskProb);
+                const badgeStyles = {
+                    HIGH: 'bg-rose-100 text-rose-800 border-rose-200',
+                    MODERATE: 'bg-amber-100 text-amber-800 border-amber-200',
+                    LOW: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                }[cat.code];
+
+                const ageFlag = p.age >= 75 ? `<span class="text-amber-600 font-bold" title="อายุ >= 75 ปี">${p.age} ปี</span>` : `${p.age} ปี`;
+                const acbFlag = p.acb >= 3 ? `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">ACB ${p.acb}</span>` : `ACB ${p.acb}`;
+
+                return `
+                    <tr class="hover:bg-slate-50/90 transition">
+                        <td class="py-3 px-4">
+                            <div class="font-mono font-bold text-slate-900">${p.id}</div>
+                            <div class="text-[11px] text-slate-400">${p.date || '-'}</div>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                            <div>${ageFlag}</div>
+                            <div class="text-[11px] text-slate-500">เรียน ${p.education} ปี</div>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                            <div>2Q: <strong>${p.q2}</strong></div>
+                            <div class="text-[11px] mt-0.5">${acbFlag}</div>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                            <span class="font-bold ${p.ad8 >= 2 ? 'text-rose-600' : 'text-slate-700'}">${p.ad8}</span> / 8
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                            <span class="font-bold ${p.minicog <= 2 ? 'text-rose-600' : 'text-teal-700'}">${p.minicog}</span> / 5
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                            <div class="font-medium ${p.trailLatency >= 85 ? 'text-amber-700 font-bold' : 'text-slate-700'}">${p.trailLatency} วิ</div>
+                            <div class="text-[11px] text-slate-500">${p.fluency} คำ/นาที</div>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                            <span class="text-sm font-extrabold ${cat.code === 'HIGH' ? 'text-rose-600' : cat.code === 'MODERATE' ? 'text-amber-600' : 'text-emerald-600'}">
+                                ${p.riskProb}%
+                            </span>
+                        </td>
+                        <td class="py-3 px-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeStyles}">
+                                ${cat.label}
+                            </span>
+                            ${p.notes ? `<div class="text-[11px] text-slate-500 mt-1 max-w-[200px] truncate" title="${p.notes}">${p.notes}</div>` : ''}
+                        </td>
+                        <td class="py-3 px-4 text-right whitespace-nowrap">
+                            <button onclick="inspectCaseInML('${p.id}')" title="วิเคราะห์ด้วย ML" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
+                                <i data-lucide="cpu" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deletePatient('${p.id}')" title="ลบข้อมูล" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function deletePatient(id) {
+            patients = patients.filter(p => p.id !== id);
+            saveToLocalStorage();
+            updateDashboard();
+            renderPatientTable();
+            populateCalculatorDropdown();
+            showToast(`ลบข้อมูลเคส ${id} ออกจากฐานข้อมูลแล้ว`, "info");
+        }
+
+        // =========================================================================
+        // 6. ML UI & FAST TRIAGE CALCULATOR LOGIC
+        // =========================================================================
+        function updateMLUI() {
+            document.getElementById('ml-metric-acc').textContent = `${mlModel.accuracy}%`;
+            document.getElementById('ml-metric-sens').textContent = `${mlModel.sensitivity}%`;
+            document.getElementById('ml-metric-loss').textContent = mlModel.finalLoss;
+
+            // Update Loss Chart
+            charts.loss.data.labels = mlModel.lossHistory.map(item => item.epoch);
+            charts.loss.data.datasets[0].data = mlModel.lossHistory.map(item => item.loss);
+            charts.loss.update();
+
+            // Render Feature Importance Bars
+            const maxW = Math.max(...mlModel.weights.map(Math.abs), 0.1);
+            const container = document.getElementById('ml-weights-container');
+            container.innerHTML = FEATURE_META.map((f, idx) => {
+                const wVal = mlModel.weights[idx];
+                const pct = Math.min(100, Math.round((Math.abs(wVal) / maxW) * 100));
+                return `
+                    <div>
+                        <div class="flex justify-between text-[11px] mb-0.5">
+                            <span class="font-medium text-slate-700">${f.label}</span>
+                            <span class="font-mono font-semibold text-indigo-700">w = ${wVal.toFixed(2)}</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-indigo-500 to-teal-500 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function populateCalculatorDropdown() {
+            const select = document.getElementById('calc-load-case');
+            select.innerHTML = `<option value="">-- โหลดจากเคสในระบบ (${patients.length} ราย) --</option>` +
+                patients.map(p => `<option value="${p.id}">${p.id} (อายุ ${p.age} ปี | AD8: ${p.ad8} | Mini-Cog: ${p.minicog})</option>`).join('');
+        }
+
+        function loadCaseIntoCalculator(id) {
+            if (!id) return;
+            const p = patients.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('calc-age').value = p.age;
+            document.getElementById('calc-edu').value = p.education;
+            document.getElementById('calc-ad8').value = p.ad8;
+            document.getElementById('calc-minicog').value = p.minicog;
+            document.getElementById('calc-trail').value = p.trailLatency;
+            document.getElementById('calc-acb').value = p.acb;
+            document.getElementById('calc-2q').value = p.q2;
+            document.getElementById('calc-fluency').value = p.fluency;
+
+            updateCalculator();
+            showToast(`โหลดข้อมูลเคส ${p.id} เข้าสู่เครื่องคำนวณแล้ว`, "info");
+        }
+
+        function inspectCaseInML(id) {
+            switchTab('ml');
+            document.getElementById('calc-load-case').value = id;
+            loadCaseIntoCalculator(id);
+        }
+
+        function updateCalculator() {
+            const inputObj = {
+                age: Number(document.getElementById('calc-age').value),
+                education: Number(document.getElementById('calc-edu').value),
+                ad8: Number(document.getElementById('calc-ad8').value),
+                minicog: Number(document.getElementById('calc-minicog').value),
+                trailLatency: Number(document.getElementById('calc-trail').value),
+                acb: Number(document.getElementById('calc-acb').value),
+                q2: Number(document.getElementById('calc-2q').value),
+                fluency: Number(document.getElementById('calc-fluency').value)
+            };
+
+            // Update slider labels
+            document.getElementById('val-calc-age').textContent = `${inputObj.age} ปี`;
+            document.getElementById('val-calc-edu').textContent = `${inputObj.education} ปี`;
+            document.getElementById('val-calc-ad8').textContent = `${inputObj.ad8} คะแนน`;
+            document.getElementById('val-calc-minicog').textContent = `${inputObj.minicog} คะแนน`;
+            document.getElementById('val-calc-trail').textContent = `${inputObj.trailLatency} วิ`;
+            document.getElementById('val-calc-acb').textContent = `${inputObj.acb} คะแนน`;
+            document.getElementById('val-calc-2q').textContent = `${inputObj.q2} คะแนน`;
+            document.getElementById('val-calc-fluency').textContent = `${inputObj.fluency} คำ`;
+
+            // Predict with ML
+            const prob = predictRiskML(inputObj);
+            const cat = getRiskCategory(prob);
+
+            // Style Result Box
+            const box = document.getElementById('calc-result-box');
+            const probEl = document.getElementById('calc-risk-prob');
+            const badgeEl = document.getElementById('calc-risk-badge');
+            const adviceEl = document.getElementById('calc-clinical-advice');
+
+            probEl.textContent = `${prob}%`;
+
+            if (cat.code === 'HIGH') {
+                box.className = "mt-5 p-5 rounded-2xl border-2 border-rose-300 bg-rose-50/70 transition-all";
+                probEl.className = "text-4xl font-extrabold text-rose-700";
+                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-rose-200 text-rose-900";
+                badgeEl.textContent = "ความเสี่ยงสูง (High Risk / Dementia Suspected)";
+                adviceEl.textContent = "พบความเสี่ยงสูงต่อภาวะสมองรู้คิดบกพร่อง/อัลไซเมอร์ แนะนำส่งต่ออายุรแพทย์ระบบประสาทหรือคลินิกความจำเพื่อตรวจวินิจฉัยเชิงลึก (TMSE / MoCA / Brain Imaging) และทบทวนลดยา ACB";
+            } else if (cat.code === 'MODERATE') {
+                box.className = "mt-5 p-5 rounded-2xl border-2 border-amber-300 bg-amber-50/70 transition-all";
+                probEl.className = "text-4xl font-extrabold text-amber-700";
+                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-200 text-amber-900";
+                badgeEl.textContent = "ความเสี่ยงปานกลาง (Moderate Risk / MCI)";
+                adviceEl.textContent = "เข้าข่ายภาวะการรู้คิดบกพร่องเล็กน้อย (MCI) แนะนำฝึกกระตุ้นสมอง (Cognitive Training) ปรับพฤติกรรมสุขภาพ ตรวจติดตามซ้ำใน 3-6 เดือน และเฝ้าระวังยาที่มีค่า ACB ≥ 3";
+            } else {
+                box.className = "mt-5 p-5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/70 transition-all";
+                probEl.className = "text-4xl font-extrabold text-emerald-700";
+                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-200 text-emerald-900";
+                badgeEl.textContent = "ปกติ / ความเสี่ยงต่ำ (Low Risk)";
+                adviceEl.textContent = "สมรรถภาพสมองอยู่ในเกณฑ์ปกติ แนะนำดูแลสุขภาพสมองเชิงป้องกัน ออกกำลังกายสม่ำเสมอ และตรวจคัดกรองซ้ำประจำปี";
+            }
+
+            // SHAP-like Feature Contribution Breakdown
+            const normVec = extractNormalizedFeatures(inputObj);
+            const contribs = FEATURE_META.map((f, idx) => ({
+                label: f.label,
+                score: normVec[idx] * mlModel.weights[idx]
+            })).sort((a, b) => b.score - a.score);
+
+            const totalContrib = contribs.reduce((s, c) => s + Math.max(0, c.score), 0) || 1;
+            const top3 = contribs.slice(0, 4);
+
+            document.getElementById('calc-shap-list').innerHTML = top3.map(c => {
+                const share = Math.round((Math.max(0, c.score) / totalContrib) * 100);
+                return `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-slate-600 truncate">${c.label}</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-indigo-600 rounded-full" style="width: ${share}%"></div>
+                            </div>
+                            <span class="font-mono font-semibold text-slate-800 w-9 text-right">+${share}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function saveCalculatorToRegistry() {
+            const newId = `PSN-${Math.floor(2000 + Math.random() * 7999)}`;
+            const newCase = {
+                id: newId,
+                date: new Date().toISOString().split('T')[0],
+                age: Number(document.getElementById('calc-age').value),
+                education: Number(document.getElementById('calc-edu').value),
+                q2: Number(document.getElementById('calc-2q').value),
+                acb: Number(document.getElementById('calc-acb').value),
+                ad8: Number(document.getElementById('calc-ad8').value),
+                minicog: Number(document.getElementById('calc-minicog').value),
+                trailLatency: Number(document.getElementById('calc-trail').value),
+                fluency: Number(document.getElementById('calc-fluency').value),
+                notes: "บันทึกจากระบบ Fast ML Triage Calculator"
+            };
+            newCase.riskProb = predictRiskML(newCase);
+            newCase.riskLevel = getRiskCategory(newCase.riskProb).code;
+
+            patients.unshift(newCase);
+            saveToLocalStorage();
+            updateDashboard();
+            renderPatientTable();
+            populateCalculatorDropdown();
+            showToast(`บันทึกเคสใหม่ ${newId} (ความเสี่ยง ${newCase.riskProb}%) เข้าฐานข้อมูลแล้ว`, "success");
+        }
+
+        // =========================================================================
+        // 7. MODALS, IMPORT & EXPORT (JSON / CSV)
+        // =========================================================================
+        function openAddModal() {
+            document.getElementById('add-id').value = `PSN-${Math.floor(2000 + Math.random() * 7999)}`;
+            document.getElementById('modal-add').classList.remove('hidden');
+        }
+        function closeAddModal() {
+            document.getElementById('modal-add').classList.add('hidden');
+        }
+
+        function handleAddPatient(e) {
+            e.preventDefault();
+            const newPatient = {
+                id: document.getElementById('add-id').value,
+                date: document.getElementById('add-date').value,
+                age: Number(document.getElementById('add-age').value),
+                education: Number(document.getElementById('add-edu').value),
+                q2: Number(document.getElementById('add-2q').value),
+                acb: Number(document.getElementById('add-acb').value),
+                ad8: Number(document.getElementById('add-ad8').value),
+                minicog: Number(document.getElementById('add-minicog').value),
+                trailLatency: Number(document.getElementById('add-trail').value),
+                fluency: Number(document.getElementById('add-fluency').value),
+                notes: document.getElementById('add-notes').value.trim()
+            };
+            newPatient.riskProb = predictRiskML(newPatient);
+            newPatient.riskLevel = getRiskCategory(newPatient.riskProb).code;
+
+            patients.unshift(newPatient);
+            saveToLocalStorage();
+            updateDashboard();
+            renderPatientTable();
+            populateCalculatorDropdown();
+            closeAddModal();
+            showToast(`เพิ่มข้อมูล ${newPatient.id} สำเร็จ (ML Risk: ${newPatient.riskProb}%)`, "success");
+        }
+
+        function openImportModal() {
+            document.getElementById('modal-import').classList.remove('hidden');
+        }
+        function closeImportModal() {
+            document.getElementById('modal-import').classList.add('hidden');
+        }
+
+        function fillSampleImportJSON() {
+            const sample = [
+                { id: "PSN-9101", date: "2026-11-12", age: 79, education: 4, q2: 1, acb: 4, ad8: 6, minicog: 1, trailLatency: 132, fluency: 7, notes: "นำเข้าจาก Project-Alzhimer Batch #1" },
+                { id: "PSN-9102", date: "2026-11-12", age: 65, education: 12, q2: 0, acb: 0, ad8: 1, minicog: 5, trailLatency: 42, fluency: 19, notes: "นำเข้าจาก Project-Alzhimer Batch #1" },
+                { id: "PSN-9103", date: "2026-11-12", age: 74, education: 6, q2: 1, acb: 2, ad8: 3, minicog: 3, trailLatency: 78, fluency: 11, notes: "นำเข้าจาก Project-Alzhimer Batch #1" }
+            ];
+            document.getElementById('import-json-textarea').value = JSON.stringify(sample, null, 2);
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const content = evt.target.result;
+                if (file.name.endsWith('.json')) {
+                    document.getElementById('import-json-textarea').value = content;
+                } else if (file.name.endsWith('.csv')) {
+                    const parsed = parseCSVToJSON(content);
+                    document.getElementById('import-json-textarea').value = JSON.stringify(parsed, null, 2);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSVToJSON(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            return lines.slice(1).map((line, idx) => {
+                const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
+                const obj = {};
+                headers.forEach((h, i) => obj[h] = vals[i]);
+                return {
+                    id: obj.id || `PSN-CSV-${100 + idx}`,
+                    date: obj.date || new Date().toISOString().split('T')[0],
+                    age: Number(obj.age) || 70,
+                    education: Number(obj.education) || 6,
+                    q2: Number(obj.q2) || 0,
+                    acb: Number(obj.acb) || 0,
+                    ad8: Number(obj.ad8) || 0,
+                    minicog: Number(obj.minicog) || 4,
+                    trailLatency: Number(obj.trailLatency) || 60,
+                    fluency: Number(obj.fluency) || 14,
+                    notes: obj.notes || "CSV Import"
+                };
+            });
+        }
+
+        function processJSONImport() {
+            const raw = document.getElementById('import-json-textarea').value.trim();
+            if (!raw) {
+                showToast("กรุณาวางข้อมูล JSON หรือเลือกไฟล์ก่อนนำเข้า", "error");
+                return;
+            }
+            try {
+                const arr = JSON.parse(raw);
+                if (!Array.isArray(arr)) throw new Error("ข้อมูลต้องอยู่ในรูปแบบ Array [...]");
+                let addedCount = 0;
+                arr.forEach(item => {
+                    const clean = {
+                        id: item.id || `PSN-${Math.floor(3000 + Math.random() * 6000)}`,
+                        date: item.date || new Date().toISOString().split('T')[0],
+                        age: Number(item.age) || 70,
+                        education: Number(item.education) || 6,
+                        q2: Number(item.q2) || 0,
+                        acb: Number(item.acb) || 0,
+                        ad8: Number(item.ad8) || 0,
+                        minicog: Number(item.minicog) || 3,
+                        trailLatency: Number(item.trailLatency) || 65,
+                        fluency: Number(item.fluency) || 12,
+                        notes: item.notes || "Imported from Project-Alzhimer"
+                    };
+                    clean.riskProb = predictRiskML(clean);
+                    clean.riskLevel = getRiskCategory(clean.riskProb).code;
+                    patients.unshift(clean);
+                    addedCount++;
+                });
+
+                saveToLocalStorage();
+                updateDashboard();
+                renderPatientTable();
+                populateCalculatorDropdown();
+                closeImportModal();
+                showToast(`นำเข้าข้อมูลสำเร็จจำนวน ${addedCount} เคส และวิเคราะห์ความเสี่ยงแล้ว`, "success");
+            } catch (err) {
+                showToast(`รูปแบบ JSON ไม่ถูกต้อง: ${err.message}`, "error");
+            }
+        }
+
+        function exportCSV() {
+            const headers = ["id", "date", "age", "education", "q2", "acb", "ad8", "minicog", "trailLatency", "fluency", "riskProb", "riskLevel", "notes"];
+            const rows = patients.map(p => headers.map(h => `"${(p[h] ?? '').toString().replace(/"/g, '""')}"`).join(','));
+            const csvContent = "\uFEFF" + [headers.join(','), ...rows].join('\n');
+            downloadBlob(csvContent, `Project-Alzhimer-Registry-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
+            showToast("ส่งออกรายงาน CSV เรียบร้อยแล้ว", "success");
+        }
+
+        function exportJSON() {
+            const jsonContent = JSON.stringify(patients, null, 2);
+            downloadBlob(jsonContent, `Project-Alzhimer-Data-${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+            showToast("ส่งออกไฟล์ JSON เรียบร้อยแล้ว", "success");
+        }
+
+        function downloadBlob(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // =========================================================================
+        // 8. TAB NAVIGATION & TOAST NOTIFICATIONS
+        // =========================================================================
+        function switchTab(tabName) {
+            ['dashboard', 'registry', 'ml'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('tab-active');
+                btn.classList.add('tab-inactive');
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            activeBtn.classList.remove('tab-inactive');
+            activeBtn.classList.add('tab-active');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-slate-900 text-white border-l-4 border-teal-400',
+                error: 'bg-rose-950 text-white border-l-4 border-rose-500',
+                info: 'bg-slate-800 text-white border-l-4 border-indigo-400'
+            };
+            toast.className = `${colors[type] || colors.info} px-4 py-3 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2.5 pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Boot application
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

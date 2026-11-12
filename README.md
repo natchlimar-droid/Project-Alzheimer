@@ -18,6 +18,15 @@
 
 ---
 
+## 🌐 ระบบการทำงานหลัก (Dual Application Suite)
+
+| แอปพลิเคชัน | URL / การเข้าถึง | หน้าที่หลัก |
+| :--- | :--- | :--- |
+| **1. Cognitive Screening & CDSS Portal** | [`index.html`](https://natchlimar-droid.github.io/Project-Alzhimer/) | ระบบคัดกรอง 2 มุมมอง (โหมดผู้สูงอายุ Zero-Friction UX + โหมดแพทย์ Clinician Workstation) ประเมิน AD8, Mini-Cog, Clock Drawing Canvas, Visual-Motor Latency, LIS Labs, และส่งออก HL7 FHIR R4 DiagnosticReport |
+| **2. NeuroRegistry & ML Triage Dashboard** | [`dashboard.html`](https://natchlimar-droid.github.io/Project-Alzhimer/dashboard.html) | ระบบคลังข้อมูลผู้รับการประเมิน (Pseudonymized Patient Registry 25 เคส), Analytics Dashboard พร้อม Interactive Charts 4 รูปแบบ, และ In-Browser ML Engine (Logistic Regression + L2) ที่เทรนสดบนเบราว์เซอร์พร้อม Fast Triage Calculator |
+
+---
+
 ## 📌 บทนำและปัญหาในระบบสาธารณสุขไทย (Problem Statement)
 ประเทศไทยได้ก้าวเข้าสู่ **สังคมผู้สูงอายุอย่างสมบูรณ์ (Complete Aged Society)** โดยมีประชากรอายุ 60 ปีขึ้นไปมากกว่า 20% ของประชากรทั้งประเทศ นำมาซึ่งความท้าทายสำคัญในระบบสาธารณสุข:
 1. **ภาวะสมองเสื่อมถูกตรวจพบช้า (Delayed Diagnosis):** ผู้ป่วยส่วนใหญ่มาพบแพทย์เมื่อเข้าสู่ระยะสมองเสื่อมชัดเจน (Moderate to Severe Dementia) ซึ่งเลยช่วงเวลาทอง (Golden Period) ในการชะลอโรค
