@@ -1756,8 +1756,8 @@
           </button>
         </div>
 
-        <div style="background:#FFFFFF; border:3px solid var(--border-strong); border-radius:14px; margin-bottom:1.25rem; display:flex; justify-content:center; align-items:center; padding:0.5rem;">
-          <canvas id="wizCdtCanvas" width="460" height="460" style="max-width:100%; height:auto; touch-action:none; cursor:crosshair; background:#FFF;"></canvas>
+        <div style="background:#FFFFFF; border:3px solid var(--border-strong); border-radius:14px; margin-bottom:1.25rem; display:flex; justify-content:center; align-items:center; padding:0.5rem; max-width:100%; box-sizing:border-box; overflow:hidden;">
+          <canvas id="wizCdtCanvas" width="460" height="460" style="max-width:100%; width:100%; height:auto; aspect-ratio:1/1; touch-action:none; cursor:crosshair; background:#FFF; display:block;"></canvas>
         </div>
 
         <div style="display:flex; gap:1rem; justify-content:space-between; flex-wrap:wrap; margin-bottom:1.25rem;">
@@ -1773,9 +1773,12 @@
       <!-- 3.3 Word Recall Check -->
       <div id="wizMiniCogSub-Recall" style="display:none;">
         <h3 style="font-size:1.75rem; font-weight:900; margin:0 0 0.5rem 0;">🧠 คำศัพท์ 3 คำที่จำไว้ คือคำใดบ้าง?</h3>
-        <p style="font-size:1.2rem; color:var(--text-secondary); margin:0 0 1.5rem 0;">
+        <p style="font-size:1.2rem; color:var(--text-secondary); margin:0 0 0.5rem 0;">
           กรุณาแตะเลือกคำศัพท์ที่คุณจำได้จากรายการด้านล่าง (แตะเลือกตามที่จำได้จริงค่ะ):
         </p>
+        <div id="wizRecallCountBadge" style="font-size:1.15rem; font-weight:800; color:var(--text-secondary); margin-bottom:1.5rem;">
+          (เลือกแล้ว 0 จาก 3 คำ)
+        </div>
 
         <div id="wizRecallChoicesGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:2rem;">
           <!-- Dynamically populated recall choices -->
@@ -4932,6 +4935,7 @@
         }
       } else {
         document.body.classList.remove("patient-mode");
+        syncStateToClinicianView();
         if (btnClinician) {
           btnClinician.classList.add("active");
           btnClinician.setAttribute("aria-checked", "true");
@@ -8060,6 +8064,46 @@
       return input;
     }
 
+    
+    /* Synchronize Senior Patient Wizard inputs into Clinician Workspace */
+    function syncStateToClinicianView() {
+      // 1. Demographics & Normative fields
+      const ageEl = document.getElementById("patientAgeInput");
+      const eduEl = document.getElementById("patientEduInput");
+      if (ageEl && appState.age) ageEl.value = appState.age;
+      if (eduEl && appState.yearsOfEducation) eduEl.value = appState.yearsOfEducation;
+
+      // 2. 2Q Questions UI
+      if (typeof render2QQuestions === "function") render2QQuestions();
+
+      // 3. AD8 Questions UI
+      if (typeof renderAd8Questions === "function") renderAd8Questions();
+
+      // 4. Mini-Cog Recall
+      if (appState.delayedRecallScore !== null && typeof setDirectRecallScore === "function") {
+        setDirectRecallScore(appState.delayedRecallScore);
+      }
+
+      // 5. CDT Canvas preview
+      if (appState.cdtTelemetry && appState.cdtTelemetry.imageDataUrl) {
+        const mainCanvas = document.getElementById("cdtCanvas");
+        if (mainCanvas) {
+          const mainCtx = mainCanvas.getContext("2d");
+          const img = new Image();
+          img.onload = () => {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
+          };
+          img.src = appState.cdtTelemetry.imageDataUrl;
+        }
+      }
+
+      // 6. Recalculate Clinical Dashboard & Radar Chart if data present
+      if (typeof renderRiskStratificationReport === "function") {
+        renderRiskStratificationReport();
+      }
+    }
+
     function renderRiskStratificationReport() {
       try {
         const input = buildAssessmentInput();
@@ -9971,11 +10015,9 @@
       if (q.type === "2Q") {
         if (!appState['2qResponses']) appState['2qResponses'] = [false, false];
         appState['2qResponses'][q.index] = (choice === "YES");
-        // Sync with underlying form
-        const radioYes = document.getElementById(`twoQ_${q.index}_yes`);
-        const radioNo = document.getElementById(`twoQ_${q.index}_no`);
-        if (choice === "YES" && radioYes) radioYes.checked = true;
-        if (choice === "NO" && radioNo) radioNo.checked = true;
+        if (q.index === 0) appState.depression2Q.depressedMood = (choice === "YES");
+        if (q.index === 1) appState.depression2Q.lossOfInterests = (choice === "YES");
+        if (typeof render2QStatus === "function") render2QStatus(false);
       } else if (q.type === "AD8") {
         appState.ad8Responses[q.index] = choice;
         // Sync with underlying form radios
@@ -10101,10 +10143,10 @@
       canvas.onmouseup = stopDraw;
       canvas.onmouseleave = stopDraw;
 
-      canvas.ontouchstart = startDraw;
-      canvas.ontouchmove = draw;
-      canvas.ontouchend = stopDraw;
-      canvas.ontouchcancel = stopDraw;
+      canvas.addEventListener("touchstart", startDraw, { passive: false });
+      canvas.addEventListener("touchmove", draw, { passive: false });
+      canvas.addEventListener("touchend", stopDraw, { passive: false });
+      canvas.addEventListener("touchcancel", stopDraw, { passive: false });
     }
 
     function clearWizCdtCanvas() {
@@ -10117,12 +10159,25 @@
     }
 
     function proceedWizToRecall() {
-      // Save CDT telemetry
+      // Save CDT telemetry and copy to main clinician canvas
       const canvas = document.getElementById("wizCdtCanvas");
       if (canvas) {
-        appState.cdtTelemetry.imageDataUrl = canvas.toDataURL("image/png");
+        const dataUrl = canvas.toDataURL("image/png");
+        appState.cdtTelemetry.imageDataUrl = dataUrl;
         appState.cdtTelemetry.sourceType = "SCREEN_DRAWING";
-        appState.cdtResult = "NORMAL"; // default to pass if attempted
+        appState.cdtResult = "NORMAL";
+
+        // Mirror to main clinician canvas
+        const mainCanvas = document.getElementById("cdtCanvas");
+        if (mainCanvas) {
+          const mainCtx = mainCanvas.getContext("2d");
+          const img = new Image();
+          img.onload = () => {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
+          };
+          img.src = dataUrl;
+        }
       }
 
       document.getElementById("wizMiniCogSub-Cdt").style.display = "none";
@@ -10150,10 +10205,29 @@
       const idx = selectedWizRecallWords.indexOf(word);
       if (idx > -1) {
         selectedWizRecallWords.splice(idx, 1);
-        if (btn) btn.classList.remove("selected");
+        if (btn) {
+          btn.classList.remove("selected");
+          btn.style.borderColor = "";
+          btn.style.backgroundColor = "";
+          btn.style.color = "";
+        }
       } else {
+        if (selectedWizRecallWords.length >= 3) {
+          showToast("สามารถเลือกได้สูงสุด 3 คำค่ะ (หากต้องการเปลี่ยนคำ ให้แตะยกเลิกคำเดิมก่อนนะคะ)", "warning");
+          return;
+        }
         selectedWizRecallWords.push(word);
-        if (btn) btn.classList.add("selected");
+        if (btn) {
+          btn.classList.add("selected");
+          btn.style.borderColor = "var(--primary-bg)";
+          btn.style.backgroundColor = "var(--primary-bg)";
+          btn.style.color = "var(--primary-text)";
+        }
+      }
+      const countBadge = document.getElementById("wizRecallCountBadge");
+      if (countBadge) {
+        countBadge.textContent = `(เลือกแล้ว ${selectedWizRecallWords.length} จาก 3 คำ)`;
+        countBadge.style.color = selectedWizRecallWords.length === 3 ? "var(--status-low-text)" : "var(--text-secondary)";
       }
     }
 
