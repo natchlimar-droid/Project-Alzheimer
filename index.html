@@ -1793,7 +1793,11 @@
     <!-- Screen 4: Traffic Light Plain-Language Result -->
     <div id="patientScreen-4" class="card-box" style="display:none; padding:2rem 1.5rem; background:var(--bg-card); border-radius:18px;">
       <div id="patientTrafficLightCardContent">
-        <!-- Dynamically rendered result -->
+        <div style="text-align:center; padding:2.5rem 1rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.75rem;">⏳</div>
+          <div style="font-size:1.35rem; font-weight:800; color:var(--text-primary); margin-bottom:0.5rem;">กำลังประมวลผลข้อมูลสุขภาพความจำ...</div>
+          <p style="font-size:1.05rem; color:var(--text-secondary); margin:0;">ระบบกำลังวิเคราะห์คะแนนแบบประเมินและผลการทดสอบค่ะ</p>
+        </div>
       </div>
     </div>
   </div>
@@ -10249,21 +10253,32 @@
     }
 
     function finishPatientAssessment() {
-      const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
-      const targetWords = wordSet.words;
-      let recallScore = 0;
-      targetWords.forEach(w => {
-        if (selectedWizRecallWords.includes(w)) recallScore++;
-      });
-      appState.delayedRecallScore = recallScore;
-      setDirectRecallScore(recallScore);
+      try {
+        const wordSet = (typeof WORD_SETS !== "undefined" ? WORD_SETS : WORD_REGISTRATION_SETS)[appState.activeWordSetIndex || 0];
+        const targetWords = wordSet ? wordSet.words : ["กล้วย", "เก้าอี้", "เหรียญ"];
+        let recallScore = 0;
+        const selected = Array.isArray(selectedWizRecallWords) ? selectedWizRecallWords : [];
+        targetWords.forEach(w => {
+          if (selected.includes(w)) recallScore++;
+        });
+        appState.delayedRecallScore = recallScore;
+        if (typeof setDirectRecallScore === "function") setDirectRecallScore(recallScore);
 
-      // Run risk evaluation
-      renderRiskStratificationReport();
+        // Run clinician risk evaluation in background (non-blocking)
+        try {
+          renderRiskStratificationReport();
+        } catch (reportErr) {
+          console.warn("Clinician report background sync:", reportErr);
+        }
+      } catch (err) {
+        console.warn("finishPatientAssessment pre-calc error:", err);
+      }
 
       // Transition to Screen 4: Traffic Light Plain-Language Result
-      document.getElementById("patientScreen-3").style.display = "none";
-      document.getElementById("patientScreen-4").style.display = "block";
+      const s3 = document.getElementById("patientScreen-3");
+      const s4 = document.getElementById("patientScreen-4");
+      if (s3) s3.style.display = "none";
+      if (s4) s4.style.display = "block";
       updateWizProgress(4, "ขั้นตอนที่ 4: สรุปผลสุขภาพความจำสำหรับประชาชน", 100);
       renderPatientTrafficLightResult();
       window.scrollTo({ top: 0, behavior: "smooth" });
