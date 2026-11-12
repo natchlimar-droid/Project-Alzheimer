@@ -1335,6 +1335,78 @@
       }
     }
 
+  
+    /* ==========================================================================
+       Senior Patient Wizard (Zero-Friction UX, Adaptive Role-Based Presentation)
+       ========================================================================== */
+    body.patient-mode .step-nav {
+      display: none !important;
+    }
+    body.patient-mode #clinicianWorkspace {
+      display: none !important;
+    }
+    body.patient-mode #seniorPatientWizard {
+      display: block !important;
+    }
+
+    body:not(.patient-mode) #seniorPatientWizard {
+      display: none !important;
+    }
+    body:not(.patient-mode) #clinicianWorkspace {
+      display: block !important;
+    }
+    body:not(.patient-mode) .step-nav {
+      display: grid !important;
+    }
+
+    .patient-wiz-container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 1.25rem 0.75rem;
+    }
+    .patient-choice-btn {
+      width: 100% !important;
+      min-height: 64px !important;
+      font-size: 1.25rem !important;
+      font-weight: 800 !important;
+      padding: 1rem 1.5rem !important;
+      border-radius: 14px !important;
+      border-width: 3px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 1rem !important;
+      text-align: left !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
+      background-color: var(--bg-surface) !important;
+      color: var(--text-primary) !important;
+    }
+    .patient-choice-btn:hover,
+    .patient-choice-btn:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14) !important;
+      border-color: var(--primary-bg) !important;
+    }
+    .patient-choice-btn.selected {
+      background-color: var(--primary-bg) !important;
+      color: var(--primary-text) !important;
+      border-color: var(--border-strong) !important;
+    }
+    .patient-progress-bar-bg {
+      width: 100%;
+      height: 12px;
+      background: var(--border-subtle);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .patient-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563EB, #10B981);
+      transition: width 0.35s ease;
+    }
+
   </style>
 </head>
 
@@ -1482,6 +1554,249 @@
        Main Content Container
        ======================================================================== -->
   <main class="main-container">
+  <!-- ========================================================================
+       SENIOR PATIENT WIZARD: ZERO-FRICTION UX (1 Screen = 1 Task)
+       ======================================================================== -->
+  <div id="seniorPatientWizard" class="patient-wiz-container patient-only">
+
+    <!-- Progress Indicator Header -->
+    <div id="patientWizProgressHeader" style="display:none; margin-bottom:1.5rem; background:var(--bg-card); padding:1rem 1.25rem; border-radius:12px; border:2px solid var(--border-subtle);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <span id="patientWizStepTitle" style="font-size:1.15rem; font-weight:800; color:var(--text-primary);">
+          ขั้นตอนที่ 1: ข้อมูลเบื้องต้น
+        </span>
+        <span id="patientWizProgressBadge" style="background:#2563EB; color:#FFF; font-weight:800; font-size:0.95rem; padding:0.25rem 0.75rem; border-radius:12px;">
+          ความคืบหน้า 25%
+        </span>
+      </div>
+      <div class="patient-progress-bar-bg">
+        <div id="patientWizProgressBar" class="patient-progress-bar-fill" style="width:25%;"></div>
+      </div>
+    </div>
+
+    <!-- Screen 0: Welcome Screen -->
+    <div id="patientScreen-0" class="card-box" style="text-align:center; padding:3rem 1.5rem; background:var(--bg-card); border-radius:18px;">
+      <div style="font-size:3.8rem; line-height:1; margin-bottom:1rem;">🧠</div>
+      <h2 style="font-size:2rem; font-weight:900; margin:0 0 0.75rem 0; color:var(--text-primary); line-height:1.3;">
+        ตรวจเช็กสุขภาพความจำเบื้องต้น
+      </h2>
+      <p style="font-size:1.25rem; line-height:1.7; color:var(--text-secondary); max-width:620px; margin:0 auto 2.5rem auto;">
+        แบบทดสอบสำหรับผู้สูงอายุและครอบครัว เพื่อสังเกตการทำงานของสมองและความจำเบื้องต้น<br>
+        สะดวก สบายใจ ใช้เวลาเพียง 5 นาที ค่อยๆ ตอบทีละข้อนะคะ
+      </p>
+      <button type="button" class="btn btn-primary" onclick="startPatientWizard()" style="min-height:68px; font-size:1.35rem; font-weight:900; width:100%; max-width:440px; border-radius:16px; margin:0 auto; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow:0 6px 18px rgba(37,99,235,0.35);">
+        <span>เริ่มตรวจสุขภาพความจำ ➔</span>
+      </button>
+    </div>
+
+    <!-- Screen 1: Basic Profile (3 Simple Big-Button Questions) -->
+    <div id="patientScreen-1" class="card-box" style="display:none; padding:2rem 1.5rem; background:var(--bg-card); border-radius:18px;">
+      <!-- Q1: Who is answering -->
+      <div id="wizProfileSub-1">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+          <h3 style="margin:0; font-size:1.55rem; font-weight:900; color:var(--text-primary); line-height:1.4;">
+            1. ใครเป็นคนทำแบบทดสอบนี้คะ?
+          </h3>
+          <button type="button" class="btn btn-tts" onclick="speakThai('ใครเป็นคนทำแบบทดสอบนี้คะ', this)" style="padding:0.4rem 0.8rem; font-size:0.95rem; min-height:44px;">
+            🔊 ฟังเสียง
+          </button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:1.5rem;">
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileTaker('SELF')">
+            <span style="font-size:1.8rem;">👴</span>
+            <span>ฉันทำด้วยตัวเอง (ผู้รับการตรวจ)</span>
+          </button>
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileTaker('CAREGIVER')">
+            <span style="font-size:1.8rem;">👨‍👩‍👧</span>
+            <span>ญาติหรือผู้ดูแลช่วยทำให้</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Q2: Age Range -->
+      <div id="wizProfileSub-2" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+          <h3 style="margin:0; font-size:1.55rem; font-weight:900; color:var(--text-primary); line-height:1.4;">
+            2. ช่วงอายุของผู้รับการตรวจ?
+          </h3>
+          <button type="button" class="btn btn-tts" onclick="speakThai('ช่วงอายุของผู้รับการตรวจ อยู่ในช่วงใดคะ', this)" style="padding:0.4rem 0.8rem; font-size:0.95rem; min-height:44px;">
+            🔊 ฟังเสียง
+          </button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:1.5rem;">
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileAge(55)">
+            <span style="font-size:1.8rem;">🟢</span>
+            <span>อายุต่ำกว่า 60 ปี</span>
+          </button>
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileAge(68)">
+            <span style="font-size:1.8rem;">🟡</span>
+            <span>อายุ 60 – 74 ปี</span>
+          </button>
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileAge(78)">
+            <span style="font-size:1.8rem;">🟠</span>
+            <span>อายุ 75 ปีขึ้นไป</span>
+          </button>
+        </div>
+        <button type="button" class="btn" onclick="showWizProfileSub(1)" style="min-height:50px; font-size:1.05rem;">
+          ⬅ ย้อนกลับ
+        </button>
+      </div>
+
+      <!-- Q3: Education -->
+      <div id="wizProfileSub-3" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+          <h3 style="margin:0; font-size:1.55rem; font-weight:900; color:var(--text-primary); line-height:1.4;">
+            3. ระดับการศึกษาสูงสุด?
+          </h3>
+          <button type="button" class="btn btn-tts" onclick="speakThai('ระดับการศึกษาสูงสุดของผู้รับการตรวจ อยู่ในระดับใดคะ', this)" style="padding:0.4rem 0.8rem; font-size:0.95rem; min-height:44px;">
+            🔊 ฟังเสียง
+          </button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:1.5rem;">
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileEdu(6)">
+            <span style="font-size:1.8rem;">📖</span>
+            <span>ประถมศึกษา (หรือเทียบเท่า)</span>
+          </button>
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileEdu(12)">
+            <span style="font-size:1.8rem;">📚</span>
+            <span>มัธยมศึกษา / ปวช. / ปวส.</span>
+          </button>
+          <button type="button" class="btn patient-choice-btn" onclick="submitWizProfileEdu(16)">
+            <span style="font-size:1.8rem;">🎓</span>
+            <span>ปริญญาตรีขึ้นไป</span>
+          </button>
+        </div>
+        <button type="button" class="btn" onclick="showWizProfileSub(2)" style="min-height:50px; font-size:1.05rem;">
+          ⬅ ย้อนกลับ
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 2: Card-by-Card Questions (2Q + AD8) -->
+    <div id="patientScreen-2" class="card-box" style="display:none; padding:2rem 1.5rem; background:var(--bg-card); border-radius:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+        <span id="patientCardQBadge" style="background:#2563EB; color:#FFF; font-weight:800; font-size:1.05rem; padding:0.35rem 0.9rem; border-radius:14px;">
+          ข้อที่ 1 จาก 8
+        </span>
+        <button type="button" class="btn btn-tts" id="patientCardQTtsBtn" onclick="speakActivePatientCardQuestion()" style="padding:0.45rem 1rem; font-size:1rem; min-height:46px;">
+          🔊 ฟังเสียงอ่านคำถาม
+        </button>
+      </div>
+
+      <h3 id="patientCardQTitle" style="font-size:1.65rem; font-weight:900; line-height:1.5; color:var(--text-primary); margin:0 0 0.85rem 0;">
+        คำถาม...
+      </h3>
+      <p id="patientCardQExample" style="font-size:1.15rem; color:var(--text-secondary); margin:0 0 2rem 0; line-height:1.6;">
+        ตัวอย่าง...
+      </p>
+
+      <!-- 2 Giant Choice Buttons (Height >= 64px, Gap >= 16px) -->
+      <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:2rem;">
+        <button type="button" class="btn patient-choice-btn" onclick="handlePatientCardChoice('YES')" style="border-color:#EF4444; color:#B91C1C;">
+          <span style="font-size:2rem; line-height:1;">⚠️</span>
+          <div>
+            <div style="font-size:1.35rem; font-weight:900;">มีการเปลี่ยนแปลง (ใช่ / เริ่มมีปัญหา)</div>
+            <div style="font-size:0.95rem; font-weight:600; color:var(--text-secondary); margin-top:0.2rem;">เริ่มสังเกตเห็นความผิดปกติหรือถดถอยจากเดิม</div>
+          </div>
+        </button>
+        <button type="button" class="btn patient-choice-btn" onclick="handlePatientCardChoice('NO')" style="border-color:#10B981; color:#047857;">
+          <span style="font-size:2rem; line-height:1;">✅</span>
+          <div>
+            <div style="font-size:1.35rem; font-weight:900;">ไม่มีการเปลี่ยนแปลง (ปกติ / ทำได้ดี)</div>
+            <div style="font-size:0.95rem; font-weight:600; color:var(--text-secondary); margin-top:0.2rem;">ยังทำสิ่งนี้ได้เป็นปกติเหมือนเดิมทุกอย่าง</div>
+          </div>
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+        <button type="button" class="btn" id="patientCardPrevBtn" onclick="handlePatientCardPrev()" style="min-height:50px; font-size:1.05rem;">
+          ⬅ ข้อก่อนหน้า
+        </button>
+        <button type="button" class="btn" onclick="handlePatientCardChoice('NA')" style="min-height:50px; font-size:0.98rem; color:var(--text-secondary);">
+          ❓ ไม่แน่ใจ / ข้ามข้อนี้
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Mini-Cog Memory & Clock Drawing -->
+    <div id="patientScreen-3" class="card-box" style="display:none; padding:2rem 1.5rem; background:var(--bg-card); border-radius:18px;">
+      <!-- 3.1 Words Presentation -->
+      <div id="wizMiniCogSub-Words" style="text-align:center;">
+        <h3 style="font-size:1.75rem; font-weight:900; margin:0 0 0.5rem 0;">📝 จำคำศัพท์ 3 คำ</h3>
+        <p style="font-size:1.25rem; color:var(--text-secondary); margin:0 0 1.5rem 0; line-height:1.6;">
+          กรุณาตั้งใจจำ 3 คำนี้ไว้ให้ดีนะคะ เดี๋ยวระบบจะถามอีกครั้งในขั้นตอนถัดไปค่ะ
+        </p>
+        
+        <div id="wizWordCardsGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1.25rem; margin-bottom:1.75rem;">
+          <!-- Dynamically populated word cards -->
+        </div>
+
+        <div style="margin-bottom:2rem;">
+          <button type="button" class="btn btn-tts" onclick="speakWizWords()" style="min-height:54px; font-size:1.15rem; padding:0.6rem 1.5rem;">
+            🔊 ฟังเสียงอ่านทั้ง 3 คำ
+          </button>
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="proceedWizToCdt()" style="min-height:64px; font-size:1.35rem; font-weight:900; width:100%; border-radius:14px; box-shadow:0 6px 16px rgba(37,99,235,0.3);">
+          จำได้ครบทั้ง 3 คำแล้ว ➔ วาดนาฬิกา
+        </button>
+      </div>
+
+      <!-- 3.2 Clock Drawing Canvas -->
+      <div id="wizMiniCogSub-Cdt" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <h3 style="font-size:1.75rem; font-weight:900; margin:0 0 0.35rem 0;">🕒 วาดรูปหน้าปัดนาฬิกา</h3>
+            <p style="font-size:1.2rem; color:var(--text-secondary); margin:0; line-height:1.6;">
+              ใช้นิ้วหรือปากกา Stylus วาดหน้าปัดนาฬิกา ใส่เลข 1 ถึง 12 ให้ครบ และวาดเข็มชี้เวลา <strong>11:10 (11 โมง 10 นาที)</strong>
+            </p>
+          </div>
+          <button type="button" class="btn btn-tts" onclick="speakThai('กรุณาวาดหน้าปัดนาฬิกา ใส่ตัวเลขหนึ่งถึงสิบสองให้ครบ และวาดเข็มบอกเวลาสิบเอ็ดโมงสิบนาทีค่ะ', this)" style="padding:0.4rem 0.8rem; font-size:0.95rem; min-height:44px;">
+            🔊 ฟังคำแนะนำ
+          </button>
+        </div>
+
+        <div style="background:#FFFFFF; border:3px solid var(--border-strong); border-radius:14px; margin-bottom:1.25rem; display:flex; justify-content:center; align-items:center; padding:0.5rem;">
+          <canvas id="wizCdtCanvas" width="460" height="460" style="max-width:100%; height:auto; touch-action:none; cursor:crosshair; background:#FFF;"></canvas>
+        </div>
+
+        <div style="display:flex; gap:1rem; justify-content:space-between; flex-wrap:wrap; margin-bottom:1.25rem;">
+          <button type="button" class="btn" onclick="clearWizCdtCanvas()" style="min-height:56px; font-size:1.1rem; border-color:#EF4444; color:#DC2626;">
+            🔄 ลบวาดใหม่
+          </button>
+          <button type="button" class="btn btn-primary" onclick="proceedWizToRecall()" style="min-height:56px; font-size:1.25rem; font-weight:900; flex:1; min-width:200px;">
+            วาดเสร็จแล้ว ➔ ตอบคำศัพท์
+          </button>
+        </div>
+      </div>
+
+      <!-- 3.3 Word Recall Check -->
+      <div id="wizMiniCogSub-Recall" style="display:none;">
+        <h3 style="font-size:1.75rem; font-weight:900; margin:0 0 0.5rem 0;">🧠 คำศัพท์ 3 คำที่จำไว้ คือคำใดบ้าง?</h3>
+        <p style="font-size:1.2rem; color:var(--text-secondary); margin:0 0 1.5rem 0;">
+          กรุณาแตะเลือกคำศัพท์ที่คุณจำได้จากรายการด้านล่าง (แตะเลือกตามที่จำได้จริงค่ะ):
+        </p>
+
+        <div id="wizRecallChoicesGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:2rem;">
+          <!-- Dynamically populated recall choices -->
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="finishPatientAssessment()" style="min-height:64px; font-size:1.35rem; font-weight:900; width:100%; border-radius:14px; box-shadow:0 6px 16px rgba(37,99,235,0.3);">
+          ดูผลสรุปสุขภาพความจำ ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 4: Traffic Light Plain-Language Result -->
+    <div id="patientScreen-4" class="card-box" style="display:none; padding:2rem 1.5rem; background:var(--bg-card); border-radius:18px;">
+      <div id="patientTrafficLightCardContent">
+        <!-- Dynamically rendered result -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Clinician Full Functional Workspace -->
+  <div id="clinicianWorkspace" class="clinician-only">
 
     <!-- ======================================================================
          STEP 0: Patient Demographics & Quick Clinical Scenario Loader
@@ -3096,7 +3411,8 @@
 
 
 
-  </main>
+    </div><!-- /#clinicianWorkspace -->
+</main>
 
   <!-- ========================================================================
        Clinical Modals (4AT Delirium, Speech PDPA Consent, Unit Test Runner)
@@ -9481,6 +9797,507 @@
       updateTrailTelemetryUI();
       clearAllLabInputs();
     });
+  
+    /* ========================================================================
+       SENIOR PATIENT WIZARD LOGIC (Zero-Friction UX, Adaptive Role Presentation)
+       ======================================================================== */
+    let wizCardQuestions = [
+      {
+        type: "2Q",
+        index: 0,
+        badge: "แบบประเมินอารมณ์ ข้อ 1/2",
+        title: "ใน 2 สัปดาห์ที่ผ่านมา รู้สึกหดหู่ เศร้า หรือท้อแท้บ่อยๆ หรือไม่คะ?",
+        example: "รู้สึกใจคอไม่ดี ไม่แจ่มใส หรือรู้สึกเศร้าบ่อยครั้งในช่วงนี้",
+        audioText: "ในสองสัปดาห์ที่ผ่านมา รู้สึกหดหู่ เศร้า หรือท้อแท้บ่อยๆ หรือไม่คะ"
+      },
+      {
+        type: "2Q",
+        index: 1,
+        badge: "แบบประเมินอารมณ์ ข้อ 2/2",
+        title: "ใน 2 สัปดาห์ที่ผ่านมา รู้สึกเบื่อ ไม่มีความสุขในการทำกิจกรรมที่เคยชอบหรือไม่คะ?",
+        example: "งานอดิเรกหรือสิ่งเดิมๆ ที่เคยทำแล้วมีความสุข ตอนนี้รู้สึกเฉยชาหรือเบื่อหน่าย",
+        audioText: "ในสองสัปดาห์ที่ผ่านมา รู้สึกเบื่อ ไม่มีความสุขในการทำกิจกรรมที่เคยชอบหรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 0,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 1/8",
+        title: "มีปัญหาเรื่องการตัดสินใจผิดพลาด เช่น ตัดสินใจเรื่องเงินหรือเรื่องสำคัญผิดไปจากเดิม?",
+        example: "เช่น ถูกหลอกง่ายขึ้น หรือตัดสินใจเรื่องสำคัญในบ้านผิดพลาดอย่างไม่เคยเป็นมาก่อน",
+        audioText: "มีปัญหาเรื่องการตัดสินใจผิดพลาด เช่น ตัดสินใจเรื่องเงินหรือเรื่องสำคัญผิดไปจากเดิมหรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 1,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 2/8",
+        title: "ความสนใจในงานอดิเรก กิจกรรมที่เคยชอบ หรือสิ่งรอบตัวลดลงไปมาก?",
+        example: "เช่น เลิกทำสวน เลิกเย็บผ้า เลิกออกไปพบเพื่อนฝูงโดยไม่มีสาเหตุชัดเจน",
+        audioText: "ความสนใจในงานอดิเรก หรือกิจกรรมที่เคยชอบลดลงไปมากหรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 2,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 3/8",
+        title: "พูดซ้ำ ถามคำถามเดิมๆ หรือเล่าเรื่องเดิมซ้ำๆ ในช่วงเวลาใกล้กัน?",
+        example: "ถามคำถามเดิมซ้ำทั้งที่เพิ่งตอบไป หรือเล่าเรื่องเดิมวนไปมาหลายรอบในวันเดียว",
+        audioText: "พูดซ้ำ ถามคำถามเดิมๆ หรือเล่าเรื่องเดิมซ้ำๆ ในช่วงเวลาใกล้กันหรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 3,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 4/8",
+        title: "มีปัญหาในการเรียนรู้วิธีใช้อุปกรณ์ใหม่ๆ (เช่น รีโมททีวี, เตาไมโครเวฟ, โทรศัพท์มือถือ)?",
+        example: "สับสนกับปุ่มกด ไม่เข้าใจขั้นตอนง่ายๆ แม้จะสอนซ้ำหลายครั้ง",
+        audioText: "มีปัญหาในการเรียนรู้วิธีใช้อุปกรณ์ใหม่ๆ หรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 4,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 5/8",
+        title: "ลืมเดือน หรือปีปัจจุบัน หรือจำวันเวลาสำคัญผิดบ่อยๆ?",
+        example: "เช่น สับสนว่าตอนนี้เป็นปีไหน หรือจำวันนัดสำคัญผิดพลาด",
+        audioText: "ลืมเดือน หรือปีปัจจุบัน หรือจำวันเวลาสำคัญผิดบ่อยๆ หรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 5,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 6/8",
+        title: "มีปัญหาในการจัดการเรื่องการเงิน (เช่น จ่ายบิล, ตรวจสอบเงินทอน, ใช้ตู้ ATM)?",
+        example: "คำนวณเงินง่ายๆ ผิด หรือสับสนเรื่องการจ่ายค่าน้ำค่าไฟ",
+        audioText: "มีปัญหาในการจัดการเรื่องการเงิน หรือคำนวณเงินทอนหรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 6,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 7/8",
+        title: "ลืมเวลานัดหมาย หรือลืมเหตุการณ์สำคัญในครอบครัวบ่อยขึ้น?",
+        example: "ลืมวันนัดหมอ หรือลืมวันเกิดของคนในครอบครัว",
+        audioText: "ลืมเวลานัดหมาย หรือลืมเหตุการณ์สำคัญในครอบครัวบ่อยขึ้นหรือไม่คะ"
+      },
+      {
+        type: "AD8",
+        index: 7,
+        badge: "ความจำในชีวิตประจำวัน ข้อ 8/8",
+        title: "มีปัญหาเรื่องความคิด ความจำ หรือสมาธิต่อเนื่องเกือบทุกวัน?",
+        example: "คนรอบข้างเริ่มสังเกตเห็นว่าหลงลืมบ่อยขึ้นอย่างชัดเจน",
+        audioText: "มีปัญหาเรื่องความคิด ความจำ หรือสมาธิต่อเนื่องเกือบทุกวันหรือไม่คะ"
+      }
+    ];
+
+    let currentWizCardIndex = 0;
+    let selectedWizRecallWords = [];
+
+    function startPatientWizard() {
+      document.getElementById("patientScreen-0").style.display = "none";
+      document.getElementById("patientScreen-1").style.display = "block";
+      document.getElementById("patientWizProgressHeader").style.display = "block";
+      updateWizProgress(1, "ขั้นตอนที่ 1: ข้อมูลเบื้องต้น", 25);
+      showWizProfileSub(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateWizProgress(stepNum, title, percent) {
+      const titleEl = document.getElementById("patientWizStepTitle");
+      const badgeEl = document.getElementById("patientWizProgressBadge");
+      const barEl = document.getElementById("patientWizProgressBar");
+      if (titleEl) titleEl.textContent = title;
+      if (badgeEl) badgeEl.textContent = `ความคืบหน้า ${percent}%`;
+      if (barEl) barEl.style.width = `${percent}%`;
+    }
+
+    function showWizProfileSub(subNum) {
+      document.getElementById("wizProfileSub-1").style.display = (subNum === 1) ? "block" : "none";
+      document.getElementById("wizProfileSub-2").style.display = (subNum === 2) ? "block" : "none";
+      document.getElementById("wizProfileSub-3").style.display = (subNum === 3) ? "block" : "none";
+    }
+
+    function submitWizProfileTaker(role) {
+      appState.informantRelationship = role;
+      const takerInput = document.getElementById("informantRelationshipSelect");
+      if (takerInput) takerInput.value = role;
+      showWizProfileSub(2);
+    }
+
+    function submitWizProfileAge(age) {
+      appState.age = age;
+      const ageInput = document.getElementById("patientAgeInput");
+      if (ageInput) ageInput.value = age;
+      showWizProfileSub(3);
+    }
+
+    function submitWizProfileEdu(eduYears) {
+      appState.yearsOfEducation = eduYears;
+      const eduInput = document.getElementById("patientEduInput");
+      if (eduInput) eduInput.value = eduYears;
+
+      // Transition to Screen 2: Card-by-Card Questions
+      document.getElementById("patientScreen-1").style.display = "none";
+      document.getElementById("patientScreen-2").style.display = "block";
+      updateWizProgress(2, "ขั้นตอนที่ 2: สังเกตความจำในชีวิตประจำวัน", 50);
+      currentWizCardIndex = 0;
+      renderActivePatientCard();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderActivePatientCard() {
+      const q = wizCardQuestions[currentWizCardIndex];
+      if (!q) return;
+
+      const badgeEl = document.getElementById("patientCardQBadge");
+      const titleEl = document.getElementById("patientCardQTitle");
+      const exEl = document.getElementById("patientCardQExample");
+      const prevBtn = document.getElementById("patientCardPrevBtn");
+
+      if (badgeEl) badgeEl.textContent = q.badge;
+      if (titleEl) titleEl.textContent = q.title;
+      if (exEl) exEl.textContent = q.example;
+      if (prevBtn) prevBtn.style.visibility = (currentWizCardIndex === 0) ? "hidden" : "visible";
+
+      // Auto scroll smoothly to card top
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function speakActivePatientCardQuestion() {
+      const q = wizCardQuestions[currentWizCardIndex];
+      if (q && q.audioText) {
+        speakThai(q.audioText, document.getElementById("patientCardQTtsBtn"));
+      }
+    }
+
+    function handlePatientCardChoice(choice) {
+      const q = wizCardQuestions[currentWizCardIndex];
+      if (!q) return;
+
+      if (q.type === "2Q") {
+        if (!appState['2qResponses']) appState['2qResponses'] = [false, false];
+        appState['2qResponses'][q.index] = (choice === "YES");
+        // Sync with underlying form
+        const radioYes = document.getElementById(`twoQ_${q.index}_yes`);
+        const radioNo = document.getElementById(`twoQ_${q.index}_no`);
+        if (choice === "YES" && radioYes) radioYes.checked = true;
+        if (choice === "NO" && radioNo) radioNo.checked = true;
+      } else if (q.type === "AD8") {
+        appState.ad8Responses[q.index] = choice;
+        // Sync with underlying form radios
+        const radioYes = document.getElementById(`ad8_${q.index}_yes`);
+        const radioNo = document.getElementById(`ad8_${q.index}_no`);
+        const radioNa = document.getElementById(`ad8_${q.index}_na`);
+        if (choice === "YES" && radioYes) radioYes.checked = true;
+        if (choice === "NO" && radioNo) radioNo.checked = true;
+        if (choice === "NA" && radioNa) radioNa.checked = true;
+      }
+
+      currentWizCardIndex++;
+      if (currentWizCardIndex < wizCardQuestions.length) {
+        renderActivePatientCard();
+      } else {
+        // Questions completed, proceed to Screen 3: Mini-Cog
+        document.getElementById("patientScreen-2").style.display = "none";
+        document.getElementById("patientScreen-3").style.display = "block";
+        updateWizProgress(3, "ขั้นตอนที่ 3: ทดสอบความจำและวาดนาฬิกา", 75);
+        setupWizMiniCog();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function handlePatientCardPrev() {
+      if (currentWizCardIndex > 0) {
+        currentWizCardIndex--;
+        renderActivePatientCard();
+      } else {
+        document.getElementById("patientScreen-2").style.display = "none";
+        document.getElementById("patientScreen-1").style.display = "block";
+        showWizProfileSub(3);
+        updateWizProgress(1, "ขั้นตอนที่ 1: ข้อมูลเบื้องต้น", 25);
+      }
+    }
+
+    /* ------------------------------------------------------------------------
+       WIZARD STEP 3: MINI-COG (WORDS + CDT + RECALL)
+       ------------------------------------------------------------------------ */
+    function setupWizMiniCog() {
+      document.getElementById("wizMiniCogSub-Words").style.display = "block";
+      document.getElementById("wizMiniCogSub-Cdt").style.display = "none";
+      document.getElementById("wizMiniCogSub-Recall").style.display = "none";
+
+      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
+      const words = wordSet.words;
+      const icons = ["🍌", "🚗", "💡"];
+
+      const grid = document.getElementById("wizWordCardsGrid");
+      if (grid) {
+        grid.innerHTML = words.map((w, idx) => `
+          <div style="background:var(--bg-elevated); border:3px solid var(--border-strong); border-radius:16px; padding:1.75rem 1rem; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+            <div style="font-size:3rem; line-height:1; margin-bottom:0.75rem;">${icons[idx] || "📌"}</div>
+            <div style="font-size:1.75rem; font-weight:900; color:var(--text-primary);">${w}</div>
+          </div>
+        `).join("");
+      }
+    }
+
+    function speakWizWords() {
+      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
+      const phrase = `กรุณาตั้งใจจำสามคำนี้นะคะ ได้แก่ ${wordSet.words[0]}, ${wordSet.words[1]}, และ ${wordSet.words[2]}`;
+      speakThai(phrase);
+    }
+
+    function proceedWizToCdt() {
+      document.getElementById("wizMiniCogSub-Words").style.display = "none";
+      document.getElementById("wizMiniCogSub-Cdt").style.display = "block";
+      initWizCdtCanvas();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    let wizCdtDrawing = false;
+    let wizCdtCtx = null;
+
+    function initWizCdtCanvas() {
+      const canvas = document.getElementById("wizCdtCanvas");
+      if (!canvas) return;
+      wizCdtCtx = canvas.getContext("2d");
+      wizCdtCtx.lineWidth = 4;
+      wizCdtCtx.lineCap = "round";
+      wizCdtCtx.lineJoin = "round";
+      wizCdtCtx.strokeStyle = "#0F172A";
+
+      // Clear with pure white
+      wizCdtCtx.fillStyle = "#FFFFFF";
+      wizCdtCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      }
+
+      function startDraw(e) {
+        wizCdtDrawing = true;
+        const pos = getPos(e);
+        wizCdtCtx.beginPath();
+        wizCdtCtx.moveTo(pos.x, pos.y);
+        if (e.cancelable && e.type.startsWith('touch')) e.preventDefault();
+      }
+
+      function draw(e) {
+        if (!wizCdtDrawing) return;
+        const pos = getPos(e);
+        wizCdtCtx.lineTo(pos.x, pos.y);
+        wizCdtCtx.stroke();
+        if (e.cancelable && e.type.startsWith('touch')) e.preventDefault();
+      }
+
+      function stopDraw() {
+        wizCdtDrawing = false;
+      }
+
+      canvas.onmousedown = startDraw;
+      canvas.onmousemove = draw;
+      canvas.onmouseup = stopDraw;
+      canvas.onmouseleave = stopDraw;
+
+      canvas.ontouchstart = startDraw;
+      canvas.ontouchmove = draw;
+      canvas.ontouchend = stopDraw;
+      canvas.ontouchcancel = stopDraw;
+    }
+
+    function clearWizCdtCanvas() {
+      const canvas = document.getElementById("wizCdtCanvas");
+      if (canvas && wizCdtCtx) {
+        wizCdtCtx.fillStyle = "#FFFFFF";
+        wizCdtCtx.fillRect(0, 0, canvas.width, canvas.height);
+        showToast("ล้างกระดานวาดเรียบร้อยค่ะ", "info");
+      }
+    }
+
+    function proceedWizToRecall() {
+      // Save CDT telemetry
+      const canvas = document.getElementById("wizCdtCanvas");
+      if (canvas) {
+        appState.cdtTelemetry.imageDataUrl = canvas.toDataURL("image/png");
+        appState.cdtTelemetry.sourceType = "SCREEN_DRAWING";
+        appState.cdtResult = "NORMAL"; // default to pass if attempted
+      }
+
+      document.getElementById("wizMiniCogSub-Cdt").style.display = "none";
+      document.getElementById("wizMiniCogSub-Recall").style.display = "block";
+
+      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
+      const targetWords = wordSet.words;
+      const distractorWords = wordSet.distractors || ["พัดลม", "เก้าอี้", "กระเป๋า"];
+      const allChoices = [...targetWords, ...distractorWords].sort(() => Math.random() - 0.5);
+
+      selectedWizRecallWords = [];
+      const grid = document.getElementById("wizRecallChoicesGrid");
+      if (grid) {
+        grid.innerHTML = allChoices.map(w => `
+          <button type="button" class="btn patient-choice-btn" id="wizWordChoice_${w}" onclick="toggleWizWordChoice('${w}')" style="justify-content:center; text-align:center; min-height:60px; font-size:1.3rem;">
+            ${w}
+          </button>
+        `).join("");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function toggleWizWordChoice(word) {
+      const btn = document.getElementById(`wizWordChoice_${word}`);
+      const idx = selectedWizRecallWords.indexOf(word);
+      if (idx > -1) {
+        selectedWizRecallWords.splice(idx, 1);
+        if (btn) btn.classList.remove("selected");
+      } else {
+        selectedWizRecallWords.push(word);
+        if (btn) btn.classList.add("selected");
+      }
+    }
+
+    function finishPatientAssessment() {
+      const wordSet = WORD_REGISTRATION_SETS[appState.activeWordSetIndex || 0];
+      const targetWords = wordSet.words;
+      let recallScore = 0;
+      targetWords.forEach(w => {
+        if (selectedWizRecallWords.includes(w)) recallScore++;
+      });
+      appState.delayedRecallScore = recallScore;
+      setDirectRecallScore(recallScore);
+
+      // Run risk evaluation
+      renderRiskStratificationReport();
+
+      // Transition to Screen 4: Traffic Light Plain-Language Result
+      document.getElementById("patientScreen-3").style.display = "none";
+      document.getElementById("patientScreen-4").style.display = "block";
+      updateWizProgress(4, "ขั้นตอนที่ 4: สรุปผลสุขภาพความจำสำหรับประชาชน", 100);
+      renderPatientTrafficLightResult();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    /* ------------------------------------------------------------------------
+       WIZARD STEP 4: PLAIN-LANGUAGE TRAFFIC LIGHT RESULT
+       ------------------------------------------------------------------------ */
+    function renderPatientTrafficLightResult() {
+      const container = document.getElementById("patientTrafficLightCardContent");
+      if (!container) return;
+
+      const ad8Score = countAd8Yes();
+      const recall = (appState.delayedRecallScore !== null) ? appState.delayedRecallScore : 3;
+      const tier = lastAssessmentPayload ? lastAssessmentPayload.riskTier : "LOW";
+
+      let lightColor = "green"; // green, yellow, red
+      let title = "สุขภาพความจำอยู่ในเกณฑ์ปกติสมวัย";
+      let subtitle = "ไม่พบสัญญาณความเสี่ยงของภาวะสมองเสื่อมจากการประเมินเบื้องต้น";
+      let badgeHtml = '<span style="background:#10B981; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🟢 ความจำสมวัย (เกณฑ์ปกติ)</span>';
+      let icon = "🟢";
+      let actionBoxHtml = "";
+
+      if (tier === "HIGH" || tier === "CRITICAL" || (ad8Score >= 4 && recall === 0)) {
+        lightColor = "red";
+        icon = "🔴";
+        title = "พบสัญญาณความเสี่ยงที่ควรปรึกษาแพทย์เฉพาะทาง";
+        subtitle = "ระบบตรวจพบความเปลี่ยนแปลงด้านความคิดความจำที่ชัดเจน หรือมีปัจจัยเสี่ยง";
+        badgeHtml = '<span style="background:#DC2626; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🔴 ควรได้รับการตรวจจากแพทย์เฉพาะทาง</span>';
+        actionBoxHtml = `
+          <div style="background:#FEF2F2; border:2px solid #FCA5A5; border-radius:14px; padding:1.25rem; color:#991B1B; margin:1.5rem 0; text-align:left;">
+            <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">🩺 คำแนะนำสำหรับการดูแล (นำไปพบแพทย์):</div>
+            <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
+              <li><strong>นัดหมายพบแพทย์:</strong> แนะนำพาผู้รับการตรวจไปพบแพทย์เฉพาะทางด้านประสาทวิทยา หรือคลินิกความจำ (Memory Clinic)</li>
+              <li><strong>เตรียมรายการยา:</strong> นำยาทุกชนิดที่ทานอยู่ปัจจุบัน (ทั้งยาประจำตัว ยาแก้แพ้ ยานอนหลับ) ไปให้แพทย์ตรวจสอบ</li>
+              <li><strong>พิมพ์ผลสรุปนี้:</strong> นำผลการประเมินนี้แนบไปด้วยเพื่อให้แพทย์ดูภาพรวมการคัดกรองเบื้องต้นได้ทันที</li>
+            </ul>
+          </div>
+        `;
+      } else if (tier === "MODERATE" || ad8Score >= 2 || recall <= 1) {
+        lightColor = "yellow";
+        icon = "🟡";
+        title = "เริ่มพบความเปลี่ยนแปลงเล็กน้อย ควรปรึกษาแพทย์";
+        subtitle = "มีความเปลี่ยนแปลงเรื่องความจำบางส่วนที่ควรตรวจเช็กหาสาเหตุที่รักษาหายได้";
+        badgeHtml = '<span style="background:#D97706; color:#FFF; font-size:1.15rem; font-weight:900; padding:0.4rem 1.25rem; border-radius:24px;">🟡 เริ่มมีความเปลี่ยนแปลง (ควรปรึกษาแพทย์)</span>';
+        actionBoxHtml = `
+          <div style="background:#FFFBEB; border:2px solid #FCD34D; border-radius:14px; padding:1.25rem; color:#92400E; margin:1.5rem 0; text-align:left;">
+            <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">👨‍⚕️ คำแนะนำสำหรับการดูแล:</div>
+            <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
+              <li><strong>ตรวจเช็กสุขภาพทั่วไป:</strong> ปรึกษาแพทย์ปฐมภูมิเพื่อตรวจหาสาเหตุที่อาจรักษาหายได้ เช่น ภาวะขาดวิตามิน B12, ต่อมไทรอยด์ทำงานต่ำ หรือภาวะซึมเศร้า</li>
+              <li><strong>จดบันทึกอาการ:</strong> หากสังเกตเห็นอาการหลงลืม เช่น ลืมกินยา ลืมของ ให้จดบันทึกวันที่และเหตุการณ์ไว้เพื่อแจ้งแพทย์</li>
+              <li><strong>ตรวจติดตามผล:</strong> แนะนำทำแบบประเมินความจำซ้ำทุกๆ 3 - 6 เดือนเพื่อดูแนวโน้ม</li>
+            </ul>
+          </div>
+        `;
+      } else {
+        actionBoxHtml = `
+          <div style="background:#ECFDF5; border:2px solid #6EE7B7; border-radius:14px; padding:1.25rem; color:#065F46; margin:1.5rem 0; text-align:left;">
+            <div style="font-weight:900; font-size:1.25rem; margin-bottom:0.5rem;">🥗 คำแนะนำการส่งเสริมสุขภาพสมอง:</div>
+            <ul style="margin:0; padding-left:1.35rem; font-size:1.1rem; line-height:1.7;">
+              <li><strong>อาหารบำรุงสมอง (MIND Diet):</strong> เน้นผักใบเขียว เบอร์รี่ ถั่ว ธัญพืชไม่ขัดสี ปลา และน้ำมันมะกอก</li>
+              <li><strong>ออกกำลังกายแบบแอโรบิก:</strong> เดินเร็ว หรือปั่นจักรยานอยู่กับที่ 30 นาทีต่อวัน อย่างน้อย 5 วันต่อสัปดาห์</li>
+              <li><strong>การนอนหลับที่มีคุณภาพ:</strong> นอนหลับให้สนิท 7–8 ชั่วโมงต่อคืน เพื่อให้สมองขจัดโปรตีนของเสีย</li>
+              <li><strong>ฝึกสมองและเข้าสังคม:</strong> อ่านหนังสือ เล่นเกมต่อคำศัพท์ และพบปะพูดคุยกับเพื่อนฝูงสม่ำเสมอ</li>
+            </ul>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div style="text-align:center; padding:1rem 0;">
+          <div style="margin-bottom:1rem;">${badgeHtml}</div>
+          <h2 style="font-size:1.95rem; font-weight:900; margin:0 0 0.5rem 0; color:var(--text-primary); line-height:1.3;">
+            ${title}
+          </h2>
+          <p style="font-size:1.2rem; color:var(--text-secondary); margin:0 0 1.5rem 0; line-height:1.6;">
+            ${subtitle}
+          </p>
+
+          <!-- Summary Metric Cards -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+            <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">แบบสอบถามญาติ (AD8)</div>
+              <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">${ad8Score} / 8 ข้อ</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">${ad8Score >= 2 ? "⚠️ มีการเปลี่ยนแปลง" : "✅ ปกติดี"}</div>
+            </div>
+            <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">ความจำ 3 คำ (Mini-Cog)</div>
+              <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">${recall} / 3 คำ</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">${recall >= 2 ? "✅ จำได้ดี" : "⚠️ จำได้น้อย"}</div>
+            </div>
+            <div style="background:var(--bg-elevated); padding:1rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:0.95rem; font-weight:700; color:var(--text-secondary);">วาดรูปนาฬิกา</div>
+              <div style="font-size:1.85rem; font-weight:900; color:var(--text-primary); margin-top:0.25rem;">✅ วาดเสร็จ</div>
+              <div style="font-size:0.85rem; color:var(--text-secondary);">บันทึกภาพหน้าปัดแล้ว</div>
+            </div>
+          </div>
+
+          ${actionBoxHtml}
+
+          <!-- Action Buttons -->
+          <div style="display:flex; flex-direction:column; gap:12px; max-width:480px; margin:2rem auto 0 auto;">
+            <button type="button" class="btn btn-primary" onclick="window.print()" style="min-height:60px; font-size:1.25rem; font-weight:900; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;">
+              <span>🖨️ พิมพ์รายงานสรุปผลเพื่อนำไปพบแพทย์ (A4)</span>
+            </button>
+            <button type="button" class="btn" onclick="restartPatientWizard()" style="min-height:54px; font-size:1.15rem; font-weight:800; border-radius:14px;">
+              🔄 เริ่มตรวจใหม่อีกครั้ง
+            </button>
+            <button type="button" class="btn" onclick="setViewMode('CLINICIAN')" style="min-height:50px; font-size:1.05rem; font-weight:700; border-color:var(--primary-bg); background:var(--bg-surface); color:var(--text-primary);">
+              👨‍⚕️ สลับเป็นโหมดเจ้าหน้าที่ (ดูค่า Telemetry &amp; LIS)
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function restartPatientWizard() {
+      resetForNewPatient();
+      document.getElementById("patientScreen-4").style.display = "none";
+      document.getElementById("patientScreen-0").style.display = "block";
+      document.getElementById("patientWizProgressHeader").style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("รีเซ็ตแบบประเมินเรียบร้อยค่ะ", "info");
+    }
+
   </script>
 </body>
 
