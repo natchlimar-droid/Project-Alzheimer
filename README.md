@@ -10,6 +10,14 @@
 
 ---
 
+## 🖥️ Interface Preview
+
+| Patient-Friendly Screening Mode | Clinical Staff & Telemetry Mode |
+| :---: | :---: |
+| ![Patient Mode](assets/patient-mode.png) | ![Staff Mode](assets/staff-mode.png) |
+
+---
+
 ## 📌 บทนำและปัญหาในระบบสาธารณสุขไทย (Problem Statement)
 ประเทศไทยได้ก้าวเข้าสู่ **สังคมผู้สูงอายุอย่างสมบูรณ์ (Complete Aged Society)** โดยมีประชากรอายุ 60 ปีขึ้นไปมากกว่า 20% ของประชากรทั้งประเทศ นำมาซึ่งความท้าทายสำคัญในระบบสาธารณสุข:
 1. **ภาวะสมองเสื่อมถูกตรวจพบช้า (Delayed Diagnosis):** ผู้ป่วยส่วนใหญ่มาพบแพทย์เมื่อเข้าสู่ระยะสมองเสื่อมชัดเจน (Moderate to Severe Dementia) ซึ่งเลยช่วงเวลาทอง (Golden Period) ในการชะลอโรค
