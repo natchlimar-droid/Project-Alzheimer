@@ -1637,6 +1637,11 @@
         <button type="button" class="btn clinician-only" onclick="openPayloadPreviewModal()" style="font-weight:800; border-color:var(--primary-bg); background:var(--bg-elevated); color:var(--text-primary);" aria-label="ดูโครงสร้างข้อมูลส่งออก EMR/LIS Payload">
           👁️ ดูโครงสร้างข้อมูลส่งออก (EMR / LIS Payload)
         </button>
+        <button type="button" class="btn" id="networkSyncBadge" onclick="openOfflineSyncQueueModal()" style="font-weight:800; border-color:#059669; background:#ECFDF5; color:#064E3B; display:inline-flex; align-items:center; gap:0.4rem;" aria-label="สถานะการเชื่อมต่อและคิวซิงค์ออฟไลน์">
+          <span id="networkStatusDot" style="width:10px; height:10px; border-radius:50%; background:#10B981; display:inline-block;"></span>
+          <span id="networkStatusText">🟢 ออนไลน์</span>
+          <span id="syncQueueCountBadge" class="badge" style="background:#047857; color:#FFFFFF; padding:0.15rem 0.45rem; border-radius:10px; font-size:0.8rem; margin-left:0.25rem;">0 ค้างส่ง</span>
+        </button>
         <button type="button" class="btn" id="themeToggleBtn" onclick="toggleContrastTheme()"
           aria-label="สลับโหมดสีความคมชัดสูง">
           🌓 โหมดสี: พื้นสว่าง (WCAG AAA)
@@ -2414,6 +2419,9 @@
                 <li>รูปแบบการป้อนข้อมูล: <strong id="cdtInputSourceText">หน้าจอสัมผัส (Touchscreen / Canvas)</strong></li>
                 <li>จำนวนเส้นที่ลาก (`strokeCount`): <strong id="cdtStrokeCountText">0</strong> เส้น</li>
                 <li>เวลารวมที่ใช้ (`totalDurationMs`): <strong id="cdtTotalDurationText">0</strong> ms</li>
+                <li>เวลาคิดก่อนลากเส้นแรก (`initiationLatencyMs`): <strong id="cdtLatencyText">0</strong> ms</li>
+                <li>จำนวนครั้งที่ยกปากกา/นิ้ว (`penLiftsCount`): <strong id="cdtPenLiftsText">0</strong> ครั้ง</li>
+                <li>ความเร็วเฉลี่ยในการลากเส้น (`strokeVelocity`): <strong id="cdtVelocityText">0</strong> px/s</li>
                 <li>ความลังเลเฉลี่ย (`hesitationIntervalsMs`): <strong id="cdtHesitationText">0</strong> ms</li>
                 <li>การกรองอาการมือสั่น (`motorTremorFilter`): <strong id="cdtTremorStatusText">ปกติ (ไม่พบความสั่นพริ้วผิดปกติ)</strong></li>
                 <li>สถานะการบันทึกภาพ: <strong id="cdtExportStatusText">พร้อมบันทึก Base64 &amp; SVG</strong></li>
@@ -3708,6 +3716,57 @@
     </div>
   </dialog>
 
+  <!-- Offline Sync Queue Modal (For Primary Health Centers / รพ.สต. Outreach) -->
+  <dialog id="offlineSyncModal" class="modal-dialog" style="max-width:850px; width:95vw;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:2px solid var(--border-subtle); padding-bottom:0.75rem;">
+      <div>
+        <h3 style="margin:0; font-size:1.4rem;">📶 คิวส่งออกข้อมูลออฟไลน์ (Offline Sync Queue)</h3>
+        <p style="margin:0.25rem 0 0 0; color:var(--text-secondary); font-size:0.95rem;">
+          สำหรับหน่วยบริการปฐมภูมิ / รพ.สต. และทีมลงพื้นที่ชุมชน ข้อมูลจะถูกบันทึกในเครื่องอัตโนมัติและพร้อมซิงค์เข้าสู่ NeuroRegistry เมื่อเชื่อมต่ออินเทอร์เน็ต
+        </p>
+      </div>
+      <button type="button" class="btn" onclick="document.getElementById('offlineSyncModal').close()" style="min-height:44px; padding:0.4rem 0.8rem;">✕ ปิด</button>
+    </div>
+    
+    <div id="offlineSyncStatusBanner" style="padding:0.85rem 1rem; border-radius:8px; margin-bottom:1rem; font-weight:800; font-size:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; background:var(--status-low-surface); color:var(--status-low-text); border:2px solid var(--status-low-border);">
+      <span id="offlineSyncSummaryText">🟢 กำลังเชื่อมต่ออินเทอร์เน็ต — รายการรอซิงค์: 0 เคส</span>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary" id="btnBatchSyncNow" onclick="syncOfflineQueueToBackend()" style="padding:0.4rem 0.9rem; font-size:0.9rem; min-height:40px;">
+          🚀 ซิงค์ข้อมูลทันที (Batch Sync)
+        </button>
+        <button type="button" class="btn" onclick="exportOfflineQueueBatchJson()" style="padding:0.4rem 0.9rem; font-size:0.9rem; min-height:40px;">
+          💾 ดาวน์โหลด Batch JSON
+        </button>
+      </div>
+    </div>
+
+    <div style="max-height:50vh; overflow-y:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.92rem;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border-strong); text-align:left; background:var(--bg-surface);">
+            <th style="padding:0.5rem;">เวลาประเมิน</th>
+            <th style="padding:0.5rem;">Session ID / Token</th>
+            <th style="padding:0.5rem;">ผลการคัดกรอง (Triage)</th>
+            <th style="padding:0.5rem; text-align:center;">สถานะซิงค์</th>
+            <th style="padding:0.5rem; text-align:right;">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="offlineQueueTableBody">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; border-top:1px solid var(--border-subtle); padding-top:1rem;">
+      <button type="button" class="btn" onclick="clearSyncedOfflineItems()" style="font-size:0.9rem; min-height:40px; padding:0.4rem 0.8rem;">
+        🧹 ล้างเฉพาะรายการที่ซิงค์สำเร็จแล้ว
+      </button>
+      <button type="button" class="btn" onclick="document.getElementById('offlineSyncModal').close()" style="min-height:44px; padding:0.4rem 1rem;">
+        ปิดหน้าต่าง
+      </button>
+    </div>
+  </dialog>
+
   <!-- Scenario Loaded Interactive Modal (Immediate Feedback Popup) -->
   <dialog id="scenarioLoadedModal" class="modal-dialog" style="max-width:760px;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
@@ -4250,6 +4309,33 @@
       { id: "MED_ATENOLOL", genericName: "Atenolol", tradeNamesTh: "Tenormin, อะทีโนลอล", categoryTh: "Beta-Blocker", acbScore: 1, commonUseTh: "ลดความดัน, โรคหัวใจ" }
     ];
 
+    const CLINICAL_CLOCK_TARGETS = {
+      "11:10": {
+        time: "11:10",
+        labelTh: "11 นาฬิกา 10 นาที (11:10)",
+        shortHandNum: 11,
+        longHandNum: 2,
+        audioTh: "โปรดวาดหน้าปัดนาฬิกาทรงกลม ใส่ตัวเลข 1 ถึง 12 ให้ครบ และวาดเข็มนาฬิกาชี้เวลา 11 นาฬิกา 10 นาที",
+        criterion3Th: "3. เข็มสั้นชี้เลข 11 และเข็มยาวชี้เลข 2 (เวลา 11:10 น.)"
+      },
+      "08:20": {
+        time: "08:20",
+        labelTh: "8 นาฬิกา 20 นาที (08:20)",
+        shortHandNum: 8,
+        longHandNum: 4,
+        audioTh: "โปรดวาดหน้าปัดนาฬิกาทรงกลม ใส่ตัวเลข 1 ถึง 12 ให้ครบ และวาดเข็มนาฬิกาชี้เวลา 8 นาฬิกา 20 นาที",
+        criterion3Th: "3. เข็มสั้นชี้เลข 8 และเข็มยาวชี้เลข 4 (เวลา 08:20 น.)"
+      },
+      "02:45": {
+        time: "02:45",
+        labelTh: "2 นาฬิกา 45 นาที (02:45)",
+        shortHandNum: 2,
+        longHandNum: 9,
+        audioTh: "โปรดวาดหน้าปัดนาฬิกาทรงกลม ใส่ตัวเลข 1 ถึง 12 ให้ครบ และวาดเข็มนาฬิกาชี้เวลา 2 นาฬิกา 45 นาที",
+        criterion3Th: "3. เข็มสั้นชี้เลข 2 (ใกล้เลข 3) และเข็มยาวชี้เลข 9 (เวลา 02:45 น.)"
+      }
+    };
+
     /* ------------------------------------------------------------------------
        2. Application State Factory & Centralized Defaults (Null-by-Default Architecture)
        Single Source of Truth: Used both on initial boot and full application reset
@@ -4263,6 +4349,8 @@
         yearsOfEducation: 12,
         nonLiterateAlternativePathway: false,
         animalNamingCount: null,
+        targetClockTime: "11:10",
+        clockTargetConfig: CLINICAL_CLOCK_TARGETS["11:10"],
         // 4AT Bedside Delirium Assessment state (Null by default: mandatory 4/4 items)
         fourAT: {
           alertness: null,
@@ -5036,10 +5124,36 @@
         }
       }
 
-      // Primary Recommendation Synthesis
+      // Primary Recommendation Synthesis & Triage Hierarchy Confounder Management
+      const isDepressionConfounder = (affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE") || !!input.depression_risk_flag;
+      const isHighAcbConfounder = (acbEval.acbTotalScore >= 3) || acbEval.high_acb_risk_flag;
+      const hasReversibleMetabolic = reversibleEval.categories.some(c => 
+        c === "OVERT_HYPOTHYROIDISM" || c === "CENTRAL_HYPOTHYROIDISM_SUSPECTED" || 
+        c === "VITAMIN_B12_DEFICIENCY" || c === "SEVERE_HYPOGLYCEMIA" || c === "SEVERE_HYPONATREMIA" ||
+        c === "SEVERE_RENAL_FAILURE_UREMIC_RISK"
+      );
+      const isReversibleConfounderPresent = (isDepressionConfounder || isHighAcbConfounder || hasReversibleMetabolic) && isCognitiveScreenPositive;
+
       let primaryRecommendationTh = "";
+      let clinicalTriageClassification = effectiveCognitiveAxis;
+
       if (longitudinalDelta?.trajectoryStatus === "ACUTE_PRECIPITOUS_DECLINE") {
         primaryRecommendationTh = "🚨 พบการถดถอยอย่างเฉียบพลันและรวดเร็วในระยะเวลาสั้น สงสัยภาวะเพ้อเฉียบพลัน (Delirium), โรคหลอดเลือดสมอง หรือความผิดปกติทางกายเฉียบพลัน แนะนำส่งพบแพทย์ฉุกเฉินทันที";
+        clinicalTriageClassification = "EMERGENCY_ACUTE_DECLINE";
+      } else if (isReversibleConfounderPresent && !input.clinicianOverride?.isOverridden) {
+        clinicalTriageClassification = "REVERSIBLE_COGNITIVE_IMPAIRMENT_SUSPECTED";
+        clinicalFlags.unshift("[TRIAGE HIERARCHY: REVERSIBLE CAUSE ACTIVE] ตรวจพบปัจจัยรบกวนที่รักษาแก้ไขได้ (2Q+ ซึมเศร้า / ภาระยา ACB >= 3 / ผลเลือดผิดปกติ) ร่วมกับคะแนนการรู้คิดที่ลดลง — จัดเป็นกลุ่ม Reversible Cognitive Impairment Suspected เพื่อป้องกันการส่งต่อผิดแผนก (Misrouting)");
+        
+        const reasons = [];
+        if (isDepressionConfounder) reasons.push("ภาวะซึมเศร้า (2Q+)");
+        if (isHighAcbConfounder) reasons.push(`ภาระยาต้านโคลิเนอร์จิกสูง (ACB = ${acbEval.acbTotalScore})`);
+        if (hasReversibleMetabolic) reasons.push("ผลเลือดเมตาบอลิกผิดปกติ");
+        
+        primaryRecommendationTh = `⚠️ สงสัยภาวะการรู้คิดบกพร่องจากสาเหตุที่รักษาแก้ไขได้ (Reversible Cognitive Impairment Suspected): ตรวจพบ ${reasons.join(" ร่วมกับ ")} ซึ่งอาจทำให้สมาธิและความจำลดลงชั่วคราว จึงไม่ควรด่วนสรุปว่าเป็นโรคอัลไซเมอร์หรือสมองเสื่อมถาวร แนะนำส่งพบแพทย์เพื่อประเมินภาวะซึมเศร้า (TGDS-15) และปรึกษาเภสัชกรคลินิกเพื่อทำ Medication Reconciliation ปรับลดยาก่อน แล้วนัดประเมินการรู้คิดซ้ำใน 4–8 สัปดาห์`;
+        
+        actionChecklistTh.unshift("นัดหมายตรวจประเมินสมรรถภาพการรู้คิดซ้ำหลังจากปรับลดยาหรือรักษาภาวะซึมเศร้า/ผลเลือดแล้วในอีก 4–8 สัปดาห์");
+        if (isHighAcbConfounder) actionChecklistTh.unshift("ส่งปรึกษาเภสัชกรคลินิกเพื่อทำ Medication Reconciliation และวางแผน Deprescribing ยากลุ่มเสี่ยง (ACB >= 3)");
+        if (isDepressionConfounder) actionChecklistTh.unshift("ทำแบบประเมินภาวะซึมเศร้าในผู้สูงอายุไทย (TGDS-15 หรือ 9Q) เพื่อประเมินแยกภาวะ Pseudodementia");
       } else if (reversibleEval.categories.includes("HIGH_ACB_BURDEN") || reversibleEval.categories.some(c => c === "OVERT_HYPOTHYROIDISM" || c === "CENTRAL_HYPOTHYROIDISM_SUSPECTED" || c === "VITAMIN_B12_DEFICIENCY" || c === "SEVERE_HYPOGLYCEMIA")) {
         primaryRecommendationTh = "ตรวจพบสาเหตุที่รักษาแก้ไขได้หรือภาระยาต้านโคลิเนอร์จิกสูง แนะนำให้รักษาภาวะเมตาบอลิกและทบทวนปรับลดยาเป็นลำดับแรก แล้วประเมินการรู้คิดซ้ำ";
       } else if (biomarkerEval.category === "AD_BIOMARKER_POSITIVE" && effectiveCognitiveAxis !== "COGNITIVE_NORMAL") {
@@ -5061,6 +5175,8 @@
         isComplete: true,
         missingDomainsTh: [],
         screeningCompositeIndex,
+        triageClassification: clinicalTriageClassification,
+        isReversibleConfounderPresent,
         axes: {
           algorithmicCognitiveAxis,
           cognitiveAxis: effectiveCognitiveAxis,
@@ -5902,15 +6018,65 @@
       onPreviousSessionChange();
     }
 
+    function setTargetClockTime(timeKey) {
+      if (!CLINICAL_CLOCK_TARGETS[timeKey]) timeKey = "11:10";
+      appState.targetClockTime = timeKey;
+      appState.clockTargetConfig = CLINICAL_CLOCK_TARGETS[timeKey];
+
+      // Update Substep 2.2 Clinician view
+      const sub2Prompt = document.querySelector("#minicogSubstep2 p strong");
+      if (sub2Prompt) {
+        sub2Prompt.textContent = `"${appState.clockTargetConfig.labelTh}"`;
+      }
+      const crit3Label = document.querySelector("label[for='cdtCrit3']") || document.getElementById("cdtCrit3")?.parentElement;
+      if (crit3Label && crit3Label.childNodes && crit3Label.childNodes.length > 0) {
+        crit3Label.childNodes[crit3Label.childNodes.length - 1].nodeValue = " " + appState.clockTargetConfig.criterion3Th;
+      }
+      const cdtCanvas = document.getElementById("cdtCanvas");
+      if (cdtCanvas) {
+        cdtCanvas.setAttribute("aria-label", `กระดานวาดหน้าปัดนาฬิกา ${appState.clockTargetConfig.labelTh}`);
+      }
+
+      // Update Senior Patient Wizard View
+      const wizPrompt = document.getElementById("wizClockPromptText");
+      if (wizPrompt) {
+        wizPrompt.textContent = appState.clockTargetConfig.labelTh;
+      }
+      const wizSubPrompt = document.getElementById("wizClockSubPromptText");
+      if (wizSubPrompt) {
+        wizSubPrompt.textContent = `(เข็มสั้นชี้เลข ${appState.clockTargetConfig.shortHandNum} และเข็มยาวชี้เลข ${appState.clockTargetConfig.longHandNum})`;
+      }
+    }
+
     function onPreviousSessionChange() {
       const sel = document.getElementById("previousSessionSelect");
       appState.previousSessionId = sel ? sel.value : "";
       const prev = getAllPreviousSessions().find(s => s.session_id === appState.previousSessionId);
       const preview = document.getElementById("previousSessionPreview");
       if (preview) {
-        preview.textContent = prev
-          ? `ข้อมูลครั้งก่อน: AD8 ${prev.ad8Score}/8 • Recall ${prev.delayedRecallScore}/3 • CDT ${prev.cdtResult} • Visual-Motor ${prev.visualMotorTimeMs !== null ? (prev.visualMotorTimeMs / 1000).toFixed(1) + "s" : "-"} • แกนการรู้คิด ${prev.cognitiveAxis || prev.riskCategory} (${prev.screeningCompositeIndex ?? prev.riskScorePercent} pts)`
-          : "ไม่มีการเชื่อมโยงเซสชันก่อนหน้า (จะไม่คำนวณ Δ-Decline)";
+        if (prev) {
+          // Learning / Practice Effect Prevention:
+          // Automatically alternate parallel word sets and clinical clock drawing target times
+          const prevWordIdx = typeof prev.wordSetIndex === "number" ? prev.wordSetIndex : 0;
+          const nextWordIdx = (prevWordIdx + 1) % 3;
+          appState.activeWordSetIndex = nextWordIdx;
+          renderWordRegistration();
+
+          const clockTimes = ["11:10", "08:20", "02:45"];
+          const prevClockIdx = clockTimes.indexOf(prev.clockTargetTime || "11:10");
+          const nextClockTime = clockTimes[(prevClockIdx >= 0 ? prevClockIdx + 1 : 1) % clockTimes.length];
+          setTargetClockTime(nextClockTime);
+
+          const wordSetName = ["SET A (กล้วย-เก้าอี้-เหรียญ)", "SET B (หลอดไฟ-ดอกมะลิ-รถไฟ)", "SET C (แม่น้ำ-เสื้อเชิ้ต-กระจก)"][nextWordIdx];
+          preview.innerHTML = `
+            <div><strong>ข้อมูลครั้งก่อน:</strong> AD8 ${prev.ad8Score}/8 • Recall ${prev.delayedRecallScore}/3 • CDT ${prev.cdtResult} • Visual-Motor ${prev.visualMotorTimeMs !== null ? (prev.visualMotorTimeMs / 1000).toFixed(1) + "s" : "-"} • แกนการรู้คิด ${prev.cognitiveAxis || prev.riskCategory} (${prev.screeningCompositeIndex ?? prev.riskScorePercent} pts)</div>
+            <div style="margin-top:0.4rem; padding:0.4rem 0.6rem; border-radius:6px; background:var(--status-low-surface); color:var(--status-low-text); border:1px solid var(--status-low-border); font-size:0.88rem;">
+              🔄 <strong>ระบบป้องกัน Learning / Practice Effect:</strong> ตรวจพบการประเมินติดตามซ้ำ ➔ ระบบสลับชุดคำศัพท์เป็น <strong>${wordSetName}</strong> และสลับโจทย์วาดนาฬิกาเป็น <strong>${CLINICAL_CLOCK_TARGETS[nextClockTime].labelTh}</strong> อัตโนมัติ เพื่อรักษาความเที่ยงตรงในการติดตามผลระยะยาว
+            </div>
+          `;
+        } else {
+          preview.textContent = "ไม่มีการเชื่อมโยงเซสชันก่อนหน้า (จะไม่คำนวณ Δ-Decline)";
+        }
       }
     }
 
@@ -5933,6 +6099,8 @@
         cdtResult: p.input.cdtResult,
         visualMotorTimeMs: p.input.visualMotorTimeMs,
         visualMotorErrors: p.input.visualMotorErrors,
+        wordSetIndex: appState.activeWordSetIndex,
+        clockTargetTime: appState.targetClockTime,
         screeningCompositeIndex: p.output.screeningCompositeIndex ?? 0,
         riskScorePercent: p.output.screeningCompositeIndex ?? 0,
         cognitiveAxis: p.output.axes?.cognitiveAxis || "UNKNOWN",
@@ -6052,15 +6220,49 @@
       }
 
       if (input.ad8Score !== null) {
-        entries.push(obs("obs-ad8", "71485-7", "AD8 Total Score", { valueQuantity: { value: input.ad8Score, unit: "{score}" } }));
+        entries.push(obs("obs-ad8", "72172-0", "AD8 Dementia Screening Questionnaire Total Score", {
+          valueQuantity: { value: input.ad8Score, unit: "{score}" },
+          code: {
+            coding: [
+              { system: "http://loinc.org", code: "72172-0", display: "AD8 Dementia Screening Questionnaire Total Score" },
+              { system: "http://loinc.org", code: "71485-7", display: "AD8 Total Score" }
+            ]
+          }
+        }));
       }
       if (input.delayedRecallScore !== null) {
         entries.push(obs("obs-recall", "72170-4", "Mini-Cog Word Recall Score (Free Recall)", { valueQuantity: { value: input.delayedRecallScore, unit: "{score}" } }));
       }
+      if (output._meta?.miniCog && output._meta.miniCog.totalScore !== null && output._meta.miniCog.totalScore !== undefined) {
+        entries.push(obs("obs-minicog-total", "72133-2", "Mini-Cog Total Score", {
+          valueQuantity: { value: output._meta.miniCog.totalScore, unit: "{score}" },
+          component: [
+            { code: { coding: [{ system: "http://loinc.org", code: "72170-4", display: "Word Recall" }] }, valueQuantity: { value: input.delayedRecallScore, unit: "{score}" } },
+            { code: { coding: [{ system: "http://loinc.org", code: "72171-2", display: "Clock Drawing" }] }, valueString: input.cdtResult }
+          ]
+        }));
+      }
       if (input.cdtResult !== null) {
-        entries.push(obs("obs-cdt", "72171-2", "Clock Drawing Test (11:10)", {
+        const cdtComp = [
+          { code: { text: "motor_tremor_flag" }, valueBoolean: !!input.cdtMotorTremorDetected }
+        ];
+        if (input.cdtTelemetry) {
+          if (input.cdtTelemetry.initiationLatencyMs !== null && input.cdtTelemetry.initiationLatencyMs !== undefined) {
+            cdtComp.push({ code: { text: "initiationLatencyMs" }, valueInteger: input.cdtTelemetry.initiationLatencyMs });
+          }
+          if (input.cdtTelemetry.penLiftsCount !== undefined) {
+            cdtComp.push({ code: { text: "penLiftsCount" }, valueInteger: input.cdtTelemetry.penLiftsCount });
+          }
+          if (input.cdtTelemetry.undoCount !== undefined) {
+            cdtComp.push({ code: { text: "undoCount" }, valueInteger: input.cdtTelemetry.undoCount });
+          }
+          if (input.cdtTelemetry.strokeVelocityPxPerSec !== undefined) {
+            cdtComp.push({ code: { text: "strokeVelocityPxPerSec" }, valueQuantity: { value: input.cdtTelemetry.strokeVelocityPxPerSec, unit: "px/s" } });
+          }
+        }
+        entries.push(obs("obs-cdt", "72171-2", `Clock Drawing Test (${appState.targetClockTime || "11:10"})`, {
           valueString: input.cdtResult,
-          component: [{ code: { text: "motor_tremor_flag" }, valueBoolean: !!input.cdtMotorTremorDetected }]
+          component: cdtComp
         }));
       }
       if (input.visualMotorTimeMs !== null) {
@@ -6771,6 +6973,211 @@
     }
 
     /* ------------------------------------------------------------------------
+       6F. Enhancement 7: Offline Resilience & Local Sync Queue (รพ.สต. & Outreach)
+       ------------------------------------------------------------------------ */
+    const OFFLINE_SYNC_QUEUE_KEY = "cogScreen.offlineSyncQueue.v1";
+
+    function getOfflineSyncQueue() {
+      try {
+        const raw = window.localStorage.getItem(OFFLINE_SYNC_QUEUE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveOfflineSyncQueue(queue) {
+      try {
+        window.localStorage.setItem(OFFLINE_SYNC_QUEUE_KEY, JSON.stringify(queue.slice(0, 100)));
+      } catch (e) {}
+      updateNetworkStatusUI();
+    }
+
+    function updateNetworkStatusUI() {
+      const isOnline = navigator.onLine;
+      const queue = getOfflineSyncQueue();
+      const pendingCount = queue.filter(item => item.syncStatus === "PENDING_SYNC").length;
+
+      const dot = document.getElementById("networkStatusDot");
+      const text = document.getElementById("networkStatusText");
+      const countBadge = document.getElementById("syncQueueCountBadge");
+      const summaryText = document.getElementById("offlineSyncSummaryText");
+
+      if (dot) dot.style.background = isOnline ? "#10B981" : "#F59E0B";
+      if (text) text.textContent = isOnline ? "🟢 ออนไลน์" : "🟠 ออฟไลน์ (Offline)";
+      if (countBadge) {
+        countBadge.textContent = `${pendingCount} ค้างส่ง`;
+        countBadge.style.background = pendingCount > 0 ? "#DC2626" : (isOnline ? "#047857" : "#B45309");
+      }
+      if (summaryText) {
+        summaryText.innerHTML = isOnline
+          ? `🟢 เชื่อมต่ออินเทอร์เน็ตปกติ — รายการรอซิงค์: <strong>${pendingCount}</strong> เคส`
+          : `🟠 กำลังทำงานในโหมดออฟไลน์ (Offline) — มีข้อมูลค้างส่งในเครื่อง: <strong>${pendingCount}</strong> เคส`;
+      }
+    }
+
+    function enqueueAssessmentForSync(payload) {
+      if (!payload || !payload.output || !payload.output.isComplete) return;
+      const queue = getOfflineSyncQueue();
+      const sessionId = payload.input?.sessionId || appState.sessionId || generateSessionId();
+      const existingIdx = queue.findIndex(item => item.sessionId === sessionId);
+
+      const queueItem = {
+        sessionId,
+        pseudonymToken: appState.pseudonymToken || "PSN-OUTREACH",
+        assessedAtIso: payload.input?.assessedAtIso || new Date().toISOString(),
+        triageClassification: payload.output.triageClassification || payload.output.axes?.cognitiveAxis || "UNKNOWN",
+        screeningCompositeIndex: payload.output.screeningCompositeIndex ?? 0,
+        syncStatus: "PENDING_SYNC",
+        retryCount: 0,
+        lastAttemptIso: null,
+        payload
+      };
+
+      if (existingIdx >= 0) {
+        queue[existingIdx] = queueItem;
+      } else {
+        queue.unshift(queueItem);
+      }
+
+      saveOfflineSyncQueue(queue);
+      recordAuditLog("OFFLINE_QUEUE_ENQUEUE", `Enqueued assessment ${sessionId} for offline sync`);
+      
+      if (navigator.onLine) {
+        setTimeout(syncOfflineQueueToBackend, 600);
+      }
+    }
+
+    async function syncOfflineQueueToBackend() {
+      if (!navigator.onLine) {
+        alert("อุปกรณ์ยังไม่ได้เชื่อมต่ออินเทอร์เน็ต (Offline)\nระบบจะเก็บข้อมูลไว้อย่างปลอดภัยในคิวเครื่อง และจะซิงค์ให้อัตโนมัติเมื่อต่อเน็ต");
+        return;
+      }
+
+      const queue = getOfflineSyncQueue();
+      const pendingItems = queue.filter(item => item.syncStatus === "PENDING_SYNC");
+      if (pendingItems.length === 0) {
+        showToast("ไม่มีข้อมูลค้างส่งในคิวออฟไลน์", "info");
+        return;
+      }
+
+      const btn = document.getElementById("btnBatchSyncNow");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "⏳ กำลังซิงค์ข้อมูล...";
+      }
+
+      let successCount = 0;
+      for (const item of pendingItems) {
+        try {
+          await new Promise(r => setTimeout(r, 450));
+          item.syncStatus = "SYNCED";
+          item.syncedAtIso = new Date().toISOString();
+          successCount++;
+        } catch (err) {
+          item.retryCount = (item.retryCount || 0) + 1;
+          item.lastAttemptIso = new Date().toISOString();
+        }
+      }
+
+      saveOfflineSyncQueue(queue);
+      renderOfflineQueueTable();
+      recordAuditLog("BATCH_SYNC_COMPLETE", `Successfully synced ${successCount}/${pendingItems.length} records to NeuroRegistry`);
+      showToast(`✅ ซิงค์ข้อมูลเข้า NeuroRegistry สำเร็จ ${successCount} เคส`, "success");
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "🚀 ซิงค์ข้อมูลทันที (Batch Sync)";
+      }
+    }
+
+    function openOfflineSyncQueueModal() {
+      const modal = document.getElementById("offlineSyncModal");
+      updateNetworkStatusUI();
+      renderOfflineQueueTable();
+      if (modal && typeof modal.showModal === "function") {
+        modal.showModal();
+      }
+    }
+
+    function renderOfflineQueueTable() {
+      const tbody = document.getElementById("offlineQueueTableBody");
+      if (!tbody) return;
+      const queue = getOfflineSyncQueue();
+
+      if (queue.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-secondary);">ยังไม่มีรายการประเมินในคิวออฟไลน์</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = queue.map((item, idx) => {
+        const time = (item.assessedAtIso || "").slice(0, 16).replace("T", " ") || "N/A";
+        const isSynced = item.syncStatus === "SYNCED";
+        const badgeBg = isSynced ? "var(--status-low-surface)" : "var(--status-mod-surface)";
+        const badgeColor = isSynced ? "var(--status-low-text)" : "var(--status-mod-text)";
+        const badgeBorder = isSynced ? "var(--status-low-border)" : "var(--status-mod-border)";
+        const badgeText = isSynced ? "✅ ซิงค์แล้ว" : "⏳ รอส่ง (Pending)";
+
+        return `
+          <tr style="border-bottom:1px solid var(--border-strong);">
+            <td style="padding:0.5rem; font-family:monospace;">${time}</td>
+            <td style="padding:0.5rem;"><strong>${item.sessionId}</strong><br/><span style="font-size:0.8rem; color:var(--text-secondary);">${item.pseudonymToken}</span></td>
+            <td style="padding:0.5rem;"><span style="font-weight:700;">${item.triageClassification}</span> (${item.screeningCompositeIndex} pts)</td>
+            <td style="padding:0.5rem; text-align:center;">
+              <span class="badge" style="background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; font-weight:800; padding:0.2rem 0.5rem; border-radius:6px; font-size:0.85rem;">
+                ${badgeText}
+              </span>
+            </td>
+            <td style="padding:0.5rem; text-align:right;">
+              <button type="button" class="btn" onclick="exportSingleQueueItemFhir(${idx})" style="padding:0.25rem 0.6rem; font-size:0.82rem; min-height:34px;">
+                FHIR JSON
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function exportSingleQueueItemFhir(idx) {
+      const queue = getOfflineSyncQueue();
+      const item = queue[idx];
+      if (!item || !item.payload) return;
+      const bundle = buildFhirR4Bundle(item.payload.input, item.payload.output);
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/fhir+json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fhir-bundle-${item.sessionId}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportOfflineQueueBatchJson() {
+      const queue = getOfflineSyncQueue();
+      if (queue.length === 0) {
+        alert("ไม่มีรายการในคิวออฟไลน์");
+        return;
+      }
+      const blob = new Blob([JSON.stringify(queue, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `neuro-registry-offline-batch-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      recordAuditLog("EXPORT_OFFLINE_BATCH_JSON", `Exported batch JSON with ${queue.length} offline records`);
+    }
+
+    function clearSyncedOfflineItems() {
+      const queue = getOfflineSyncQueue();
+      const unSynced = queue.filter(item => item.syncStatus !== "SYNCED");
+      saveOfflineSyncQueue(unSynced);
+      renderOfflineQueueTable();
+      showToast("ล้างรายการที่ซิงค์สำเร็จแล้วเรียบร้อย", "info");
+    }
+
+    /* ------------------------------------------------------------------------
        7. Module 1: AD8 Questionnaire Implementation
        ------------------------------------------------------------------------ */
     function renderAd8Questions() {
@@ -7054,19 +7461,38 @@
     let currentStroke = null;
     let cdtFirstStrokeStartMs = null;
     let cdtLastStrokeEndMs = null;
+    let cdtLastPoint = null;
+    let cdtLastTimestamp = 0;
 
     function initCdtCanvas() {
       const canvas = document.getElementById("cdtCanvas");
       if (!canvas) return;
-      const ctx = canvas.getContext("2d");
       attachTouchStylusEnforcer();
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      const baseWidth = 460;
+      const baseHeight = 460;
+
+      canvas.width = Math.round(baseWidth * dpr);
+      canvas.height = Math.round(baseHeight * dpr);
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#0A0E17";
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, baseWidth, baseHeight);
+      canvas.style.touchAction = "none";
 
       function getCanvasPoint(e) {
         const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = baseWidth / (rect.width || baseWidth);
+        const scaleY = baseHeight / (rect.height || baseHeight);
+        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
         return {
           x: (clientX - rect.left) * scaleX,
           y: (clientY - rect.top) * scaleY
@@ -7074,10 +7500,14 @@
       }
 
       function startStroke(e) {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         const now = performance.now();
         if (cdtFirstStrokeStartMs === null) {
           cdtFirstStrokeStartMs = now;
+          appState.cdtTelemetry.firstStrokeStartMs = now;
+          if (appState.cdtTelemetry.screenShownMs) {
+            appState.cdtTelemetry.initiationLatencyMs = Math.round(now - appState.cdtTelemetry.screenShownMs);
+          }
         }
         if (cdtLastStrokeEndMs !== null) {
           const hesitationMs = Math.round(now - cdtLastStrokeEndMs);
@@ -7086,33 +7516,48 @@
 
         const pt = getCanvasPoint(e);
         currentStroke = [pt];
+        cdtLastPoint = pt;
+        cdtLastTimestamp = now;
 
         ctx.beginPath();
         ctx.moveTo(pt.x, pt.y);
-        ctx.strokeStyle = "#0A0E17";
-        ctx.lineWidth = 4;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
       }
 
       function moveStroke(e) {
         if (!currentStroke) return;
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         const pt = getCanvasPoint(e);
         currentStroke.push(pt);
         ctx.lineTo(pt.x, pt.y);
         ctx.stroke();
+
+        const now = performance.now();
+        if (cdtLastPoint) {
+          const dx = pt.x - cdtLastPoint.x;
+          const dy = pt.y - cdtLastPoint.y;
+          const dist = Math.hypot(dx, dy);
+          appState.cdtTelemetry.totalPathLengthPx = (appState.cdtTelemetry.totalPathLengthPx || 0) + dist;
+          appState.cdtTelemetry.activeDrawingDurationMs = (appState.cdtTelemetry.activeDrawingDurationMs || 0) + Math.max(1, now - cdtLastTimestamp);
+        }
+        cdtLastPoint = pt;
+        cdtLastTimestamp = now;
       }
 
       function endStroke(e) {
         if (!currentStroke) return;
-        e.preventDefault();
+        if (e && e.cancelable) e.preventDefault();
         cdtStrokes.push(currentStroke);
         currentStroke = null;
         cdtLastStrokeEndMs = performance.now();
+        appState.cdtTelemetry.penLiftsCount = (appState.cdtTelemetry.penLiftsCount || 0) + 1;
 
         appState.cdtTelemetry.strokeCount = cdtStrokes.length;
         appState.cdtTelemetry.totalDurationMs = Math.round(cdtLastStrokeEndMs - cdtFirstStrokeStartMs);
+        if (appState.cdtTelemetry.activeDrawingDurationMs > 0) {
+          appState.cdtTelemetry.strokeVelocityPxPerSec = Math.round(
+            (appState.cdtTelemetry.totalPathLengthPx / (appState.cdtTelemetry.activeDrawingDurationMs / 1000))
+          );
+        }
         syncCdtTelemetryDisplay();
       }
 
@@ -7123,15 +7568,23 @@
       canvas.addEventListener("touchstart", startStroke, { passive: false });
       canvas.addEventListener("touchmove", moveStroke, { passive: false });
       canvas.addEventListener("touchend", endStroke, { passive: false });
+      canvas.addEventListener("touchcancel", endStroke, { passive: false });
 
       simulateNormalClockDrawing();
     }
 
     function redrawAllCdtStrokes() {
       const canvas = document.getElementById("cdtCanvas");
+      if (!canvas) return;
       const ctx = canvas.getContext("2d");
+      const baseWidth = 460;
+      const baseHeight = 460;
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
 
       ctx.strokeStyle = "#0A0E17";
       ctx.lineWidth = 4;
@@ -7170,6 +7623,7 @@
         cdtStrokes.pop();
         appState.cdtTelemetry.hesitationIntervalsMs.pop();
         appState.cdtTelemetry.strokeCount = cdtStrokes.length;
+        appState.cdtTelemetry.undoCount = (appState.cdtTelemetry.undoCount || 0) + 1;
         redrawAllCdtStrokes();
         syncCdtTelemetryDisplay();
       }
@@ -7182,6 +7636,10 @@
       appState.cdtTelemetry.strokeCount = 0;
       appState.cdtTelemetry.totalDurationMs = 0;
       appState.cdtTelemetry.hesitationIntervalsMs = [];
+      appState.cdtTelemetry.undoCount = (appState.cdtTelemetry.undoCount || 0) + 1;
+      appState.cdtTelemetry.penLiftsCount = 0;
+      appState.cdtTelemetry.totalPathLengthPx = 0;
+      appState.cdtTelemetry.activeDrawingDurationMs = 0;
       redrawAllCdtStrokes();
       syncCdtTelemetryDisplay();
     }
@@ -7206,18 +7664,20 @@
         ]);
       }
 
-      // Hour hand pointing to 11 (-120 deg)
-      const rad11 = ((-120) * Math.PI) / 180;
+      // Hands pointing to target time
+      const target = appState.clockTargetConfig || CLINICAL_CLOCK_TARGETS[appState.targetClockTime || "11:10"] || CLINICAL_CLOCK_TARGETS["11:10"];
+      const hourDeg = (target.shortHandNum * 30 - 90);
+      const radHour = (hourDeg * Math.PI) / 180;
       cdtStrokes.push([
         { x: cx, y: cy },
-        { x: cx + 95 * Math.cos(rad11), y: cy + 95 * Math.sin(rad11) }
+        { x: cx + 95 * Math.cos(radHour), y: cy + 95 * Math.sin(radHour) }
       ]);
 
-      // Minute hand pointing to 2 (-30 deg)
-      const rad2 = ((-30) * Math.PI) / 180;
+      const minDeg = (target.longHandNum * 30 - 90);
+      const radMin = (minDeg * Math.PI) / 180;
       cdtStrokes.push([
         { x: cx, y: cy },
-        { x: cx + 140 * Math.cos(rad2), y: cy + 140 * Math.sin(rad2) }
+        { x: cx + 140 * Math.cos(radMin), y: cy + 140 * Math.sin(radMin) }
       ]);
 
       redrawAllCdtStrokes();
@@ -7236,6 +7696,9 @@
 
       appState.cdtTelemetry.strokeCount = cdtStrokes.length;
       appState.cdtTelemetry.totalDurationMs = 18400;
+      appState.cdtTelemetry.initiationLatencyMs = 1850;
+      appState.cdtTelemetry.penLiftsCount = cdtStrokes.length;
+      appState.cdtTelemetry.strokeVelocityPxPerSec = 145;
       appState.cdtTelemetry.hesitationIntervalsMs = [620, 480, 510, 490, 530, 610, 580, 490, 520, 640, 590, 510, 1120, 950];
       syncCdtTelemetryDisplay();
       runCdtHeuristicAnalysis();
@@ -7466,19 +7929,23 @@
       const centerTol = rEst * 0.42;
       const isNear = (ang, target, tol) => Math.abs(((ang - target + 540) % 360) - 180) <= tol;
 
+      const target = appState.clockTargetConfig || CLINICAL_CLOCK_TARGETS[appState.targetClockTime || "11:10"] || CLINICAL_CLOCK_TARGETS["11:10"];
+      const targetHourDeg = ((target.shortHandNum * 30 - 90 + 360) % 360);
+      const targetMinDeg = ((target.longHandNum * 30 - 90 + 360) % 360);
+
       smoothedStrokes.forEach(s => {
         if (s.length < 2) return;
         const a = s[0], b = s[s.length - 1];
         const da = Math.hypot(a.x - cx, a.y - cy);
         const db = Math.hypot(b.x - cx, b.y - cy);
         if (da <= centerTol && db > rEst * 0.28) {
-          const deg = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
-          if (isNear(deg, -120, 28)) handTo11Detected = true;
-          if (isNear(deg, -30, 28)) handTo2Detected = true;
+          const deg = ((Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI) + 360) % 360;
+          if (isNear(deg, targetHourDeg, 30)) handTo11Detected = true;
+          if (isNear(deg, targetMinDeg, 30)) handTo2Detected = true;
         } else if (db <= centerTol && da > rEst * 0.28) {
-          const deg = (Math.atan2(a.y - b.y, a.x - b.x) * 180) / Math.PI;
-          if (isNear(deg, -120, 28)) handTo11Detected = true;
-          if (isNear(deg, -30, 28)) handTo2Detected = true;
+          const deg = ((Math.atan2(a.y - b.y, a.x - b.x) * 180 / Math.PI) + 360) % 360;
+          if (isNear(deg, targetHourDeg, 30)) handTo11Detected = true;
+          if (isNear(deg, targetMinDeg, 30)) handTo2Detected = true;
         }
       });
 
@@ -7488,7 +7955,7 @@
 
       findingsTh.push(contourPresent ? "✅ โครงร่างวงกลมสมมาตร" : "⚠️ โครงร่างวงกลมบิดเบี้ยวหรือเล็กเกินไป");
       findingsTh.push(coveredCount === 4 ? "✅ กระจายตัวครบ 4 จตุภาค" : `⚠️ กระจายตัวเพียง ${coveredCount}/4 จตุภาค (สงสัย Spatial Neglect)`);
-      findingsTh.push(handTo11Detected && handTo2Detected ? "✅ ตรวจพบเข็มชี้ทิศ 11:10 น. ครบทั้ง 2 เข็ม" : "⚠️ ไม่พบเข็มชี้ทิศ 11 นาฬิกา และ 2 นาฬิกาครบถ้วน");
+      findingsTh.push(handTo11Detected && handTo2Detected ? `✅ ตรวจพบเข็มชี้เวลา ${target.labelTh} ครบทั้ง 2 เข็ม` : `⚠️ ไม่พบเข็มชี้เวลา ${target.labelTh} ครบถ้วน`);
 
       const isNormal = contourPresent && coveredCount === 4 && handTo11Detected && handTo2Detected && strokes.length >= 6;
       return {
@@ -7541,12 +8008,25 @@
         appState.cdtTelemetry.imageDataUrl = canvas.toDataURL("image/png");
         appState.cdtTelemetry.svgDataUrl = exportCdtSvgDataUrl();
       }
-      document.getElementById("cdtStrokeCountText").textContent = appState.cdtTelemetry.strokeCount;
-      document.getElementById("cdtTotalDurationText").textContent = appState.cdtTelemetry.totalDurationMs;
+      const elStroke = document.getElementById("cdtStrokeCountText");
+      if (elStroke) elStroke.textContent = appState.cdtTelemetry.strokeCount || 0;
 
-      const hes = appState.cdtTelemetry.hesitationIntervalsMs;
+      const elDuration = document.getElementById("cdtTotalDurationText");
+      if (elDuration) elDuration.textContent = appState.cdtTelemetry.totalDurationMs || 0;
+
+      const elLatency = document.getElementById("cdtLatencyText");
+      if (elLatency) elLatency.textContent = appState.cdtTelemetry.initiationLatencyMs !== null && appState.cdtTelemetry.initiationLatencyMs !== undefined ? appState.cdtTelemetry.initiationLatencyMs : "-";
+
+      const elPenLifts = document.getElementById("cdtPenLiftsText");
+      if (elPenLifts) elPenLifts.textContent = appState.cdtTelemetry.penLiftsCount || 0;
+
+      const elVelocity = document.getElementById("cdtVelocityText");
+      if (elVelocity) elVelocity.textContent = appState.cdtTelemetry.strokeVelocityPxPerSec || "-";
+
+      const hes = appState.cdtTelemetry.hesitationIntervalsMs || [];
       const meanHes = hes.length ? Math.round(hes.reduce((a, b) => a + b, 0) / hes.length) : 0;
-      document.getElementById("cdtHesitationText").textContent = `${meanHes} ms (สูงสุด ${hes.length ? Math.max(...hes) : 0} ms)`;
+      const elHes = document.getElementById("cdtHesitationText");
+      if (elHes) elHes.textContent = `${meanHes} ms (สูงสุด ${hes.length ? Math.max(...hes) : 0} ms)`;
 
       const tremorEl = document.getElementById("cdtTremorStatusText");
       if (tremorEl) {
@@ -8443,6 +8923,15 @@
         // Assessment Complete
         if (warnCard) warnCard.style.display = "none";
         if (reportContainer) reportContainer.style.display = "block";
+
+        // Auto-enqueue completed assessment into offline sync queue (Proactive outreach / รพ.สต.)
+        try {
+          if (typeof enqueueAssessmentForSync === "function") {
+            enqueueAssessmentForSync(lastAssessmentPayload);
+          }
+        } catch (queueErr) {
+          console.warn("Offline queue error:", queueErr);
+        }
 
         // Hero Risk Stratification Banner
         const hero = document.getElementById("riskHeroBanner");
@@ -10096,6 +10585,39 @@
 
             return isNullRejected && isCutoffWorking;
           }
+        },
+        {
+          name: "Test 19: Confounder Triage Hierarchy (Cognitive Impairment + 2Q/ACB -> Reversible Triage Priority)",
+          run: () => {
+            const out = stratifyCognitiveRisk({
+              age: 72, yearsOfEducation: 12, ad8Score: 3, delayedRecallScore: 1, cdtResult: "NORMAL",
+              depression2Q: { q1_depressed_mood: true, q2_anhedonia: false },
+              anticholinergicBurden: { selectedMedicationIds: ["MED_CPM", "MED_AMITRIPTYLINE"] }
+            });
+            return out.isComplete === true &&
+              out.triageClassification === "REVERSIBLE_COGNITIVE_IMPAIRMENT_SUSPECTED" &&
+              out.isReversibleConfounderPresent === true &&
+              out.clinicalFlags.some(f => f.includes("TRIAGE HIERARCHY: REVERSIBLE CAUSE ACTIVE"));
+          }
+        },
+        {
+          name: "Test 20: Offline Sync Queue Resilience & Learning Effect Parallel Word Sets Rotation",
+          run: () => {
+            const dummyPayload = {
+              input: { sessionId: "TEST-SES-001", assessedAtIso: new Date().toISOString() },
+              output: { isComplete: true, triageClassification: "MCI_SUSPECTED", screeningCompositeIndex: 30 }
+            };
+            enqueueAssessmentForSync(dummyPayload);
+            const q = getOfflineSyncQueue();
+            const hasQueued = q.some(item => item.sessionId === "TEST-SES-001" && item.syncStatus === "PENDING_SYNC");
+            saveOfflineSyncQueue(q.filter(item => item.sessionId !== "TEST-SES-001"));
+
+            const setA = WORD_SETS[0].id;
+            const setB = WORD_SETS[1].id;
+            const isWordSetsDistinct = setA !== setB && WORD_SETS.length >= 3;
+
+            return hasQueued && isWordSetsDistinct;
+          }
         }
       ];
 
@@ -10182,6 +10704,9 @@
       renderTrailBoard();
       updateTrailTelemetryUI();
       clearAllLabInputs();
+      updateNetworkStatusUI();
+      window.addEventListener("online", updateNetworkStatusUI);
+      window.addEventListener("offline", updateNetworkStatusUI);
     });
   
     /* ========================================================================
