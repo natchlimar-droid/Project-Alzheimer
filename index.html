@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ระบบคัดกรองความเสี่ยงภาวะสมองรู้คิดบกพร่องและอัลไซเมอร์เบื้องต้น (Multimodal Cognitive Screening & Biomarker
     Triage)</title>
   <!-- Google Fonts: Sarabun for optimal Thai readability (with system fallback) -->
@@ -4537,7 +4537,7 @@
           <div style="font-size:0.92rem; color:var(--text-secondary);">
             💻 ซอร์สโค้ด, Unit Tests, และเอกสารสถาปัตยกรรมฉบับเต็มถูกเผยแพร่บน GitHub
           </div>
-          <a href="https://github.com/natchlimar-droid/Project-Alzhimer" target="_blank" rel="noopener noreferrer" class="btn" style="background:#24292F; color:#FFFFFF; font-weight:800; font-size:0.92rem; padding:0.5rem 1rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.45rem; text-decoration:none;">
+          <a href="https://github.com/natchlimar-droid/Project-Alzheimer" target="_blank" rel="noopener noreferrer" class="btn" style="background:#24292F; color:#FFFFFF; font-weight:800; font-size:0.92rem; padding:0.5rem 1rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.45rem; text-decoration:none;">
             <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="vertical-align:text-bottom;">
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
             </svg>
@@ -4752,10 +4752,10 @@
 
     /* Brief Thai 4-Item IADL */
     const BRIEF_IADL_ITEMS = [
-      { key: "managingFinancesImpaired", titleTh: "1. การจัดการการเงินและค่าใช้จ่าย (Managing Finances)", questionTh: "มีปัญหาในการจัดการเงิน ซื้อของทอนเงิน หรือจัดการบัญชีธนาคารด้วยตนเองหรือไม่?" },
-      { key: "takingMedicationsImpaired", titleTh: "2. การรับประทานยาประจำ (Taking Medications)", questionTh: "มีปัญหาในการจัดยาและรับประทานยาประจำตัวให้ถูกต้องตรงเวลาด้วยตนเองหรือไม่?" },
-      { key: "usingPhoneOrTransportImpaired", titleTh: "3. การใช้โทรศัพท์หรือการเดินทาง (Telephone & Transportation)", questionTh: "มีปัญหาในการกดโทรศัพท์ติดต่อคนคุ้นเคย หรือเดินทางไปสถานที่ใกล้บ้านด้วยตนเองหรือไม่?" },
-      { key: "handlingHouseholdTasksImpaired", titleTh: "4. การทำงานบ้านหรือเตรียมอาหาร (Household Tasks)", questionTh: "มีปัญหาในการทำงานบ้านง่ายๆ หรือเตรียมอาหารที่เคยทำเป็นประจำด้วยตนเองหรือไม่?" }
+      { key: "managingFinancesImpaired", titleTh: "1. การจัดการการเงินและค่าใช้จ่าย (Managing Finances)", questionTh: "มีปัญหาในการจัดการเงิน ซื้อของทอนเงิน หรือจัดการบัญชีธนาคารด้วยตนเองหรือไม่?", descTh: "มีปัญหาในการจัดการเงิน ซื้อของทอนเงิน หรือจัดการบัญชีธนาคารด้วยตนเองหรือไม่?" },
+      { key: "takingMedicationsImpaired", titleTh: "2. การรับประทานยาประจำ (Taking Medications)", questionTh: "มีปัญหาในการจัดยาและรับประทานยาประจำตัวให้ถูกต้องตรงเวลาด้วยตนเองหรือไม่?", descTh: "มีปัญหาในการจัดยาและรับประทานยาประจำตัวให้ถูกต้องตรงเวลาด้วยตนเองหรือไม่?" },
+      { key: "usingPhoneOrTransportImpaired", titleTh: "3. การใช้โทรศัพท์หรือการเดินทาง (Telephone & Transportation)", questionTh: "มีปัญหาในการกดโทรศัพท์ติดต่อคนคุ้นเคย หรือเดินทางไปสถานที่ใกล้บ้านด้วยตนเองหรือไม่?", descTh: "มีปัญหาในการกดโทรศัพท์ติดต่อคนคุ้นเคย หรือเดินทางไปสถานที่ใกล้บ้านด้วยตนเองหรือไม่?" },
+      { key: "handlingHouseholdTasksImpaired", titleTh: "4. การทำงานบ้านหรือเตรียมอาหาร (Household Tasks)", questionTh: "มีปัญหาในการทำงานบ้านง่ายๆ หรือเตรียมอาหารที่เคยทำเป็นประจำด้วยตนเองหรือไม่?", descTh: "มีปัญหาในการทำงานบ้านง่ายๆ หรือเตรียมอาหารที่เคยทำเป็นประจำด้วยตนเองหรือไม่?" }
     ];
 
     function evaluateBriefIADL(finances, meds, phoneTransport, household) {
@@ -4770,6 +4770,8 @@
         usingPhoneOrTransportImpaired: phoneTransport === true,
         handlingHouseholdTasksImpaired: household === true,
         totalImpairedCount: count,
+        totalImpairments: count,
+        impairedCount: count,
         isFunctionalDeclinePresent: count >= 1
       };
     }
@@ -5107,6 +5109,7 @@
         calibratedNetTimeMs,
         isTimeProlonged,
         isErrorElevated,
+        isImpaired: isTimeProlonged || isErrorElevated,
         interpretation
       };
     }
@@ -5952,23 +5955,10 @@
         }
 
         // 3. AD8 Informant Responses & Badge
-        if (Array.isArray(appState.ad8Responses)) {
-          let yesCount = 0;
-          appState.ad8Responses.forEach((ans, idx) => {
-            const rYes = document.getElementById(`ad8_${idx}_yes`);
-            const rNo = document.getElementById(`ad8_${idx}_no`);
-            const rNa = document.getElementById(`ad8_${idx}_na`);
-            if (ans === "YES") {
-              if (rYes) rYes.checked = true;
-              yesCount++;
-            } else if (ans === "NO") {
-              if (rNo) rNo.checked = true;
-            } else if (ans === "NA") {
-              if (rNa) rNa.checked = true;
-            }
-          });
-          const badge = document.getElementById("ad8LiveScoreBadge");
-          if (badge) badge.textContent = `${yesCount} / 8`;
+        if (typeof renderAd8Questions === "function") {
+          renderAd8Questions();
+        } else if (typeof updateAd8ScoreBadge === "function") {
+          updateAd8ScoreBadge();
         }
 
         // 4. Delayed Recall & CDT Kinematics Mirroring
@@ -6504,6 +6494,18 @@
       render2QQuestions();
     }
 
+    function evaluateDepression2Q(q1, q2) {
+      const isRisk = !!(q1 || q2);
+      return {
+        depression_risk_flag: isRisk,
+        q1_positive: !!q1,
+        q2_positive: !!q2,
+        interpretation: isRisk
+          ? "ตรวจพบความเสี่ยงภาวะซึมเศร้า (2Q Positive) แนะนำประเมิน 9Q / TGDS-15 เพื่อแยกแยะภาวะสมองเสื่อมเทียม (Pseudodementia)"
+          : "ไม่พบความเสี่ยงภาวะซึมเศร้าจากแบบคัดกรองเบื้องต้น (2Q Negative)"
+      };
+    }
+
     function render2QStatus(showMissingWarning) {
       const banner = document.getElementById("twoQStatusBanner");
       if (!banner) return;
@@ -7028,15 +7030,16 @@
 
     function exportFhirBundle() {
       if (!lastAssessmentPayload) renderRiskStratificationReport();
-      const bundle = buildFhirR4Bundle(lastAssessmentPayload.input, lastAssessmentPayload.output);
+      const bundle = buildCompleteFhirBundle();
       recordAuditLog("EXPORT_FHIR_BUNDLE", `Exported HL7 FHIR R4 Bundle (${bundle.entry.length} resources) for ${appState.pseudonymToken}`);
       const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/fhir+json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fhir-r4-bundle-${appState.sessionId}.json`;
+      a.download = `fhir-r4-bundle-${appState.sessionId || Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      showToast("🏥 ส่งออก HL7 FHIR R4 Bundle สำเร็จ", "success");
     }
 
     /* ------------------------------------------------------------------------
@@ -7698,7 +7701,7 @@
     }
 
     function updateNetworkStatusUI() {
-      const isOnline = navigator.onLine;
+      const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
       const queue = getOfflineSyncQueue();
       const pendingCount = queue.filter(item => item.syncStatus === "PENDING_SYNC").length;
 
@@ -7747,13 +7750,13 @@
       saveOfflineSyncQueue(queue);
       recordAuditLog("OFFLINE_QUEUE_ENQUEUE", `Enqueued assessment ${sessionId} for offline sync`);
       
-      if (navigator.onLine) {
+      if (typeof navigator !== "undefined" && navigator.onLine) {
         setTimeout(syncOfflineQueueToBackend, 600);
       }
     }
 
     async function syncOfflineQueueToBackend() {
-      if (!navigator.onLine) {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
         alert("อุปกรณ์ยังไม่ได้เชื่อมต่ออินเทอร์เน็ต (Offline)\nระบบจะเก็บข้อมูลไว้อย่างปลอดภัยในคิวเครื่อง และจะซิงค์ให้อัตโนมัติเมื่อต่อเน็ต");
         return;
       }
@@ -10000,11 +10003,11 @@
         // 2. Compute 5-Axis Cognitive Domain Radar Chart Scores (0.0 to 1.0)
         const memScore = input.delayedRecallScore !== null ? (input.delayedRecallScore / 3) : 0.8;
         const visuoScore = input.cdtResult === "NORMAL" ? 1.0 : (input.cdtResult === "ABNORMAL" ? 0.3 : 0.7);
-        const iadlCount = input.briefIADL?.totalImpairments || 0;
+        const iadlCount = (input.briefIADL?.totalImpairedCount ?? input.briefIADL?.totalImpairments ?? 0);
         const ad8Val = input.ad8Score ?? 0;
         const acbVal = input.anticholinergicBurden?.acbTotalScore || 0;
         const funcScore = Math.max(0.1, 1.0 - (ad8Val / 8) * 0.5 - (iadlCount / 4) * 0.5);
-        const speedScore = _meta?.vmt?.isImpaired ? 0.4 : (input.visualMotorTimeMs !== null ? 0.95 : 0.85);
+        const speedScore = (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated) ? 0.4 : (input.visualMotorTimeMs !== null ? 0.95 : 0.85);
         const affScore = isDepressed ? 0.35 : (acbVal >= 3 ? 0.45 : 1.0);
 
         renderCognitiveRadarChart({
@@ -10206,7 +10209,7 @@
           dAd8Badge.style.background = isAd8Impaired ? "var(--status-mod-surface)" : "var(--status-low-surface)";
           dAd8Badge.style.color = isAd8Impaired ? "var(--status-mod-text)" : "var(--status-low-text)";
         }
-        const iadlImpCount = input.briefIADL?.totalImpairments || 0;
+        const iadlImpCount = (input.briefIADL?.totalImpairedCount ?? input.briefIADL?.totalImpairments ?? 0);
         if (dIadlSt) {
           dIadlSt.textContent = iadlImpCount === 0
             ? "IADL: สามารถดูแลตนเอง ทานยา จัดการเงินได้เป็นอิสระ (0/4 บกพร่อง)"
@@ -10228,7 +10231,7 @@
         if (dVmtTime) dVmtTime.textContent = input.visualMotorTimeMs !== null ? `${vmtSec} วินาที` : "ไม่ได้ทดสอบ";
         if (dVmtErrors) dVmtErrors.textContent = `กดผิดลำดับ: ${input.visualMotorErrors} ครั้ง`;
 
-        const isVmtSlow = _meta?.vmt?.isImpaired || false;
+        const isVmtSlow = (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated) || false;
         if (dVmtBadge) {
           dVmtBadge.textContent = isVmtSlow ? "ช้ากว่าเกณฑ์" : "ความเร็วปกติ";
           dVmtBadge.style.background = isVmtSlow ? "var(--status-mod-surface)" : "var(--status-low-surface)";
@@ -10356,15 +10359,15 @@
             },
             {
               name: "🧬 ตัวชี้วัดทางห้องปฏิบัติการ (Plasma p-tau217 / Biomarkers)",
-              detail: (input.labs?.ptau217Status === "POSITIVE" || input.labs?.ptau217PgMl >= 0.40) ? "ผลตรวจ Plasma p-tau217 เป็นบวก (Specific AD Pathology)" : ((input.labs?.ptau217Status === "BORDERLINE") ? "Plasma p-tau217 ก้ำกึ่ง (Intermediate)" : "ผลตรวจปกติ หรือ ไม่ได้ตรวจ"),
-              weight: (input.labs?.ptau217Status === "POSITIVE" || input.labs?.ptau217PgMl >= 0.40) ? 22 : ((input.labs?.ptau217Status === "BORDERLINE") ? 10 : 0),
-              color: (input.labs?.ptau217Status === "POSITIVE" || input.labs?.ptau217PgMl >= 0.40) ? "#DC2626" : ((input.labs?.ptau217Status === "BORDERLINE") ? "#F59E0B" : "#64748B")
+              detail: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? "ผลตรวจ Plasma p-tau217 เป็นบวก (Specific AD Pathology)" : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? "Plasma p-tau217 ก้ำกึ่ง (Intermediate)" : "ผลตรวจปกติ หรือ ไม่ได้ตรวจ"),
+              weight: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? 22 : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? 10 : 0),
+              color: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? "#DC2626" : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? "#F59E0B" : "#64748B")
             },
             {
               name: "⏱️ ความเร็วการลากเส้นและมิติสัมพันธ์ (Visual-Motor & CDT)",
-              detail: (_meta?.vmt?.isImpaired || input.cdtResult === "ABNORMAL") ? `ลากเส้นช้าหรือบิดเบี้ยว (Motor Tremor: ${input.cdtMotorTremorDetected ? "ตรวจพบ/กรองแล้ว" : "ปกติ"})` : "การลากเส้นและวาดภาพนาฬิกาปกติ",
-              weight: (_meta?.vmt?.isImpaired || input.cdtResult === "ABNORMAL") ? 12 : 0,
-              color: (_meta?.vmt?.isImpaired || input.cdtResult === "ABNORMAL") ? "#F59E0B" : "#10B981"
+              detail: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? `ลากเส้นช้าหรือบิดเบี้ยว (Motor Tremor: ${input.cdtMotorTremorDetected ? "ตรวจพบ/กรองแล้ว" : "ปกติ"})` : "การลากเส้นและวาดภาพนาฬิกาปกติ",
+              weight: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? 12 : 0,
+              color: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? "#F59E0B" : "#10B981"
             },
             {
               name: "👴 ปัจจัยพื้นฐานทางอายุ (Age Risk Baseline)",
@@ -10496,7 +10499,14 @@
     }
 
     function scrollToQuickPresets() {
+      if (typeof openScenarioPickerModal === "function") {
+        openScenarioPickerModal();
+      }
+      setViewMode('CLINICIAN', false);
       goToStep(0);
+      if (typeof switchStep0Tab === "function") {
+        switchStep0Tab(3);
+      }
       const presetCard = document.getElementById("quickScenarioPresetCard") || document.getElementById("clinicalScenarioPresetsCard");
       if (presetCard) {
         presetCard.style.display = "block";
@@ -10509,7 +10519,7 @@
           presetCard.style.boxShadow = "";
         }, 3000);
       }
-      showToast("เลื่อนหน้าจอลงมายังเคสจำลองทางคลินิก (คลิกเลือก 1 ใน 6 เคสเพื่อทดสอบระบบทันที)", "info");
+      showToast("เปิดหน้าต่างเลือกเคสจำลองทางคลินิก (คลิกเลือกเพื่อทดสอบระบบทันที)", "info");
     }
 
     function openSystemArchitectureModal() {
@@ -10815,238 +10825,9 @@
 
     function buildCompleteFhirBundle() {
       if (!lastAssessmentPayload) renderRiskStratificationReport();
-      const inp = lastAssessmentPayload.input;
-      const out = lastAssessmentPayload.output;
-      const timestampIso = new Date().toISOString();
-      const patientId = appState.pseudonymToken || "PSN-ANONYMOUS";
-
-      const entries = [
-        {
-          fullUrl: `urn:uuid:${patientId}`,
-          resource: {
-            resourceType: "Patient",
-            id: patientId,
-            name: [{ text: document.getElementById("patientNameInput")?.value || "คุณสมชาย ใจดี" }],
-            extension: [
-              { url: "http://example.org/fhir/StructureDefinition/years-of-education", valueInteger: inp.yearsOfEducation },
-              { url: "http://example.org/fhir/StructureDefinition/age-years", valueInteger: inp.age }
-            ]
-          }
-        },
-        {
-          fullUrl: "urn:uuid:obs-ad8",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-ad8",
-            status: "final",
-            code: {
-              coding: [
-                { system: "http://loinc.org", code: "72172-0", display: "AD8 Dementia Screening Interview Total Score" },
-                { system: "http://loinc.org", code: "71485-7", display: "Eight-item informant interview to differentiate aging and dementia total score" }
-              ]
-            },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueInteger: inp.ad8Score
-          }
-        },
-        {
-          fullUrl: "urn:uuid:obs-minicog-total",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-minicog-total",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "72133-2", display: "Mini-Cog Total Score" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueInteger: (inp.delayedRecallScore ?? 0) + (inp.cdtResult === "NORMAL" ? 2 : 0)
-          }
-        },
-        {
-          fullUrl: "urn:uuid:obs-minicog-recall",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-minicog-recall",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "72170-4", display: "Mini-Cog Word Recall Score" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueInteger: inp.delayedRecallScore
-          }
-        },
-        {
-          fullUrl: "urn:uuid:obs-minicog-clock",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-minicog-clock",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "72171-2", display: "Mini-Cog Clock Drawing Score" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueString: inp.cdtResult,
-            extension: [
-              { url: "http://example.org/fhir/StructureDefinition/cdt-source-type", valueString: appState.cdtTelemetry?.sourceType || "SCREEN_DRAWING" }
-            ]
-          }
-        },
-        {
-          fullUrl: "urn:uuid:obs-phq2",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-phq2",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "55758-7", display: "Patient Health Questionnaire 2-item (PHQ-2) total score" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueInteger: (appState.depression2Q?.q1_depressed_mood ? 1 : 0) + (appState.depression2Q?.q2_anhedonia ? 1 : 0),
-            component: [
-              { code: { coding: [{ system: "http://loinc.org", code: "44255-8", display: "PHQ-2 Item 1: Depressed mood" }] }, valueBoolean: !!appState.depression2Q?.q1_depressed_mood },
-              { code: { coding: [{ system: "http://loinc.org", code: "44250-9", display: "PHQ-2 Item 2: Anhedonia" }] }, valueBoolean: !!appState.depression2Q?.q2_anhedonia }
-            ]
-          }
-        }
-      ];
-
-      // FHIR QuestionnaireResponse for AD8 Informant Interview
-      if (inp.ad8Score !== null && inp.ad8Score !== undefined) {
-        entries.push({
-          fullUrl: "urn:uuid:qr-ad8-informant",
-          resource: {
-            resourceType: "QuestionnaireResponse",
-            id: "qr-ad8-informant",
-            status: "completed",
-            questionnaire: "http://example.org/fhir/Questionnaire/AD8-Dementia-Screen",
-            subject: { reference: `urn:uuid:${patientId}` },
-            authored: timestampIso,
-            item: [
-              { linkId: "ad8-total-score", text: "AD8 Total Score", answer: [{ valueInteger: inp.ad8Score }] }
-            ]
-          }
-        });
-      }
-
-      // FHIR QuestionnaireResponse for 2Q Depression Screening
-      entries.push({
-        fullUrl: "urn:uuid:qr-2q-depression",
-        resource: {
-          resourceType: "QuestionnaireResponse",
-          id: "qr-2q-depression",
-          status: "completed",
-          questionnaire: "http://example.org/fhir/Questionnaire/2Q-Depression-Gatekeeper",
-          subject: { reference: `urn:uuid:${patientId}` },
-          authored: timestampIso,
-          item: [
-            { linkId: "2q-depressed-mood", text: "2Q Item 1: Depressed Mood", answer: [{ valueBoolean: !!appState.q2Responses[0] }] },
-            { linkId: "2q-anhedonia", text: "2Q Item 2: Anhedonia", answer: [{ valueBoolean: !!appState.q2Responses[1] }] }
-          ]
-        }
-      });
-
-            if (inp.visualMotorTimeMs !== null && inp.visualMotorTimeMs !== undefined) {
-        entries.push({
-          fullUrl: "urn:uuid:obs-trail-making",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-trail-making",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "72106-8", display: "Trail Making Test Completion Time" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueQuantity: { value: inp.visualMotorTimeMs, unit: "ms" }
-          }
-        });
-      }
-
-      const labs = inp.labs || {};
-      if (labs.plasma_ptau217_pg_mL !== undefined) {
-        entries.push({
-          fullUrl: "urn:uuid:obs-plasma-ptau217",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-plasma-ptau217",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "104352-0", display: "Plasma Phosphorylated Tau 217" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueQuantity: { value: labs.plasma_ptau217_pg_mL, unit: "pg/mL" }
-          }
-        });
-      }
-
-      if (labs.vitamin_b12_pg_mL !== undefined) {
-        entries.push({
-          fullUrl: "urn:uuid:obs-vitamin-b12",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-vitamin-b12",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "2132-9", display: "Vitamin B12" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueQuantity: { value: labs.vitamin_b12_pg_mL, unit: "pg/mL" }
-          }
-        });
-      }
-
-      if (labs.tsh_uIU_mL !== undefined) {
-        entries.push({
-          fullUrl: "urn:uuid:obs-tsh",
-          resource: {
-            resourceType: "Observation",
-            id: "obs-tsh",
-            status: "final",
-            code: { coding: [{ system: "http://loinc.org", code: "3016-3", display: "Thyrotropin (TSH)" }] },
-            subject: { reference: `urn:uuid:${patientId}` },
-            effectiveDateTime: timestampIso,
-            valueQuantity: { value: labs.tsh_uIU_mL, unit: "uIU/mL" }
-          }
-        });
-      }
-
-      entries.push({
-        fullUrl: "urn:uuid:diagnostic-report-cognitive-triage",
-        resource: {
-          resourceType: "DiagnosticReport",
-          id: "diagnostic-report-cognitive-triage",
-          status: "final",
-          code: { coding: [{ system: "http://loinc.org", code: "72106-8", display: "Cognitive Screening Multi-Axis Report" }] },
-          subject: { reference: `urn:uuid:${patientId}` },
-          effectiveDateTime: timestampIso,
-          conclusion: out.primaryRecommendationTh || "Complete Cognitive Screening",
-          result: [
-            { reference: "urn:uuid:obs-ad8", display: "AD8 Dementia Screening Score" },
-            { reference: "urn:uuid:obs-minicog-total", display: "Mini-Cog Total Score" },
-            { reference: "urn:uuid:obs-minicog-recall", display: "Mini-Cog Word Recall Score" },
-            { reference: "urn:uuid:obs-minicog-clock", display: "Mini-Cog Clock Drawing Score" },
-            { reference: "urn:uuid:obs-phq2", display: "PHQ-2 Depression Score" }
-          ],
-          extension: [
-            { url: "http://example.org/fhir/StructureDefinition/cognitive-axis", valueString: out.axes?.cognitiveAxis },
-            { url: "http://example.org/fhir/StructureDefinition/screening-composite-index", valueInteger: out.screeningCompositeIndex }
-          ]
-        }
-      });
-
-      return {
-        resourceType: "Bundle",
-        id: `bundle-cognitive-screening-${Date.now()}`,
-        type: "collection",
-        timestamp: timestampIso,
-        entry: entries
-      };
-    }
-
-    function exportFhirBundle() {
-      const bundle = buildCompleteFhirBundle();
-      recordAuditLog("EXPORT_FHIR_BUNDLE", `Exported HL7 FHIR R4 Collection Bundle for ${appState.pseudonymToken}`);
-      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `fhir-cognitive-bundle-${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("🏥 ส่งออก HL7 FHIR R4 Bundle สำเร็จ", "success");
+      const inp = lastAssessmentPayload ? lastAssessmentPayload.input : collectAssessmentInput();
+      const out = lastAssessmentPayload ? lastAssessmentPayload.output : stratifyCognitiveRisk(inp);
+      return buildFhirR4Bundle(inp, out);
     }
 
     async function dispatchSecureHospitalReferral() {
@@ -11260,26 +11041,33 @@
             const cx = 230, cy = 230, r = 180;
             const tremorStrokes = [];
             const circlePts = [];
-            for (let deg = 0; deg <= 360; deg += 4) {
+            for (let deg = 0; deg <= 360; deg += 3) {
               const rad = (deg * Math.PI) / 180;
-              const jitter = (deg % 8 === 0 ? 1 : -1) * 5.2;
-              circlePts.push({ x: cx + (r + jitter) * Math.cos(rad), y: cy + (r + jitter) * Math.sin(rad) });
+              const perpRad = rad + Math.PI / 2;
+              const jitter = Math.sin(deg * 8) * 5.2 + (deg % 6 === 0 ? 3.5 : -3.5);
+              circlePts.push({
+                x: cx + r * Math.cos(rad) + jitter * Math.cos(perpRad),
+                y: cy + r * Math.sin(rad) + jitter * Math.sin(perpRad)
+              });
             }
             tremorStrokes.push(circlePts);
             for (let h = 1; h <= 12; h++) {
               const rad = ((h * 30 - 90) * Math.PI) / 180;
-              tremorStrokes.push([
-                { x: cx + (r - 22) * Math.cos(rad), y: cy + (r - 22) * Math.sin(rad) },
-                { x: cx + (r - 8) * Math.cos(rad), y: cy + (r - 8) * Math.sin(rad) }
-              ]);
+              const tick = [];
+              for (let s = 0; s <= 6; s++) {
+                const d = (r - 22) + (s / 6) * 14;
+                const j = (s % 2 === 0 ? 1 : -1) * 3.5;
+                tick.push({ x: cx + d * Math.cos(rad) + j, y: cy + d * Math.sin(rad) + j });
+              }
+              tremorStrokes.push(tick);
             }
             const makeTremorHand = (deg, len) => {
               const rad = (deg * Math.PI) / 180;
               const perpRad = rad + Math.PI / 2;
               const pts = [];
-              for (let s = 0; s <= 12; s++) {
-                const d = (len * s) / 12;
-                const osc = s === 0 || s === 12 ? 0 : (s % 2 === 0 ? 1 : -1) * 4.5;
+              for (let s = 0; s <= 20; s++) {
+                const d = (len * s) / 20;
+                const osc = (s % 2 === 0 ? 1 : -1) * 4.5;
                 pts.push({ x: cx + d * Math.cos(rad) + osc * Math.cos(perpRad), y: cy + d * Math.sin(rad) + osc * Math.sin(perpRad) });
               }
               return pts;
@@ -11299,7 +11087,7 @@
             });
             return out.axes.biomarkerAxis === "AD_BIOMARKER_POSITIVE" &&
               out.biomarkerDetails.ptau217Status === "UNASSESSED" &&
-              out.biomarkerDetails.abetaRatioStatus === "POSITIVE" &&
+              (out.biomarkerDetails.abetaRatioStatus === "ABNORMAL_AMYLOID_POSITIVE" || out.biomarkerDetails.abetaRatioStatus === "POSITIVE") &&
               !out.clinicalFlags.some(f => f.includes("p-tau217 เป็นลบ"));
           }
         },
@@ -11709,18 +11497,26 @@
       if (q.type === "2Q") {
         if (!appState['2qResponses']) appState['2qResponses'] = [false, false];
         appState['2qResponses'][q.index] = (choice === "YES");
-        if (q.index === 0) appState.depression2Q.depressedMood = (choice === "YES");
-        if (q.index === 1) appState.depression2Q.lossOfInterests = (choice === "YES");
+        if (q.index === 0) {
+          appState.depression2Q.depressedMood = (choice === "YES");
+          appState.depression2Q.q1_depressed_mood = (choice === "YES");
+        }
+        if (q.index === 1) {
+          appState.depression2Q.lossOfInterests = (choice === "YES");
+          appState.depression2Q.q2_anhedonia = (choice === "YES");
+        }
         if (typeof render2QStatus === "function") render2QStatus(false);
       } else if (q.type === "AD8") {
         appState.ad8Responses[q.index] = choice;
-        // Sync with underlying form radios
+        // Sync with underlying form radios and renderers
         const radioYes = document.getElementById(`ad8_${q.index}_yes`);
         const radioNo = document.getElementById(`ad8_${q.index}_no`);
         const radioNa = document.getElementById(`ad8_${q.index}_na`);
         if (choice === "YES" && radioYes) radioYes.checked = true;
         if (choice === "NO" && radioNo) radioNo.checked = true;
         if (choice === "NA" && radioNa) radioNa.checked = true;
+        if (typeof renderAd8Questions === "function") renderAd8Questions();
+        if (typeof updateAd8ScoreDisplay === "function") updateAd8ScoreDisplay();
       }
 
       currentWizCardIndex++;
@@ -12679,6 +12475,13 @@
         body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ในทางกฎหมายการแพทย์ ระบบปัญญาประดิษฐ์หรือซอฟต์แวร์ไม่สามารถรับผิดชอบผลการวินิจฉัยโรคได้ หากระบบส่งผลอัตโนมัติเข้าสู่ HIS/EMR โดยไม่มีแพทย์เซ็นรับรอง จะขัดต่อมาตรฐานเวชปฏิบัติและจริยธรรมทางการแพทย์</p>
                <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> ออกแบบสถาปัตยกรรมแบบสองชั้น (Dual-Tier): ผลการคำนวณของอัลกอริทึมจะถูกบันทึกเป็น <em>Algorithmic Cognitive Axis</em> แยกต่างหากจาก <em>Clinician Override</em> ซึ่งแพทย์สามารถปรับเปลี่ยนผลตามดุลยพินิจ พร้อมบันทึกเลขที่ใบอนุญาตประกอบวิชาชีพเวชกรรมและเวลาลงนามใน HL7 FHIR R4 Bundle อย่างสมบูรณ์</p>`,
         ref: "มาตรฐานอ้างอิง: HL7 FHIR R4 DiagnosticReport / RiskAssessment Spec, แนวทางปฏิบัติการใช้ปัญญาประดิษฐ์ทางการแพทย์ แพทยสภา"
+      },
+      XAI_LOGIC: {
+        title: "Explainable AI (XAI) & Factor Contribution: เหตุผลเบื้องหลังการจำแนกความเสี่ยง",
+        badge: "Transparent Clinical Decision Support & Model Interpretability",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ในการใช้งานทางคลินิกจริง แพทย์และบุคลากรทางการแพทย์มักไม่ยอมรับโมเดลปัญญาประดิษฐ์ที่เป็น "กล่องดำ" (Black-Box AI) ที่บอกเพียงตัวเลขความเสี่ยงเป็นเปอร์เซ็นต์โดยไม่สามารถอธิบายได้ว่าเกิดจากปัจจัยใด</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> ออกแบบระบบแจกแจงน้ำหนักปัจจัย (Feature Contribution Breakdown) จำแนกตาม 6 องค์ประกอบหลัก เช่น Mini-Cog Delayed Recall, AD8 Informant, ภาระยา ACB, ผลแล็บ Plasma p-tau217, Visual-Motor Telemetry และอายุ เพื่อให้แพทย์เห็นหลักฐานเชิงประจักษ์ทันทีว่าทำไมผู้ป่วยจึงถูกจัดอยู่ในระดับความเสี่ยงดังกล่าว</p>`,
+        ref: "มาตรฐานอ้างอิง: WHO Guidance on Ethics and Governance of AI for Health, FDA Action Plan on AI/ML-Based SaMD, Miller (Artificial Intelligence 2019)"
       }
     };
 
