@@ -4,9 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Standards: HL7 FHIR R4](https://img.shields.io/badge/Interoperability-HL7%20FHIR%20R4-firebrick.svg)](#)
 [![Terminology: LOINC 17 Codes](https://img.shields.io/badge/Standard-LOINC%20Validated-brightgreen.svg)](#)
-[![Compliance: PDPA & HIPAA](https://img.shields.io/badge/Privacy-PDPA%20%7C%20HIPAA%20Compliant-blueviolet.svg)](#)
+[![Compliance: PDPA & HIPAA](https://img.shields.io/badge/Privacy-HIPAA%20%2F%20PDPA%20Inspired-blueviolet.svg)](#)
 [![Accessibility: WCAG AAA](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AAA-success.svg)](#)
-[![Concept: SaMD Class II CDS](https://img.shields.io/badge/Software-SaMD%20Class%20II%20Concept-orange.svg)](#)
+[![Concept: SaMD Class II CDS](https://img.shields.io/badge/Software-SaMD--Inspired%20Prototype-orange.svg)](#)
 
 ---
 
@@ -28,7 +28,7 @@
 ### 1. Executive Summary & Clinical Rationale (สรุปภาพรวมโครงการ)
 ระบบ **Thai Cognitive Triage CDSS** พัฒนาขึ้นเพื่อแก้ปัญหาคอขวดที่สำคัญที่สุดในระบบสาธารณสุขไทยด้านโรคสมองเสื่อม: **"ผู้ป่วยมักมาพบแพทย์เมื่อสายเกินไป (Delayed Triage) ขณะที่การคัดกรองเบื้องต้นมักแยกแยะสาเหตุชั่วคราวที่รักษาหายได้ (Reversible Causes) ไม่ออก ส่งผลให้เกิดการส่งต่อผิดแผนก (Misrouting) และสร้างความแออัดในคลินิกความจำเฉพาะทาง"**
 
-ระบบได้รับการออกแบบตั้งแต่ระดับรากฐานด้วยหลักการ **Human-Centered Healthcare Design** ผสาน **Software as a Medical Device (SaMD Class II)** เพื่อสร้างสะพานเชื่อมระหว่าง **"ผู้สูงอายุที่บ้าน/ชุมชน"** เข้ากับ **"แพทย์และระบบโรงพยาบาล (HIS/EMR)"** อย่างปลอดภัยและได้มาตรฐานสากล
+ระบบได้รับการออกแบบตั้งแต่ระดับรากฐานด้วยหลักการ **Human-Centered Healthcare Design** ผสาน **แนวคิดเครื่องมือสนับสนุนการตัดสินใจทางคลินิก (SaMD-Inspired Concept / Clinical Decision Support Prototype)** เพื่อสร้างสะพานเชื่อมระหว่าง **"ผู้สูงอายุที่บ้าน/ชุมชน"** เข้ากับ **"แพทย์และระบบโรงพยาบาล (HIS/EMR)"** อย่างปลอดภัยและได้มาตรฐานสากล
 
 ---
 
@@ -318,5 +318,19 @@ flowchart TD
 
 ---
 
-## ข้อจำกัดความรับผิดชอบ (Regulatory & SaMD Disclaimer)
-> "ระบบนี้เป็นเพียงเครื่องมือช่วยคัดกรองความเสี่ยงเบื้องต้น (Clinical Decision Support Tool) ไม่ใช่การวินิจฉัยโรคทางการแพทย์ และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น"
+## ⚠️ ข้อจำกัดและทิศทางการพัฒนาทางคลินิก (Limitations & Future Work)
+
+1. **สถานะชุดข้อมูลและการทดลอง (Synthetic Data & Prototype Status):**
+   - ชุดข้อมูลทั้งหมดในระบบ (25 เคสใน NeuroRegistry, ผลแล็บ LIS, และเวชระเบียนตัวอย่าง) เป็น **ชุดข้อมูลสังเคราะห์ทางการแพทย์ (Synthetic Clinical Data)** ที่สร้างขึ้นเพื่อสาธิตสถาปัตยกรรมซอฟต์แวร์และการทำงานร่วมกันของระบบตามมาตรฐานสากล (Interoperability Prototype) **ไม่ใช่ข้อมูลผู้ป่วยจริง**
+2. **ความจำเป็นในการศึกษาวิจัยและหาค่ามาตรฐานประชากรไทย (Need for Normative Validation):**
+   - อัลกอริทึมการคำนวณ Kinematic Latency, Visual-Motor Trail Making (8 จุด), Acoustic Speech Biomarkers และโมเดล In-Browser Logistic Regression เป็นการออกแบบเชิงแนวคิด (Proof-of-Concept) หากจะนำไปใช้จริงในทางคลินิก **จำเป็นต้องผ่านการทดสอบเทียบเคียง (Cross-Validation) กับเครื่องมือมาตรฐานของไทย เช่น TMSE (Thai Mental State Examination) หรือ MoCA-B (Montreal Cognitive Assessment - Basic)** รวมถึงต้องได้รับการพิจารณารับรองจากคณะกรรมการจริยธรรมการวิจัยในมนุษย์ (IRB)
+3. **ขอบเขตการใช้งานสนับสนุนการตัดสินใจ (SaMD-Inspired CDS Boundaries):**
+   - ระบบนี้จัดอยู่ในแนวคิด **Clinical Decision Support (CDS Prototype Concept)** ที่ทำหน้าที่เป็นด่านคัดกรองเบื้องต้นเพื่อลดภาระงานของบุคลากรสาธารณสุขและช่วยจัดลำดับความเร่งด่วน (Triage) เท่านั้น **ไม่ใช่อุปกรณ์หรือซอฟต์แวร์วินิจฉัยโรคทางการแพทย์ (Diagnostic Device)** และไม่สามารถใช้ทดแทนการตรวจยืนยันด้วยภาพถ่ายสมอง (MRI/Amyloid PET) หรือการตรวจน้ำไขสันหลัง (CSF Biomarkers) โดยแพทย์ผู้เชี่ยวชาญเฉพาะทางได้
+4. **การบริหารจัดการกุญแจความปลอดภัย (Key Management & Enterprise Tokenization):**
+   - การทำ Salted SHA-256 Client-Side Tokenization เพื่อแยก Schema A (PII) ออกจาก Schema B (Clinical Vector) เป็นการสาธิตสถาปัตยกรรม Privacy-by-Design บนฝั่ง Client-Side ในการใช้งานจริงระดับโรงพยาบาล จะต้องเชื่อมต่อกับระบบบริหารจัดการกุญแจเข้ารหัสระดับองค์กร (Enterprise Key Management Service - KMS / HSM) และกระบวนการพิสูจน์ตัวตนตามนโยบายความมั่นคงปลอดภัยสารสนเทศของสถานพยาบาล
+
+---
+
+## ข้อจำกัดความรับผิดชอบ (Regulatory & SaMD-Inspired Concept Disclaimer)
+
+> "ระบบนี้เป็นแบบจำลองแนวคิด (Prototype Concept) สำหรับประเมินความเสี่ยงเบื้องต้นด้วยข้อมูลสังเคราะห์ ไม่ใช่การวินิจฉัยโรคทางการแพทย์ และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น"

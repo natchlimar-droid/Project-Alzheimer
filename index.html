@@ -1914,8 +1914,8 @@
   <div class="samd-banner" role="region" aria-label="คำเตือนทางกฎหมายและข้อจำกัดความรับผิดชอบทางการแพทย์">
     <div class="samd-banner-inner">
       <div class="samd-banner-text">
-        <span class="samd-badge">SaMD DISCLAIMER</span>
-        <span id="samdDisclaimerText">ระบบนี้เป็นเพียงเครื่องมือประเมินความเสี่ยงเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์ และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น</span>
+        <span class="samd-badge">PROTOTYPE / SaMD-INSPIRED</span>
+        <span id="samdDisclaimerText">ระบบนี้เป็นแบบจำลองแนวคิด (Prototype Concept) สำหรับประเมินความเสี่ยงเบื้องต้นด้วยข้อมูลสังเคราะห์ ไม่ใช่การวินิจฉัยโรคทางการแพทย์ และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น</span>
         <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('SAMD')" title="ดูเบื้องหลังการออกแบบจุดนี้">💡 UX: SaMD Disclaimer</button>
       </div>
       <button type="button" class="samd-tts-btn" id="samdDisclaimerTtsBtn"
@@ -2109,13 +2109,18 @@
       <h2 style="font-size:2rem; font-weight:900; margin:0 0 0.75rem 0; color:var(--text-primary); line-height:1.3;">
         ตรวจเช็กสุขภาพความจำเบื้องต้น
       </h2>
-      <p style="font-size:1.25rem; line-height:1.7; color:var(--text-secondary); max-width:620px; margin:0 auto 2.5rem auto;">
+      <p style="font-size:1.2rem; line-height:1.7; color:var(--text-secondary); max-width:620px; margin:0 auto 2rem auto;">
         แบบทดสอบสำหรับผู้สูงอายุและครอบครัว เพื่อสังเกตการทำงานของสมองและความจำเบื้องต้น<br>
-        สะดวก สบายใจ ใช้เวลาเพียง 5 นาที ค่อยๆ ตอบทีละข้อนะคะ
+        (ทำแบบประเมินจริงทีละข้อประมาณ 5–8 นาที หรือเลือกดูผลจำลองด่วนใน 10 วินาที)
       </p>
-      <button type="button" class="btn btn-primary" onclick="startPatientWizard()" style="min-height:68px; font-size:1.35rem; font-weight:900; width:100%; max-width:440px; border-radius:16px; margin:0 auto; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow:0 6px 18px rgba(37,99,235,0.35);">
-        <span>เริ่มตรวจสุขภาพความจำ ➔</span>
-      </button>
+      <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:440px; margin:0 auto;">
+        <button type="button" class="btn btn-primary" onclick="startPatientWizard()" style="min-height:64px; font-size:1.25rem; font-weight:900; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow:0 6px 18px rgba(37,99,235,0.35);">
+          <span>เริ่มตรวจสุขภาพความจำ (ทีละข้อ) ➔</span>
+        </button>
+        <button type="button" class="btn" onclick="openScenarioPickerModal()" style="min-height:48px; font-size:1.02rem; font-weight:800; border-radius:12px; background:var(--bg-elevated); border:2px solid #2563EB; color:#2563EB; display:inline-flex; align-items:center; justify-content:center; gap:0.4rem;">
+          <span>⚡ โหลดเคสจำลองทางคลินิก (Quick Demo 10 วินาที)</span>
+        </button>
+      </div>
     </div>
 
     <!-- Screen 1: Basic Profile (3 Simple Big-Button Questions) -->
@@ -2401,6 +2406,36 @@
           onclick="speakThai('กรุณากรอกข้อมูลอายุและจำนวนปีการศึกษาของผู้รับการประเมิน หรือเลือกเคสจำลองทางคลินิกเพื่อดูตัวอย่างการทำงานของระบบ', this)">
           🔊 ฟังคำแนะนำ
         </button>
+      </div>
+
+      <!-- Top 10-Second Quick Demo Presets Banner -->
+      <div class="quick-demo-top-strip no-print" style="background:linear-gradient(135deg, #1E293B 0%, #0F172A 100%); color:#FFFFFF; padding:1rem 1.25rem; border-radius:14px; margin-bottom:1.25rem; border:2px solid #38BDF8; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="font-size:1.4rem;">⚡</span>
+            <div>
+              <strong style="font-size:1.05rem; color:#38BDF8;">Quick Demo Sandbox: โหลดเคสจำลองและดูผล 4 แกนทันทีใน 10 วินาที</strong>
+              <div style="font-size:0.82rem; color:#94A3B8;">เลือก 1 ใน 4 เคสตัวอย่างเพื่อทดสอบอัลกอริทึม ระบบจะกรอกข้อมูลและแสดงหน้ารายงานสรุปอัตโนมัติ (Synthetic Data Prototype)</div>
+            </div>
+          </div>
+          <button type="button" class="btn" onclick="openScenarioPickerModal()" style="font-size:0.85rem; font-weight:800; padding:0.35rem 0.75rem; background:#0284C7; color:#FFF; border:none; border-radius:8px;">
+            📋 ดูเคสจำลองทั้งหมด (6 เคส)
+          </button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.6rem;">
+          <button type="button" class="btn" onclick="loadClinicalPreset('MCI_POSITIVE_BIOMARKER')" style="background:#450A0A; border:1px solid #DC2626; color:#FEE2E2; font-weight:700; font-size:0.88rem; padding:0.6rem 0.75rem; text-align:left; border-radius:8px; line-height:1.35;">
+            🔴 <strong>เสี่ยงอัลไซเมอร์ระยะแรก</strong><br><span style="font-size:0.75rem; opacity:0.85;">Mini-Cog 1/5 + p-tau217 สูง 0.48</span>
+          </button>
+          <button type="button" class="btn" onclick="loadClinicalPreset('REVERSIBLE_ACB_MEDICATION')" style="background:#451A03; border:1px solid #D97706; color:#FEF3C7; font-weight:700; font-size:0.88rem; padding:0.6rem 0.75rem; text-align:left; border-radius:8px; line-height:1.35;">
+            🟡 <strong>ผลข้างเคียงจากยา ACB</strong><br><span style="font-size:0.75rem; opacity:0.85;">ACB = 7 (CPM + Dimen + Ativan)</span>
+          </button>
+          <button type="button" class="btn" onclick="loadQuickFloatingDemo('DELIRIUM_4AT')" style="background:#581C87; border:1px solid #9333EA; color:#F3E8FF; font-weight:700; font-size:0.88rem; padding:0.6rem 0.75rem; text-align:left; border-radius:8px; line-height:1.35;">
+            🚨 <strong>Delirium ติดด่าน 4AT</strong><br><span style="font-size:0.75rem; opacity:0.85;">4AT = 6 สั่งระงับตรวจความจำ</span>
+          </button>
+          <button type="button" class="btn" onclick="loadClinicalPreset('HEALTHY_NORMAL')" style="background:#064E3B; border:1px solid #10B981; color:#D1FAE5; font-weight:700; font-size:0.88rem; padding:0.6rem 0.75rem; text-align:left; border-radius:8px; line-height:1.35;">
+            🟢 <strong>สมองสมวัย (ปกติ)</strong><br><span style="font-size:0.75rem; opacity:0.85;">AD8 = 0, Mini-Cog 5/5 ครบ</span>
+          </button>
+        </div>
       </div>
 
       <!-- Step 0 Progressive Disclosure Stepper Bar -->
@@ -3176,13 +3211,13 @@
               </div>
               <div style="font-size:11pt; color:#333333; line-height:1.35;">
                 <div style="font-weight:800; font-size:11.5pt; color:#111827; letter-spacing:0.01em;">
-                  ศูนย์ความเป็นเลิศทางการแพทย์ด้านโรคสมองเสื่อมและประสาทวิทยาศาสตร์
+                  หน่วยประเมินภาวะรู้คิดและประสาทวิทยาศาสตร์จำลอง (Prototype Cognitive Screening Unit)
                 </div>
                 <div style="font-weight:600; font-size:10pt; color:#4B5563;">
-                  Center of Excellence in Neurological &amp; Cognitive Disorders
+                  Simulated Center for Cognitive &amp; Neurological Assessment (Proof-of-Concept Prototype)
                 </div>
                 <div style="font-size:9pt; color:#6B7280; margin-top:2px;">
-                  โรงพยาบาลระดับตติยภูมิ • บริการคัดกรอง วินิจฉัย และส่งเสริมสุขภาพสมองผู้สูงอายุ • โทร. 02-XXX-XXXX
+                  ระบบต้นแบบจำลองทางวิชาการ • ชุดข้อมูลสังเคราะห์ (Synthetic Data Only) • มิใช่การวินิจฉัยโรคทางการแพทย์จริง
                 </div>
               </div>
             </div>
@@ -3192,11 +3227,11 @@
                 ใบรายงานผลการคัดกรองความเสี่ยงสมองเสื่อม
               </div>
               <div style="font-size:9.5pt; font-weight:700; color:#4B5563; margin-top:1px;">
-                Patient Cognitive Health &amp; Care Management Report
+                Patient Cognitive Health &amp; Care Management Report (Prototype)
               </div>
               <div style="margin-top:6px; border:1px solid #444444; border-radius:4px; padding:4px 8px; background:#F9FAFB; font-size:9pt; text-align:left; display:inline-block;">
-                <div><strong>เลขที่เอกสาร (Doc No.):</strong> <span id="printDocumentNumberDisplay">DOC-690412-01</span></div>
-                <div><strong>วันที่ออกรายงาน:</strong> <span id="printReportDateDisplay">11 พฤศจิกายน 2569</span></div>
+                <div><strong>เลขที่เอกสาร (Doc No.):</strong> <span id="printDocumentNumberDisplay">DOC-XXXXXX-XX</span></div>
+                <div><strong>วันที่ออกรายงาน:</strong> <span id="printReportDateDisplay">--/--/----</span></div>
               </div>
             </div>
           </div>
@@ -3212,13 +3247,13 @@
             <tbody>
               <tr>
                 <td style="width:20%; background:#F9FAFB; font-weight:700;">ชื่อ-นามสกุล:</td>
-                <td style="width:30%; font-weight:600;" id="printPatientNameCell">คุณสมชาย ใจดี</td>
+                <td style="width:30%; font-weight:600;" id="printPatientNameCell">[รอข้อมูลผู้รับการประเมิน]</td>
                 <td style="width:20%; background:#F9FAFB; font-weight:700;">HN / รหัสผู้ป่วย:</td>
-                <td style="width:30%; font-weight:600;" id="printPatientHnCell">HN-690412</td>
+                <td style="width:30%; font-weight:600;" id="printPatientHnCell">[HN-XXXXXX]</td>
               </tr>
               <tr>
                 <td style="background:#F9FAFB; font-weight:700;">อายุ / การศึกษา:</td>
-                <td id="printPatientAgeEduCell">71 ปี (การศึกษา 12 ปี)</td>
+                <td id="printPatientAgeEduCell">[รอข้อมูลอายุ / การศึกษา]</td>
                 <td style="background:#F9FAFB; font-weight:700;">รหัสแฝงกำกับผลตรวจ:</td>
                 <td id="printPatientTokenCell" style="font-family:monospace; font-weight:700;">PSN-XXXX-XXXXXXXX-XXXX</td>
               </tr>
@@ -3231,11 +3266,11 @@
              ================================================================== -->
         <div class="card-box no-print" style="background:var(--bg-card); border-left:6px solid var(--primary-bg); margin-bottom:1.25rem; padding:1.25rem 1.5rem;">
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.9rem; font-size:1.05rem;">
-            <div>👤 <strong>ชื่อ-นามสกุล:</strong> <span id="dashPatientName">คุณสมชาย ใจดี</span></div>
-            <div>🆔 <strong>HN:</strong> <span id="dashPatientHn">HN-690412</span></div>
-            <div>🎂 <strong>อายุ:</strong> <span id="dashPatientAge">71</span> ปี</div>
-            <div>🎓 <strong>การศึกษา:</strong> <span id="dashPatientEdu">12</span> ปี</div>
-            <div>📅 <strong>วันที่ตรวจ:</strong> <span id="dashPatientDate">11 พฤศจิกายน 2569</span></div>
+            <div>👤 <strong>ชื่อ-นามสกุล:</strong> <span id="dashPatientName">[รอข้อมูลผู้รับการประเมิน หรือกดโหลดเคสจำลอง]</span></div>
+            <div>🆔 <strong>HN:</strong> <span id="dashPatientHn">[HN-XXXXXX]</span></div>
+            <div>🎂 <strong>อายุ:</strong> <span id="dashPatientAge">--</span> ปี</div>
+            <div>🎓 <strong>การศึกษา:</strong> <span id="dashPatientEdu">--</span> ปี</div>
+            <div>📅 <strong>วันที่ตรวจ:</strong> <span id="dashPatientDate">[ยังไม่ได้ประเมิน]</span></div>
             <div class="clinician-only">🏷️ <strong>Token:</strong> <code id="dashPatientToken">PSN-XXXX</code></div>
           </div>
         </div>
@@ -3250,43 +3285,43 @@
                 สถานะสุขภาพสมองภาพรวม (Overall Cognitive Health Status)
               </div>
               <div style="display:flex; align-items:center; gap:0.85rem;">
-                <span id="dashMasterStatusIcon" style="font-size:3rem; line-height:1;">🟢</span>
+                <span id="dashMasterStatusIcon" style="font-size:3rem; line-height:1;">⏳</span>
                 <div>
                   <h3 id="dashMasterStatusTitle" style="margin:0; font-size:1.9rem; font-weight:900; line-height:1.2;">
-                    สมองทำงานปกติ (Cognitively Healthy)
+                    รอการประมวลผลการประเมิน (Pending Assessment)
                   </h3>
                   <!-- Triage Level Badge -->
-                  <div id="dashTriageLevelBadge" class="badge triage-badge-green" style="margin-top:0.4rem; display:inline-block; font-size:0.95rem; font-weight:800; padding:0.35rem 0.85rem; border-radius:6px;">
-                    🟢 ความเร่งด่วน: Green (ติดตามประจำปี)
+                  <div id="dashTriageLevelBadge" class="badge" style="margin-top:0.4rem; display:inline-block; font-size:0.95rem; font-weight:800; padding:0.35rem 0.85rem; border-radius:6px; background:#F3F4F6; color:#4B5563; border:1px solid #D1D5DB;">
+                    ⚪ รอประเมิน (Pending Triage)
                   </div>
                 </div>
               </div>
               <p id="dashMasterStatusDesc" style="margin:1rem 0 0 0; font-size:1.15rem; line-height:1.6; font-weight:700; color:var(--text-primary);">
-                สมรรถภาพการรู้คิดทุกมิติอยู่ในเกณฑ์ปกติเหมาะสมตามวัย ไม่พบสัญญาณความเสี่ยงของภาวะสมองเสื่อม แนะนำส่งเสริมสุขภาพสมองด้วยโภชนาการ การออกกำลังกาย และฝึกสมองต่อเนื่อง
+                ยังไม่มีข้อมูลการประเมิน กรุณาทำแบบทดสอบในขั้นตอนที่ 0 ถึง 3 หรือกดเลือก [⚡ โหลดเคสจำลองทางคลินิก] เพื่อให้อัลกอริทึมวิเคราะห์ความเสี่ยง 4 แกนและออกรายงานสรุปผล
               </p>
 
               <!-- One-Click Triage Priority Recommendation Box -->
               <div id="dashTriageActionBox" style="margin-top:1rem; padding:0.85rem 1rem; border-radius:8px; border:2px solid var(--border-subtle); background:var(--bg-surface); font-size:1.02rem; font-weight:700;">
-                <span id="dashTriageActionIcon">🏥</span> <strong>คำสั่งการส่งต่อ (Clinical Triage Action):</strong> <span id="dashTriageActionText">ติดตามคัดกรองประจำปีตามนัดปกติ (Routine Annual Follow-up)</span>
+                <span id="dashTriageActionIcon">⏳</span> <strong>คำสั่งการส่งต่อ (Clinical Triage Action):</strong> <span id="dashTriageActionText">รอการทำแบบประเมินให้ครบถ้วน</span>
               </div>
             </div>
 
             <!-- Composite Score Gauge Box -->
             <div style="min-width:270px; background:var(--bg-surface); padding:1.25rem; border-radius:12px; border:2px solid var(--border-subtle); text-align:center;">
               <div style="font-size:0.92rem; font-weight:800; color:var(--text-secondary); margin-bottom:0.25rem;">ดัชนีคะแนนรวมภายใน (Composite Index)</div>
-              <div id="dashCompositeScoreText" style="font-size:2.8rem; font-weight:900; line-height:1.1; color:var(--primary-bg);">
-                0 / 100
+              <div id="dashCompositeScoreText" style="font-size:2.8rem; font-weight:900; line-height:1.1; color:var(--text-secondary);">
+                -- / 100
               </div>
               <div style="height:14px; background:var(--bg-elevated); border-radius:7px; overflow:hidden; margin:0.75rem 0 0.5rem 0; border:1px solid var(--border-subtle); position:relative;">
-                <div id="dashCompositeScoreBar" style="height:100%; width:5%; background:var(--status-low-border); border-radius:7px; transition:width 0.5s ease, background 0.5s ease;"></div>
+                <div id="dashCompositeScoreBar" style="height:100%; width:0%; background:var(--status-low-border); border-radius:7px; transition:width 0.5s ease, background 0.5s ease;"></div>
               </div>
               <div style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:700; color:var(--text-secondary);">
                 <span>0 ปกติ</span>
                 <span>25 เฝ้าระวัง</span>
                 <span>55+ เสี่ยงสูง</span>
               </div>
-              <div id="dashCompositeScoreLevel" style="font-size:0.92rem; font-weight:800; margin-top:0.4rem; color:var(--status-low-text);">
-                ระดับความเสี่ยง: ปกติ (Low Risk)
+              <div id="dashCompositeScoreLevel" style="font-size:0.92rem; font-weight:800; margin-top:0.4rem; color:var(--text-secondary);">
+                ระดับความเสี่ยง: รอการประมวลผล
               </div>
             </div>
 
@@ -3568,7 +3603,7 @@
               <!-- Dynamic Horizontal Contribution Bars rendered by renderRiskStratificationReport() -->
             </div>
             <div style="margin-top:0.75rem; padding:0.6rem 0.85rem; border-radius:6px; background:var(--bg-surface); border:1px solid var(--border-subtle); font-size:0.82rem; color:var(--text-secondary);">
-              ℹ️ <strong>หลักการโปร่งใส (Glass-Box Principle):</strong> Mini-Cog Recall มีน้ำหนักเด่นสูงสุด (+35%) ร่วมกับแบบประเมิน AD8 (+25%), ยาต้านโคลิเนอร์จิก ACB (+20%), ผลเลือด p-tau217 (+22%) และความหน่วง Visual-Motor (+12%) โดยแยกความสั่นของกล้ามเนื้อ (Motor Tremor) ออกจากการรู้คิด
+              ℹ️ <strong>หลักการโปร่งใส (Glass-Box Principle):</strong> สัดส่วนน้ำหนักปัจจัยสูงสุดรวม 100% ตามหลักฐานทางคลินิก: Mini-Cog Recall มีน้ำหนักสูงสุด (โควตา 30%) ร่วมกับ AD8 (22%), ผลแล็บ p-tau217/Aβ (20%), ภาระยา ACB (14%), ความเร็ว Visual-Motor/CDT (9%) และปัจจัยอายุ (5%) โดยกรองความสั่นของกล้ามเนื้อ (Motor Tremor) ออกจากการรู้คิด
             </div>
           </div>
 
@@ -3948,13 +3983,13 @@
 
             <div class="form-grid" style="margin-top:1rem;">
               <div class="field-group">
-                <label class="field-label" for="referralHospitalSelect">โรงพยาบาล / แผนกเฉพาะทางปลายทาง</label>
+                <label class="field-label" for="referralHospitalSelect">โรงพยาบาล / แผนกเฉพาะทางปลายทาง (Mock Referral Centers)</label>
                 <select id="referralHospitalSelect" class="input-control">
-                  <option value="HOSP_SIRIRAJ">โรงพยาบาลศิริราช (Siriraj Hospital - Memory Clinic)</option>
-                  <option value="HOSP_CHULA">โรงพยาบาลจุฬาลงกรณ์ (King Chulalongkorn Memorial Hospital)</option>
-                  <option value="HOSP_RAMA">โรงพยาบาลรามาธิบดี (Ramathibodi Hospital - Geriatrics)</option>
-                  <option value="HOSP_PROVINCIAL">โรงพยาบาลศูนย์ / โรงพยาบาลทั่วไปประจำจังหวัด</option>
-                  <option value="CUSTOM_GATEWAY">กำหนด Secure EMR Endpoint เอง (Custom Cloud Gateway)</option>
+                  <option value="MOCK_TERTIARY_A">[จำลอง] โรงพยาบาลศูนย์ตติยภูมิ ก (Mock Tertiary Care Center A - Memory Clinic)</option>
+                  <option value="MOCK_UNIVERSITY_B">[จำลอง] โรงพยาบาลมหาวิทยาลัย ข (Mock University Hospital B - Geriatrics)</option>
+                  <option value="MOCK_PROVINCIAL_C">[จำลอง] โรงพยาบาลทั่วไปประจำจังหวัด ค (Mock Provincial Hospital C)</option>
+                  <option value="MOCK_COMMUNITY_D">[จำลอง] โรงพยาบาลชุมชน / รพ.สต. เครือข่าย (Mock Primary Care Unit D)</option>
+                  <option value="CUSTOM_GATEWAY">[จำลอง] กำหนด Sandbox EMR Endpoint เอง (Custom Prototype Gateway)</option>
                 </select>
               </div>
               <div class="field-group">
@@ -3966,9 +4001,9 @@
                 </select>
               </div>
               <div class="field-group" style="grid-column: 1 / -1;">
-                <label class="field-label" for="backendApiEndpointInput">Secure EMR Gateway API Endpoint (TLS 1.3)</label>
-                <input type="url" id="backendApiEndpointInput" class="input-control" value="https://api.hospital-emr.health.go.th/v1/cognitive-referrals" />
-                <span class="field-hint">ต้องเป็น HTTPS TLS 1.3 พร้อม mTLS หรือ JWT Bearer Authentication เพื่อการจัดเก็บข้อมูลระยะยาวที่ปลอดภัย</span>
+                <label class="field-label" for="backendApiEndpointInput">Sandbox EMR Gateway API Endpoint (Prototype Simulation)</label>
+                <input type="url" id="backendApiEndpointInput" class="input-control" value="https://api.sandbox-emr.mock-health.internal/v1/referrals" />
+                <span class="field-hint">จำลองการเชื่อมต่อ FHIR R4 ServiceRequest ในสภาพแวดล้อม Sandbox เพื่อการทดสอบ (Prototype / Synthetic Data Only)</span>
               </div>
             </div>
 
@@ -3991,7 +4026,7 @@
           <div class="card-box no-print clinician-only" style="border-width:3px; margin-bottom:1.25rem;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
               <div>
-                <h3 style="margin:0; font-size:1.3rem;">🔒 สถาปัตยกรรมความปลอดภัยและการปกป้องข้อมูลชีวภาพ (HIPAA / PDPA Compliance &amp; Audit Trail)</h3>
+                <h3 style="margin:0; font-size:1.3rem;">🔒 สถาปัตยกรรมความปลอดภัยและการปกป้องข้อมูลชีวภาพ (Designed with HIPAA / PDPA Principles in Mind &amp; Audit Trail Prototype)</h3>
                 <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
                   แยกฐานข้อมูล <strong>Schema A (Identifiable PII Vault)</strong> ออกจาก <strong>Schema B (Clinical Screening Vector)</strong> อย่างเด็ดขาด ผูกด้วยรหัสแฝงทางเดียว <code>pseudonymToken</code> พร้อมบันทึก <strong>Hash-Chained Access Audit Log</strong>
                 </p>
@@ -4054,7 +4089,7 @@
         <div class="print-only-footer" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-size:8pt; color:#555555;">
             <div>
-              ⚖️ <strong>การรับรองความถูกต้อง:</strong> รายงานฉบับนี้สร้างขึ้นเพื่อเป็นเครื่องมือสนับสนุนการตัดสินใจทางคลินิก (Class II SaMD CDS) ผลการตรวจต้องได้รับการยืนยันโดยแพทย์ผู้ตรวจ
+              ⚖️ <strong>การรับรองความถูกต้อง:</strong> รายงานฉบับนี้สร้างขึ้นเพื่อเป็นเครื่องมือสนับสนุนการตัดสินใจทางคลินิก (SaMD-inspired Prototype Concept) ผลการตรวจต้องได้รับการยืนยันโดยแพทย์ผู้ตรวจ
             </div>
             <div style="text-align:right; white-space:nowrap; margin-left:1rem;">
               <span id="printFooterTimestamp">พิมพ์เมื่อ: 11/11/2569 --:-- น.</span>
@@ -4065,8 +4100,8 @@
         <!-- Prominent Regulatory Disclaimer Footer in Report -->
         <div class="card-box no-print"
           style="margin-top:1rem; border-color:var(--status-mod-border); background:var(--status-mod-surface); color:var(--status-mod-text); font-weight:700;">
-          ⚖️ <strong>ข้อจำกัดความรับผิดชอบทางการแพทย์ (Regulatory &amp; SaMD Disclaimer):</strong><br />
-          "ระบบนี้เป็นเพียงเครื่องมือประเมินความเสี่ยงเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์
+          ⚖️ <strong>ข้อจำกัดความรับผิดชอบทางการแพทย์ (Regulatory &amp; SaMD-Inspired Disclaimer):</strong><br />
+          "ระบบนี้เป็นแบบจำลองแนวคิด (Prototype Concept) สำหรับประเมินความเสี่ยงเบื้องต้นด้วยข้อมูลสังเคราะห์ ไม่ใช่การวินิจฉัยโรคทางการแพทย์
           และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น"
         </div>
 
@@ -4345,7 +4380,7 @@
       <div>
         <h3 style="margin:0; font-size:1.45rem; color:var(--text-primary);">📐 สถาปัตยกรรมระบบ &amp; แนวคิดการตัดสินใจทางคลินิก (System Architecture &amp; Clinical CDSS Logic)</h3>
         <p style="margin:0.25rem 0 0 0; color:var(--text-secondary); font-size:0.98rem;">
-          Clinical Decision Support System (SaMD Class II CDS Concept) • HIPAA/PDPA Privacy by Design • HL7 FHIR R4
+          Clinical Decision Support System (SaMD-Inspired Prototype Concept) • Designed with HIPAA/PDPA Privacy by Design • HL7 FHIR R4
         </p>
       </div>
       <button type="button" class="btn" onclick="document.getElementById('systemArchitectureModal').close()" style="min-height:44px; padding:0.4rem 0.8rem;">✕ ปิด</button>
@@ -4522,8 +4557,8 @@
             <div style="font-size:1.1rem; font-weight:800; color:#059669; margin-bottom:0.35rem;">🏥 Health Informatics Standards</div>
             <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
               <li><strong>HL7 FHIR Release 4:</strong> จัดโครงสร้าง Collection Bundle (Patient, QuestionnaireResponse, Observation, DiagnosticReport, ServiceRequest)</li>
-              <li><strong>LOINC Standard Codes:</strong> กำกับรหัสมาตรฐานสากลครบ 17 รายการ (เช่น Plasma p-tau217 LOINC <code>104352-0</code>)</li>
-              <li><strong>SaMD Class II CDS Concept:</strong> ออกแบบตามแนวคิด US FDA Software as a Medical Device (Clinical Decision Support)</li>
+              <li><strong>LOINC Standard Codes:</strong> กำกับรหัสมาตรฐานสากลครบ 17 รายการตรวจหลัก (26 ฟิลด์มาตรฐาน) (เช่น Plasma p-tau217 LOINC <code>104352-0</code>)</li>
+              <li><strong>SaMD-Inspired CDS Concept:</strong> ออกแบบตามแนวคิด US FDA Software as a Medical Device (Clinical Decision Support Prototype)</li>
               <li><strong>Clinician Decision Override:</strong> มีระบบบันทึกและทบทวนผลโดยแพทย์พร้อมเลข ว. ใบอนุญาต</li>
             </ul>
           </div>
@@ -4531,7 +4566,7 @@
           <div style="background:var(--bg-card); padding:1rem; border-radius:8px; border:1px solid var(--border-subtle);">
             <div style="font-size:1.1rem; font-weight:800; color:#D97706; margin-bottom:0.35rem;">🔒 Privacy &amp; Accessibility</div>
             <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
-              <li><strong>PDPA &amp; HIPAA Compliance:</strong> แยก Schema A (PII) ออกจาก Schema B (Clinical) ด้วย Salted Hashing</li>
+              <li><strong>Designed with PDPA &amp; HIPAA Principles:</strong> แยก Schema A (PII) ออกจาก Schema B (Clinical) ด้วย Salted Hashing</li>
               <li><strong>Zero Raw PII Persistence:</strong> ไม่จัดเก็บข้อมูลส่วนตัวแบบ Unencrypted ลงใน LocalStorage</li>
               <li><strong>Tamper-Evident Audit Trail:</strong> บันทึกประวัติการเข้าถึงเวชระเบียนด้วย Hash-Chaining</li>
               <li><strong>WCAG 2.1 Level AAA:</strong> Contrast Ratio &gt; 7:1, ตัวหนังสือ &ge; 20px, ปุ่ม &ge; 60x60px</li>
@@ -10426,44 +10461,50 @@
           }
         }
 
-        // Populate Explainable AI (XAI) Feature Contribution Breakdown
+        // Populate Explainable AI (XAI) Feature Contribution Breakdown (Normalized to 100% total max risk share)
         const xaiContainer = document.getElementById("xaiContributionBarsContainer");
         if (xaiContainer) {
           const xaiFactors = [
             {
               name: "🧠 Mini-Cog Delayed Recall (ความจำระยะสั้น)",
               detail: input.delayedRecallScore === 0 ? "จำคำศัพท์ไม่ได้เลย (0/3 คำ) — มีน้ำหนักเสี่ยงสูงสุด" : (input.delayedRecallScore === 1 ? "จำได้เพียง 1/3 คำ" : (input.delayedRecallScore === 2 ? "จำได้ 2/3 คำ" : "จำได้ครบ 3/3 คำ (ปกติ)")),
-              weight: input.delayedRecallScore === 0 ? 35 : (input.delayedRecallScore === 1 ? 22 : (input.delayedRecallScore === 2 ? 10 : 0)),
+              weight: input.delayedRecallScore === 0 ? 30 : (input.delayedRecallScore === 1 ? 18 : (input.delayedRecallScore === 2 ? 8 : 0)),
+              maxShare: 30,
               color: input.delayedRecallScore <= 1 ? "#EF4444" : (input.delayedRecallScore === 2 ? "#F59E0B" : "#10B981")
             },
             {
               name: "📋 แบบประเมินญาติและผู้ดูแล (AD8 Informant)",
               detail: input.ad8Score >= 4 ? `พบความเปลี่ยนแปลง ${input.ad8Score}/8 ข้อ (ข้อจำกัดชัดเจน)` : (input.ad8Score >= 2 ? `พบการเปลี่ยนแปลง ${input.ad8Score}/8 ข้อ (เฝ้าระวัง)` : `ปกติ ${input.ad8Score}/8 ข้อ`),
-              weight: input.ad8Score >= 4 ? 25 : (input.ad8Score >= 2 ? 16 : 0),
+              weight: input.ad8Score >= 4 ? 22 : (input.ad8Score >= 2 ? 14 : 0),
+              maxShare: 22,
               color: input.ad8Score >= 4 ? "#EF4444" : (input.ad8Score >= 2 ? "#F59E0B" : "#10B981")
-            },
-            {
-              name: "💊 ภาระยาต้านโคลิเนอร์จิก (Anticholinergic Burden - ACB)",
-              detail: acbVal >= 3 ? `ACB = ${acbVal} (ภาระยาสูง เสี่ยงกดสมอง/บดบังการรู้คิด)` : (acbVal >= 1 ? `ACB = ${acbVal} (มีความเสี่ยงเล็กน้อย)` : "ACB = 0 (ไม่มียากลุ่มเสี่ยง)"),
-              weight: acbVal >= 3 ? 20 : (acbVal >= 1 ? 8 : 0),
-              color: acbVal >= 3 ? "#D97706" : (acbVal >= 1 ? "#F59E0B" : "#10B981")
             },
             {
               name: "🧬 ตัวชี้วัดทางห้องปฏิบัติการ (Plasma p-tau217 / Biomarkers)",
               detail: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? "ผลตรวจ Plasma p-tau217 เป็นบวก (Specific AD Pathology)" : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? "Plasma p-tau217 ก้ำกึ่ง (Intermediate)" : "ผลตรวจปกติ หรือ ไม่ได้ตรวจ"),
-              weight: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? 22 : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? 10 : 0),
+              weight: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? 20 : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? 10 : 0),
+              maxShare: 20,
               color: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? "#DC2626" : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? "#F59E0B" : "#64748B")
+            },
+            {
+              name: "💊 ภาระยาต้านโคลิเนอร์จิก (Anticholinergic Burden - ACB)",
+              detail: acbVal >= 3 ? `ACB = ${acbVal} (ภาระยาสูง เสี่ยงกดสมอง/บดบังการรู้คิด)` : (acbVal >= 1 ? `ACB = ${acbVal} (มีความเสี่ยงเล็กน้อย)` : "ACB = 0 (ไม่มียากลุ่มเสี่ยง)"),
+              weight: acbVal >= 3 ? 14 : (acbVal >= 1 ? 6 : 0),
+              maxShare: 14,
+              color: acbVal >= 3 ? "#D97706" : (acbVal >= 1 ? "#F59E0B" : "#10B981")
             },
             {
               name: "⏱️ ความเร็วการลากเส้นและมิติสัมพันธ์ (Visual-Motor & CDT)",
               detail: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? `ลากเส้นช้าหรือบิดเบี้ยว (Motor Tremor: ${input.cdtMotorTremorDetected ? "ตรวจพบ/กรองแล้ว" : "ปกติ"})` : "การลากเส้นและวาดภาพนาฬิกาปกติ",
-              weight: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? 12 : 0,
+              weight: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? 9 : 0,
+              maxShare: 9,
               color: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? "#F59E0B" : "#10B981"
             },
             {
               name: "👴 ปัจจัยพื้นฐานทางอายุ (Age Risk Baseline)",
               detail: input.age >= 75 ? `อายุ ${input.age} ปี (เข้าเกณฑ์กลุ่มเสี่ยงสูงตามวัย >= 75 ปี)` : `อายุ ${input.age} ปี`,
-              weight: input.age >= 75 ? 8 : (input.age >= 65 ? 5 : 2),
+              weight: input.age >= 75 ? 5 : (input.age >= 65 ? 3 : 1),
+              maxShare: 5,
               color: input.age >= 75 ? "#3B82F6" : "#64748B"
             }
           ];
@@ -10473,13 +10514,16 @@
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
                 <span style="font-weight:700; font-size:0.88rem; color:var(--text-primary);">${f.name}</span>
                 <span style="font-weight:800; font-size:0.82rem; color:${f.color}; background:${f.color}15; padding:0.1rem 0.45rem; border-radius:4px;">
-                  ${f.weight > 0 ? `+${f.weight}% Risk Impact` : '0% (ปกติ)'}
+                  ${f.weight > 0 ? `+${f.weight}% Risk Share` : '0% (ปกติ)'}
                 </span>
               </div>
               <div style="width:100%; height:8px; background:var(--bg-elevated); border-radius:4px; overflow:hidden; margin:0.3rem 0;">
-                <div style="width:${Math.max(3, f.weight * 2.8)}%; height:100%; background:${f.color}; border-radius:4px; transition:width 0.4s ease;"></div>
+                <div style="width:${Math.max(3, (f.weight / f.maxShare) * 100)}%; height:100%; background:${f.color}; border-radius:4px; transition:width 0.4s ease;"></div>
               </div>
-              <div style="font-size:0.78rem; color:var(--text-secondary);">${f.detail}</div>
+              <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-secondary);">
+                <span>${f.detail}</span>
+                <span style="font-weight:600; font-size:0.75rem; color:var(--text-secondary); margin-left:0.5rem; white-space:nowrap;">(โควตาสูงสุด ${f.maxShare}%)</span>
+              </div>
             </div>
           `).join("");
         }
@@ -10928,7 +10972,7 @@
       const endpointInput = document.getElementById("backendApiEndpointInput");
       const feedback = document.getElementById("referralStatusFeedback");
 
-      const hospitalName = hospitalSelect ? hospitalSelect.options[hospitalSelect.selectedIndex].text : "โรงพยาบาลศิริราช";
+      const hospitalName = hospitalSelect ? hospitalSelect.options[hospitalSelect.selectedIndex].text : "[จำลอง] โรงพยาบาลศูนย์ตติยภูมิ ก (Mock Tertiary Care Center A - Memory Clinic)";
       const priority = prioritySelect ? prioritySelect.value : "routine";
       const endpoint = endpointInput ? endpointInput.value.trim() : "";
 
