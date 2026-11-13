@@ -32,15 +32,18 @@
 
 ---
 
-### 2. Clinical Bottlenecks & The Problem Space (ปัญหาและคอขวดเดิม)
-1. **ภาวะตื่นตระหนกและเครียดจากการทดสอบ (Test Anxiety & White-Coat Effect):**
-   - ผู้สูงอายุไทยเมื่อเห็นหน้าจอคอมพิวเตอร์ที่ซับซ้อน นาฬิกาจับเวลานับถอยหลังเป็นมิลลิวินาที หรือคำว่า *"ตรวจอัลไซเมอร์"* จะเกิดความเครียด ทำให้สมองส่วนหน้าชะงัก ตอบคำถามผิดพลาด เกิดผลบวกลวง (False Positive) สูงถึง 25%
+### 2. Clinical Bottlenecks & Thailand Healthcare Problem Space (ปัญหา คอขวด และบริบทสังคมสูงวัยไทย)
+ประเทศไทยได้ก้าวเข้าสู่ **สังคมผู้สูงอายุอย่างสมบูรณ์ (Complete Aged Society)** โดยมีประชากรอายุ 60 ปีขึ้นไปมากกว่า 20% ของประชากรทั้งประเทศ นำมาซึ่งความท้าทายเชิงระบบที่ซับซ้อนในการคัดกรองโรคสมองเสื่อม:
+1. **ภาวะสมองเสื่อมถูกตรวจพบช้า (Delayed Triage & Missed Golden Window):**
+   - ผู้ป่วยส่วนใหญ่มาพบแพทย์เมื่อเข้าสู่ระยะสมองเสื่อมชัดเจน (Moderate to Severe Dementia) ซึ่งเลยช่วงเวลาทองในการชะลอโรค การคัดกรองด่านหน้าจึงต้องมี **ความไวสูง (High Sensitivity $\ge 90\%$)** เพื่อลดอัตราผลลบลวง (Zero False Negatives)
 2. **การวินิจฉัย Delirium หรือ Pseudodementia เป็นโรคอัลไซเมอร์ (Misrouting):**
-   - ผู้ป่วยที่มีภาวะเพ้อเฉียบพลัน (Delirium) จากการติดเชื้อ หรือมีภาวะซึมเศร้า (Depression) จะทำแบบทดสอบความจำไม่ได้ หากไม่มีด่านกักกัน (Gatekeeper) ผู้ป่วยจะถูกส่งต่อเข้าคลินิกสมองเสื่อมแทนที่จะได้รับการรักษาฉุกเฉินทางอายุรกรรม
-3. **ความเหลื่อมล้ำทางระดับการศึกษา (Educational & Cross-Cultural Inequity):**
+   - ผู้ป่วยที่มีภาวะเพ้อเฉียบพลัน (Delirium) จากการติดเชื้อ หรือมีภาวะซึมเศร้า (Depression) จะทำแบบทดสอบความจำไม่ได้ หากไม่มีด่านกักกัน (Gatekeeper) ผู้ป่วยจะถูกส่งต่อเข้าคลินิกสมองเสื่อมแทนที่จะได้รับการรักษาฉุกเฉินทางอายุรกรรม สร้างความแออัดในโรงพยาบาลศูนย์
+3. **ภาวะตื่นตระหนกและเครียดจากการทดสอบ (Test Anxiety & White-Coat Effect):**
+   - ผู้สูงอายุไทยเมื่อเห็นหน้าจอคอมพิวเตอร์ที่ซับซ้อน นาฬิกาจับเวลานับถอยหลังเป็นมิลลิวินาที หรือคำว่า *"ตรวจอัลไซเมอร์"* จะเกิดความเครียด ทำให้สมองส่วนหน้าชะงัก ตอบคำถามผิดพลาด เกิดผลบวกลวง (False Positive) สูงถึง 25%
+4. **ความเหลื่อมล้ำทางระดับการศึกษา (Educational & Cross-Cultural Inequity):**
    - แบบทดสอบมาตรฐานสากล (เช่น Clock Drawing Test หรือ Trail Making) บังคับให้ผู้สูงอายุต้องเขียนตัวเลข 1–12 และสลับพยัญชนะไทย (1→ก→2→ข) ซึ่งผู้สูงอายุไทยในชนบทที่ไม่ได้เรียนหนังสือหรือเรียนไม่จบชั้นประถมจะทำไม่ได้แม้สมองจะยังแข็งแรง
-4. **ช่องว่างด้านความรับผิดชอบทางกฎหมายเวชกรรม (The Medico-Legal AI Gap):**
-   - ระบบ AI หรืออัลกอริทึมทั่วไปมักให้ผลลัพธ์เป็นเปอร์เซ็นต์ความเสี่ยงโดยตรง ซึ่งขัดต่อหลักเวชปฏิบัติสากล เพราะซอฟต์แวร์ไม่สามารถรับผิดชอบทางกฎหมายแทนแพทย์ได้หากเกิดข้อผิดพลาด
+5. **การขาดการเชื่อมต่อข้อมูลสู่ระบบโรงพยาบาล (Interoperability & Medico-Legal AI Gap):**
+   - ผลการคัดกรองเบื้องต้นในชุมชนมักไม่ได้มาตรฐาน ไม่สามารถส่งต่อไปยังระบบเวชระเบียน EMR/HIS ของโรงพยาบาลได้อย่างปลอดภัย อีกทั้งโมเดล AI ทั่วไปมักให้ผลลัพธ์เป็นกล่องดำ (Black-Box Probability) โดยไม่มีระบบกำกับความรับผิดชอบตามกฎหมายเวชกรรม (Clinician Decision Override)
 
 ---
 
@@ -71,13 +74,13 @@
 | **1. 4AT Delirium Gatekeeper** | ตรวจสอบระดับความรู้สึกตัวและความสับสนเฉียบพลันก่อนเริ่มทดสอบ | หากได้คะแนน $\ge 4$ ระบบจะสั่ง **Clinical Halt** ระงับการตรวจความจำทันที และเตือนให้ส่งพบแพทย์ฉุกเฉิน |
 | **2. 2Q Depression Pre-Screen** | ด่านบังคับคัดกรองอารมณ์เศร้าและความเบื่อหน่ายก่อนเข้าสู่โมดูลสมอง | หาก 2Q ให้ผลบวก ระบบจะตั้งธงเตือนแพทย์ให้ประเมินด้วย TGDS-15 ก่อนเสมอ เพื่อแยกภาวะสมองเสื่อมเทียม (Pseudodementia) |
 | **3. Spontaneous Free Recall Priority** | คิดคะแนน Mini-Cog จากการนึกคำศัพท์เองอิสระ (0–3 คะแนน) เป็นหลัก | การเลือกคำศัพท์แบบมีตัวเลือก (Cued Recognition) จะถูกเก็บเป็นข้อมูลวิจัยเสริมเพื่อแยก Storage vs Retrieval Deficit เท่านั้น ไม่นำมาบวกทับซ้อน |
-| **4. ACB Medication Burden Hierarchy** | ตรวจสอบรายการยาที่มีฤทธิ์ยับยั้ง Acetylcholine 27 รายการ | หากคะแนน ACB รวม $\ge 3$ ระบบจะจัดเป็น **Reversible Cognitive Impairment Suspected** ในลำดับความสำคัญสูงสุด และส่งปรึกษาเภสัชกรคลินิกเพื่อทำ Medication Reconciliation ปรับลดยาก่อน |
+| **4. ACB Medication Burden Hierarchy** | ตรวจสอบรายการยาที่มีฤทธิ์ยับยั้ง Acetylcholine 27–31 รายการ | หากคะแนน ACB รวม $\ge 3$ ระบบจะจัดเป็น **Reversible Cognitive Impairment Suspected** ในลำดับความสำคัญสูงสุด และส่งปรึกษาเภสัชกรคลินิกเพื่อทำ Medication Reconciliation ปรับลดยาก่อน |
 | **5. Null Input & False-Negative Brake** | ตั้งค่าเริ่มต้นของข้อมูลการประเมินทุกตัวเป็น `null` | หากตอบแบบสอบถามไม่ครบ ระบบจะไม่คำนวณคะแนนความเสี่ยงเด็ดขาด เพื่อป้องกันการแปลผลผิดพลาดว่าเป็นปกติ |
 
 ---
 
 ### 5. Systemic Outcomes & Technical Interoperability (ผลลัพธ์เชิงระบบ)
-- **Hospital-Grade Interoperability:** ส่งออกผลลัพธ์ในรูปแบบ **HL7 FHIR Release 4 (R4) Bundle** พร้อมผูก **LOINC Standard Codes ครบ 17 รายการ** (เช่น LOINC `72172-0` สำหรับ AD8, `72133-2` สำหรับ Mini-Cog, `55758-7` สำหรับ 2Q Depression)
+- **Hospital-Grade Interoperability:** ส่งออกผลลัพธ์ในรูปแบบ **HL7 FHIR Release 4 (R4) Bundle** พร้อมผูก **LOINC Standard Codes ครบ 17 รายการ** (เช่น LOINC `72172-0` สำหรับ AD8, `72133-2` สำหรับ Mini-Cog, `55758-7` สำหรับ 2Q Depression, `2132-9` สำหรับ Vitamin B12, `3016-3` สำหรับ TSH, `104352-0` สำหรับ Plasma p-tau217)
 - **Dual-Tier Accountability (Human-in-the-Loop):** ระบบบันทึกผลการคำนวณของอัลกอริทึม (`Algorithmic Cognitive Axis`) แยกต่างหากจากคำวินิจฉัยจริงของแพทย์ (`Clinician Decision Override`) พร้อมบันทึกเลขที่ใบอนุญาตประกอบวิชาชีพเวชกรรมและเวลาลงนามอิเล็กทรอนิกส์ เพื่อความรับผิดชอบตามกฎหมายเวชกรรม
 - **Privacy-by-Design:** ข้อมูลส่วนบุคคล (PII) ถูกแปลงเป็น Token แฝงด้วย **256-bit Salted SHA-256** และประมวลผล In-Memory บนฝั่ง Client-Side 100% ปราศจากการรั่วไหลสู่ LocalStorage หรือเซิร์ฟเวอร์ภายนอก
 
@@ -89,17 +92,6 @@
 | :--- | :--- | :--- |
 | **1. Cognitive Screening & CDSS Portal** | [`index.html`](https://natchlimar-droid.github.io/Project-Alzheimer/) | ระบบคัดกรอง 2 มุมมอง (โหมดผู้สูงอายุ Zero-Friction UX + โหมดแพทย์ Clinician Workstation) ประเมิน AD8, Mini-Cog, Clock Drawing Canvas, Visual-Motor Latency, LIS Labs, และส่งออก HL7 FHIR R4 DiagnosticReport |
 | **2. NeuroRegistry & ML Triage Dashboard** | [`dashboard.html`](https://natchlimar-droid.github.io/Project-Alzheimer/dashboard.html) | ระบบคลังข้อมูลผู้รับการประเมิน (Pseudonymized Patient Registry 25 เคส), Analytics Dashboard พร้อม Interactive Charts 4 รูปแบบ, และ In-Browser ML Engine (Logistic Regression + L2) ที่เทรนสดบนเบราว์เซอร์พร้อม Fast Triage Calculator |
-
----
-
-## 📌 บทนำและปัญหาในระบบสาธารณสุขไทย (Problem Statement)
-ประเทศไทยได้ก้าวเข้าสู่ **สังคมผู้สูงอายุอย่างสมบูรณ์ (Complete Aged Society)** โดยมีประชากรอายุ 60 ปีขึ้นไปมากกว่า 20% ของประชากรทั้งประเทศ นำมาซึ่งความท้าทายสำคัญในระบบสาธารณสุข:
-1. **ภาวะสมองเสื่อมถูกตรวจพบช้า (Delayed Diagnosis):** ผู้ป่วยส่วนใหญ่มาพบแพทย์เมื่อเข้าสู่ระยะสมองเสื่อมชัดเจน (Moderate to Severe Dementia) ซึ่งเลยช่วงเวลาทอง (Golden Period) ในการชะลอโรค
-2. **ความแออัดในโรงพยาบาลศูนย์และการขาดแคลนแพทย์เฉพาะทาง:** คลินิกความจำในโรงพยาบาลศูนย์ต้องรับภาระผู้ป่วยจำนวนมากที่ส่งต่อมาโดยไม่มีการคัดกรองหรือแยกแยะสาเหตุที่รักษาหายได้ (Reversible Causes)
-3. **ปัญหาความวิตกกังวลจากการทดสอบ (Test Anxiety & Cognitive Overload):** แบบประเมินหรือหน้าจอคอมพิวเตอร์ที่ซับซ้อน เต็มไปด้วยศัพท์เทคนิค สร้างความเครียดให้ผู้สูงอายุจนผลการทดสอบเบี่ยงเบน
-4. **การขาดการเชื่อมต่อข้อมูลสู่ระบบโรงพยาบาล (Interoperability Gap):** ผลการคัดกรองเบื้องต้นในชุมชนมักไม่ได้มาตรฐาน ไม่สามารถส่งต่อไปยังระบบเวชระเบียน EMR/HIS ของโรงพยาบาลได้อย่างปลอดภัย
-
-**ระบบ Thai Cognitive Triage CDSS** จึงถูกออกแบบขึ้นเพื่อเป็น **เครื่องมือสนับสนุนการตัดสินใจทางคลินิก (Clinical Decision Support System - CDSS)** ที่เชื่อมโยงระหว่าง **การคัดกรองที่เป็นมิตรต่อผู้สูงอายุในชุมชน/ที่บ้าน (Patient-Facing Mode)** กับ **ระบบวิเคราะห์เชิงลึกและการส่งต่อของผู้ประกอบวิชาชีพเวชกรรม (Clinician Dashboard & EMR Export)**
 
 ---
 
@@ -165,7 +157,7 @@ flowchart TD
    - ผ่านการทดสอบ Unit Tests ระดับ Node.js ครบ 100% (Clinical Test Suite Runner)
 2. **มาตรฐานเวชสารสนเทศและการแลกเปลี่ยนข้อมูล (Health Informatics Interoperability):**
    - **HL7 FHIR Release 4 (R4):** ส่งออกผลการประเมินในรูปแบบ `Bundle` (Type: `transaction`) บรรจุทรัพยากร `Patient`, `Observation`, และ `DiagnosticReport`
-   - **มาตรฐานรหัสตรวจทางคลินิก (LOINC Codes):** รองรับรหัสสากล 17 รายการ เช่น `71485-7` (AD8), `71486-5` (Mini-Cog), `11502-2` (B12), `11580-8` (TSH), `97560-7` (p-tau217)
+   - **มาตรฐานรหัสตรวจทางคลินิก (LOINC Codes):** กำกับรหัสมาตรฐานสากลครบถ้วน เช่น `72172-0` / `71485-7` (AD8), `72133-2` / `72170-4` (Mini-Cog), `55758-7` (2Q Depression), `2132-9` (Vitamin B12), `3016-3` (TSH), `104352-0` (Plasma p-tau217)
 3. **การปกป้องข้อมูลส่วนบุคคล (Privacy-by-Design & Security):**
    - แยก Schema A (PII: ชื่อ-นามสกุล, HN, เลขบัตรประชาชน) ออกจาก Schema B (Clinical Assessment Vector)
    - ป้องกันการระบุตัวตนด้วย **256-bit Salted SHA-256 Pseudonymization Token**
@@ -184,6 +176,7 @@ flowchart TD
 > ออกแบบและพัฒนาระบบสนับสนุนการตัดสินใจทางคลินิก (Clinical Decision Support System - CDSS) สำหรับคัดกรองภาวะรู้คิดบกพร่องและอัลไซเมอร์ระยะแรก รองรับมาตรฐานสากล **HL7 FHIR R4** และ **17 LOINC Codes**
 > • สถาปัตยกรรม **Parallel Multi-Axis Reporting** แยกประเมิน 4 มิติ (Cognitive, Reversible, Biomarker, Trajectory) พร้อมระบบป้องกันผลลบลวง (Null Input Protection)
 > • ระบบ **Dual-Role Interface**: ออกแบบ Patient Mode ตามมาตรฐาน **WCAG AAA** (Touch target $\ge 60$px, ซ่อน Telemetry ลด Test Anxiety) สลับกับ Clinician Dashboard วิเคราะห์ Stroke Latency, Radar Chart และระบบแพทย์ลงนามกำกับ (Clinician Override with License Sign-off)
+> • **Data Analytics & In-Browser ML Triage Engine (`dashboard.html`):** พัฒนาระบบคลังข้อมูลผู้ป่วยนามแฝง (Pseudonymized Patient Registry) 25 เคส พร้อมกระดานวิเคราะห์ข้อมูลโต้ตอบ 4 มิติ (Chart.js: Risk Donut, Multimodal Feature Severity, Age Scatter, Longitudinal Trend) และสร้างโมเดลจำแนกความเสี่ยง In-Browser Logistic Regression พร้อม L2 Regularization ที่เทรนสดบนเบราว์เซอร์ โดยมุ่งเน้นการคัดกรองด่านหน้าความไวสูง (Sensitivity $\ge 90.9\%$, Accuracy $92.0\%$) เพื่อลดอัตราผลลบลวง (Zero False Negatives) ในช่วงเวลาทอง พร้อมระบบวิเคราะห์ปัจจัยแบบ Glass-Box (SHAP-like Feature Contribution Breakdown)
 > • ปกป้องข้อมูลส่วนบุคคลตามมาตรฐาน **HIPAA / PDPA (Privacy-by-Design)** ด้วย Salted SHA-256 Pseudonymization Token แยก PII ออกจาก Clinical Data อย่างเด็ดขาด และทำงานแบบ Zero-Dependency Offline-First
 
 ---
@@ -191,13 +184,15 @@ flowchart TD
 ## โครงสร้างระบบ (Project Structure)
 
 - [`index.html`](file:///g:/My%20Drive/Project%20Alzhimer/index.html) — เว็บแอปพลิเคชันแบบสมบูรณ์ (Standalone Zero-Build Web Application) พร้อมสถาปัตยกรรม Multi-Axis Reporting, Pre-Test 4AT Gatekeeper, Non-Literate Pathway, Clinician Override, A4 Corporate Print Layout และระบบ Self-Test 18 ชุดในตัว
+- [`dashboard.html`](file:///g:/My%20Drive/Project%20Alzhimer/dashboard.html) — กระดานวิเคราะห์ข้อมูลทางคลินิกและโมเดลการเรียนรู้ของเครื่อง (Clinical Registry & In-Browser ML Engine) พร้อมคลัง 25 เคสจำลอง, กราฟสถิติ 4 รูปแบบ, และระบบคำนวณความเสี่ยงความไวสูง
 - [`src/types/clinical.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/types/clinical.ts) — TypeScript Interfaces และ Type Definitions มาตรฐาน (`ALGORITHM_VERSION = "v2.4.0-clinical-multiaxis"`, 4-Axis Types, `PreTestValidityGate`, `ACBMedicationItem`, `LabResults`, `AssessmentInput`, `RiskOutput`, `ClinicianOverrideRecord`, `LOINC_DATA_MAPPING`)
 - [`src/engine/riskStratification.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/engine/riskStratification.ts) — อัลกอริทึมจำแนกความเสี่ยงทางคลินิก 4 มิติ (`evaluatePreTestValidity`, `stratifyCognitiveRisk`, การป้องกันผลลบลวงจากค่าว่าง, เกณฑ์ระงับการแปลผล p-tau217 ในผู้ป่วยปกติ, การแยกภาวะไทรอยด์แฝง/ชัดเจน, การคำนวณ $\Delta$-Decline Rate $\ge 90$ วัน)
 - [`src/engine/cdtAnalyzer.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/engine/cdtAnalyzer.ts) — โมดูลวิเคราะห์รูปทรงเรขาคณิต เวกเตอร์เข็มนาฬิกา และการกรองความสั่นของกล้ามเนื้อมือ (`analyzeClockDrawingStrokes`, `detectMotorTremorFromStrokes`, `smoothStrokeForTremor`)
 - [`src/services/privacyAuditService.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/services/privacyAuditService.ts) — ระบบรักษาความปลอดภัยข้อมูลตามมาตรฐาน HIPAA / PDPA (การสร้าง Salted Pseudonym Token, In-Memory PII Isolation, Zero Raw PII in LocalStorage, Tamper-Evident Hash Audit Trail)
 - [`src/services/fhirService.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/services/fhirService.ts) — โมดูลส่งออก **HL7 FHIR R4 Collection Bundle** รหัสมาตรฐาน **LOINC** (Observation 104352-0 สำหรับ Plasma p-tau217, Screening Composite Index Extension, Clinician Practitioner Resource)
-- [`src/data/clinicalContent.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/data/clinicalContent.ts) — รายการตรวจคัดกรอง Pre-Test Validity, รายการยา 21 ชนิดพร้อมคะแนน ACB, คลังคำถาม 2Q, คำถาม AD8 ภาษาไทย, ชุดคำศัพท์ Mini-Cog มาตรฐาน TMSE, ตาราง `LOINC_DATA_MAPPING` 17 รายการ และชุดข้อมูลจำลอง
-- [`src/engine/riskStratification.test.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/engine/riskStratification.test.ts) — ชุดทดสอบความถูกต้องของอัลกอริทึมทางคลินิกครบ 13 กรณีทดสอบ (`runClinicalEngineTests`)
+- [`src/data/clinicalContent.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/data/clinicalContent.ts) — รายการตรวจคัดกรอง Pre-Test Validity, รายการยาต้านโคลิเนอร์จิก 27–31 รายการพร้อมคะแนน ACB, คลังคำถาม 2Q, คำถาม AD8 ภาษาไทย, ชุดคำศัพท์ Mini-Cog มาตรฐาน TMSE, ตาราง `LOINC_DATA_MAPPING` 17 รายการ และชุดข้อมูลจำลอง
+- [`src/engine/riskStratification.test.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/engine/riskStratification.test.ts) — ชุดทดสอบความถูกต้องของอัลกอริทึมทางคลินิกครบ 13 กรณีทดสอบหลัก (`runClinicalEngineTests`) และ 18 สถานการณ์ทดสอบบน Web UI
+- [`test-runner.mjs`](file:///g:/My%20Drive/Project%20Alzhimer/test-runner.mjs) — สคริปต์รันชุดทดสอบอัตโนมัติบน Node.js ปราศจาก External Dependency (รันผ่าน `node test-runner.mjs`)
 - [`src/index.ts`](file:///g:/My%20Drive/Project%20Alzhimer/src/index.ts) — Barrel Export สำหรับการนำไปใช้งานเป็น Library / SDK ภายนอก
 
 ---
@@ -300,7 +295,7 @@ flowchart TD
 
 ## ชุดทดสอบความถูกต้องทางคลินิก (Clinical Verification Test Suite - 18 Tests)
 
-ระบบมีชุดทดสอบครอบคลุมหลักเกณฑ์ทางคลินิกครบ 18 ประเด็น สามารถรันได้ทั้งในระบบทดสอบและผ่านปุ่ม "🧪 ผลทดสอบระบบ (Unit Tests)" บนหน้าเว็บ:
+ระบบมีชุดทดสอบครอบคลุมหลักเกณฑ์ทางคลินิกครบ 18 ประเด็น (18 สถานการณ์ทดสอบจำลองบน Web UI และ 13 กรณีทดสอบหลักใน Clinical Engine Test Suite) สามารถรันได้ทั้งในระบบทดสอบ Node.js (`node test-runner.mjs`) และผ่านปุ่ม "🧪 ผลทดสอบระบบ (Unit Tests)" บนหน้าเว็บ:
 1. **Test 1: Incomplete Assessment Protection** — ข้อมูลไม่ครบถ้วนต้องแสดง `isComplete: false` และไม่คำนวณคะแนนหลอก
 2. **Test 2: Pre-Test Delirium Gatekeeper** — ภาวะ Delirium ต้องหยุดการประเมินทันที
 3. **Test 3: Parallel Multi-Axis Reporting (No Masking)** — ภาวะขาดวิตามินบี 12 ต้องไม่บดบังภาวะเสื่อมถอยรุนแรงใน Axis 1
