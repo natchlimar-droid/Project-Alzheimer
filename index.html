@@ -193,14 +193,13 @@
     }
 
     .samd-tts-btn {
-      height: 24px !important;
-      min-height: 24px !important;
-      max-height: 24px !important;
-      padding: 0 0.55rem !important;
-      font-size: 0.74rem !important;
+      height: 28px !important;
+      min-height: 28px !important;
+      padding: 0 0.65rem !important;
+      font-size: 0.76rem !important;
       font-weight: 700 !important;
       line-height: 1 !important;
-      border-radius: 4px !important;
+      border-radius: 6px !important;
       border: 1px solid var(--border-strong) !important;
       background: var(--bg-surface) !important;
       color: var(--text-primary) !important;
@@ -209,14 +208,31 @@
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 0.25rem !important;
+      gap: 0.35rem !important;
       cursor: pointer;
-      box-shadow: none !important;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+      transition: all 0.15s ease;
+      user-select: none;
     }
     .samd-tts-btn:hover {
       background: var(--bg-elevated) !important;
       border-color: var(--primary-bg) !important;
+    }
+    .samd-tts-btn:active {
+      transform: scale(0.96);
+      background: var(--bg-focus) !important;
+    }
+    .samd-tts-btn.speaking {
+      background: #0284C7 !important;
+      color: #FFFFFF !important;
+      border-color: #0369A1 !important;
+      font-weight: 800 !important;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.4) !important;
+      animation: pulse-speaking 1.4s infinite ease-in-out;
+    }
+    @keyframes pulse-speaking {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.78; }
     }
 
     /* Dual-App Switcher / Registry Crosslink Banner */
@@ -1902,8 +1918,8 @@
         <span id="samdDisclaimerText">ระบบนี้เป็นเพียงเครื่องมือประเมินความเสี่ยงเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์ และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น</span>
         <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('SAMD')" title="ดูเบื้องหลังการออกแบบจุดนี้">💡 UX: SaMD Disclaimer</button>
       </div>
-      <button type="button" class="samd-tts-btn"
-        onclick="speakThai(document.getElementById('samdDisclaimerText').innerText, this)"
+      <button type="button" class="samd-tts-btn" id="samdDisclaimerTtsBtn"
+        onclick="toggleSamdDisclaimerSpeech(this)"
         aria-label="ฟังคำชี้แจงข้อจำกัดความรับผิดชอบ">
         🔊 ฟังคำชี้แจง
       </button>
@@ -5739,33 +5755,159 @@
     }
 
     /* ------------------------------------------------------------------------
-       4. Text-to-Speech (TTS) Thai Audio Engine (Web Speech API)
+       4. Text-to-Speech (TTS) Thai Audio Engine & Caption System
        ------------------------------------------------------------------------ */
+    let activeUtterance = null;
+    let activeSpeakingBtn = null;
+    let cachedSpeechVoices = [];
+
+    // Preload speech voices proactively
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.onvoiceschanged = () => {
+          try { cachedSpeechVoices = window.speechSynthesis.getVoices() || []; } catch (e) {}
+        };
+        cachedSpeechVoices = window.speechSynthesis.getVoices() || [];
+      } catch (e) {}
+    }
+
+    function playAudioChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === "suspended") {
+          ctx.resume();
+        }
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1); // A5
+        gain.gain.setValueAtTime(0.09, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
+      } catch (e) {}
+    }
+
+    function stopAllThaiSpeech() {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }
+      if (activeSpeakingBtn) {
+        activeSpeakingBtn.classList.remove("speaking");
+        if (activeSpeakingBtn.dataset.origHtml) {
+          activeSpeakingBtn.innerHTML = activeSpeakingBtn.dataset.origHtml;
+        }
+        activeSpeakingBtn = null;
+      }
+      document.querySelectorAll(".btn-tts.speaking, .samd-tts-btn.speaking").forEach(b => {
+        b.classList.remove("speaking");
+        if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+      });
+      activeUtterance = null;
+    }
+
+    function toggleSamdDisclaimerSpeech(btnEl) {
+      const el = document.getElementById("samdDisclaimerText");
+      const text = el ? el.innerText.trim() : "ระบบนี้เป็นเพียงเครื่องมือประเมินความเสี่ยงเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์ และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น";
+      speakThai(text, btnEl || document.getElementById("samdDisclaimerTtsBtn"));
+    }
+
     function speakThai(text, buttonEl) {
-      if (!("speechSynthesis" in window)) {
-        alert("เบราว์เซอร์ของคุณไม่รองรับระบบอ่านออกเสียง (Web Speech API)");
+      if (!text) return;
+
+      // If this button is already speaking, clicking it stops the speech (toggle behavior)
+      if (buttonEl && buttonEl.classList.contains("speaking")) {
+        stopAllThaiSpeech();
+        if (typeof showToast === "function") {
+          showToast("⏹️ หยุดเสียงอ่านแล้ว", "info", 2000);
+        }
         return;
       }
-      window.speechSynthesis.cancel();
-      document.querySelectorAll(".btn-tts.speaking").forEach(b => b.classList.remove("speaking"));
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "th-TH";
-      utterance.rate = 0.92; // Slightly slower for elderly comprehension
+      // Stop any current utterance first
+      stopAllThaiSpeech();
 
-      const voices = window.speechSynthesis.getVoices();
-      const thaiVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes("th"));
-      if (thaiVoice) {
-        utterance.voice = thaiVoice;
-      }
+      // Play soft pleasant chime feedback immediately so user knows click succeeded
+      playAudioChime();
 
+      // Visual button feedback
       if (buttonEl) {
+        activeSpeakingBtn = buttonEl;
+        if (!buttonEl.dataset.origHtml) {
+          buttonEl.dataset.origHtml = buttonEl.innerHTML;
+        }
         buttonEl.classList.add("speaking");
-        utterance.onend = () => buttonEl.classList.remove("speaking");
-        utterance.onerror = () => buttonEl.classList.remove("speaking");
+        const isSamd = buttonEl.classList.contains("samd-tts-btn");
+        buttonEl.innerHTML = isSamd ? "⏹️ หยุดเสียง" : "⏹️ หยุด";
       }
 
-      window.speechSynthesis.speak(utterance);
+      // Always show immediate visible caption toast on screen
+      const previewText = text.length > 75 ? text.slice(0, 75) + "..." : text;
+      if (typeof showToast === "function") {
+        showToast(`🔊 กำลังอ่าน: "${previewText}"`, "info", 5000);
+      }
+
+      // Web Speech API check
+      if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+        if (typeof showToast === "function") {
+          showToast(`📢 ข้อความ: "${text}"`, "info", 7000);
+          showToast("ℹ️ เบราว์เซอร์นี้ไม่รองรับ Web Speech API ระบบจึงแสดงข้อความให้อ่านแทน", "warning", 5000);
+        }
+        setTimeout(() => stopAllThaiSpeech(), 2500);
+        return;
+      }
+
+      try {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "th-TH";
+        utterance.rate = 0.92; // Elderly-friendly rate
+
+        // Find Thai voice
+        const voices = (cachedSpeechVoices && cachedSpeechVoices.length > 0)
+          ? cachedSpeechVoices
+          : (window.speechSynthesis.getVoices() || []);
+        
+        const thaiVoice = voices.find(v => {
+          const l = (v.lang || "").toLowerCase();
+          return l === "th-th" || l.startsWith("th") || (v.name && v.name.toLowerCase().includes("thai"));
+        });
+        if (thaiVoice) {
+          utterance.voice = thaiVoice;
+        }
+
+        utterance.onend = () => {
+          stopAllThaiSpeech();
+        };
+
+        utterance.onerror = (evt) => {
+          console.warn("TTS Playback Notice:", evt && evt.error);
+          stopAllThaiSpeech();
+          // If error is not intentional cancel, ensure user has readable copy
+          if (evt && evt.error && evt.error !== "canceled" && evt.error !== "interrupted") {
+            if (typeof showToast === "function") {
+              showToast(`📢 ข้อความ: "${text}"`, "info", 7000);
+              showToast("ℹ️ ระบบเสียงภาษาไทยไม่พร้อมใช้งานบนอุปกรณ์นี้ จึงแสดงเป็นข้อความให้อ่านแทน", "info", 5000);
+            }
+          }
+        };
+
+        // Prevent Chromium GC bug
+        window._activeUtterance = utterance;
+        activeUtterance = utterance;
+
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.error("SpeechSynthesis speak error:", err);
+        stopAllThaiSpeech();
+        if (typeof showToast === "function") {
+          showToast(`📢 ข้อความ: "${text}"`, "info", 7000);
+        }
+      }
     }
 
     /* ------------------------------------------------------------------------
