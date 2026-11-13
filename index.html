@@ -1716,7 +1716,7 @@
           🌓 <span class="toolbar-text-desktop">โหมดสี: </span>พื้นสว่าง<span class="toolbar-text-desktop"> (WCAG AAA)</span>
         </button>
         <button type="button" class="btn" onclick="cycleFontSize()" id="fontSizeBtn" aria-label="ปรับขนาดตัวอักษร">
-          🔠 <span class="toolbar-text-desktop">ขนาดอักษร: </span>19px
+          🔠 <span class="toolbar-text-desktop">ขนาดอักษร: </span>16px
         </button>
         <button type="button" class="btn clinician-only" onclick="runAndShowSelfTests()" aria-label="ตรวจสอบความถูกต้องของอัลกอริทึม">
           🧪 <span class="toolbar-text-desktop">ผลทดสอบระบบ </span>(Tests)
@@ -2101,14 +2101,14 @@
       </div>
 
       <!-- Step 0 Progressive Disclosure Stepper Bar -->
-      <div class="step0-progressive-stepper" id="step0ProgressiveStepper" style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
-        <button type="button" class="btn step0-tab-btn active btn-primary" id="step0TabBtn-1" onclick="switchStep0Tab(1)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
+      <div class="step0-progressive-stepper" id="step0ProgressiveStepper">
+        <button type="button" class="btn step0-tab-btn active btn-primary" id="step0TabBtn-1" onclick="switchStep0Tab(1)">
           <span>👤 1. ข้อมูลผู้ป่วย &amp; ความพร้อม</span>
         </button>
-        <button type="button" class="btn step0-tab-btn" id="step0TabBtn-2" onclick="switchStep0Tab(2)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
+        <button type="button" class="btn step0-tab-btn" id="step0TabBtn-2" onclick="switchStep0Tab(2)">
           <span>💊 2. คัดกรองซึมเศร้า &amp; ยา ACB</span>
         </button>
-        <button type="button" class="btn step0-tab-btn" id="step0TabBtn-3" onclick="switchStep0Tab(3)" style="flex:1; min-height:48px; font-weight:800; border-radius:12px; justify-content:center; border-width:2px;">
+        <button type="button" class="btn step0-tab-btn" id="step0TabBtn-3" onclick="switchStep0Tab(3)">
           <span>📊 3. ติดตามผล &amp; เคสจำลอง</span>
         </button>
       </div>
@@ -4515,7 +4515,7 @@
     function createDefaultAppState() {
       return {
         currentStep: 0,
-        fontSizePx: 19,
+        fontSizePx: 16,
         theme: "high-contrast-light",
         age: 71,
         yearsOfEducation: 12,
@@ -5464,7 +5464,7 @@
     }
 
     function cycleFontSize() {
-      const sizes = [19, 21, 24];
+      const sizes = [16, 18, 20];
       const idx = (sizes.indexOf(appState.fontSizePx) + 1) % sizes.length;
       appState.fontSizePx = sizes[idx];
       document.documentElement.style.setProperty("--base-font-size", appState.fontSizePx + "px");
@@ -6594,9 +6594,9 @@
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.6rem;">
             ${g.list.map(med => {
               const selected = appState.acbMedicationIds.includes(med.id);
-              const trade = String(med.tradeNamesTh || med.tradeName || med.brandName || "").replace(/undefined/gi, "").trim();
-              const category = String(med.categoryTh || med.category || "").replace(/undefined/gi, "").trim();
-              const commonUse = String(med.commonUseTh || med.commonUse || "").replace(/undefined/gi, "").trim();
+              const trade = (med.tradeNamesTh || med.tradeName || med.brandName || "").trim();
+              const category = (med.categoryTh || med.category || "").trim();
+              const commonUse = (med.commonUseTh || med.commonUse || "").trim();
               let descParts = [];
               if (trade) descParts.push(`<strong style="color:var(--text-primary);">${trade}</strong>`);
               if (category) descParts.push(`<em>${category}</em>`);
@@ -6604,20 +6604,19 @@
               if (commonUse) {
                 descHtml += (descHtml ? ` (${commonUse})` : `(${commonUse})`);
               }
-              descHtml = descHtml.replace(/undefined/gi, "").trim();
               if (!descHtml) descHtml = "ยากลุ่มเสี่ยงต่อการรู้คิด (Anticholinergic Burden)";
               return `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; padding:0.6rem; border-radius:6px; border:2px solid ${selected ? "var(--status-high-border)" : "var(--border-strong)"}; background:${selected ? "var(--status-high-surface)" : "var(--bg-card)"};">
                   <div style="flex:1;">
-                    <div style="font-weight:800; font-size:0.98rem; color:${selected ? "var(--status-high-text)" : "var(--text-primary)"};">
-                      <span style="display:inline-block; padding:0.05rem 0.4rem; border-radius:4px; background:${med.acbScore >= 3 ? "var(--status-high-bg)" : (med.acbScore === 2 ? "var(--status-mod-bg)" : "var(--status-low-bg)")}; color:#FFF; font-size:0.8rem; margin-right:0.3rem;">+${med.acbScore}</span>
+                    <div style="font-weight:800; font-size:0.95rem; color:${selected ? "var(--status-high-text)" : "var(--text-primary)"};">
+                      <span style="display:inline-block; padding:0.05rem 0.4rem; border-radius:4px; background:${med.acbScore >= 3 ? "var(--status-high-bg)" : (med.acbScore === 2 ? "var(--status-mod-bg)" : "var(--status-low-bg)")}; color:#FFF; font-size:0.78rem; margin-right:0.3rem;">+${med.acbScore}</span>
                       ${med.genericName}
                     </div>
-                    <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.15rem;">
+                    <div style="font-size:0.84rem; color:var(--text-secondary); margin-top:0.2rem; line-height:1.4;">
                       ${descHtml}
                     </div>
                   </div>
-                  <button type="button" class="btn ${selected ? "btn-primary" : ""}" style="min-width:85px; font-size:0.85rem; padding:0.35rem 0.6rem;" onclick="toggleAcbMedication('${med.id}')">
+                  <button type="button" class="btn ${selected ? "btn-primary" : ""}" style="min-width:85px; min-height:34px; height:34px; font-size:0.82rem; padding:0.25rem 0.6rem; flex-shrink:0;" onclick="toggleAcbMedication('${med.id}')">
                     ${selected ? "⚠️ ใช้อยู่" : "⬜ ไม่ได้ใช้"}
                   </button>
                 </div>
