@@ -2462,26 +2462,26 @@
           <div class="form-grid">
             <div class="field-group">
               <label class="field-label" for="patientNameInput">ชื่อ-นามสกุล (ผู้รับการประเมิน)</label>
-              <input type="text" id="patientNameInput" class="input-control" value="คุณสมชาย ใจดี (HN-690412)"
+              <input type="text" id="patientNameInput" class="input-control" value="" placeholder="กรอกชื่อ-นามสกุล หรือกด [⚡ โหลดเคสจำลอง] ด้านบน"
                 oninput="syncDemographics()" />
               <span class="field-hint clinician-only">แยกเก็บใน PII Schema และแปลงเป็นรหัสแฝง (Pseudonymized Token) อัตโนมัติ</span>
             </div>
             <div class="field-group">
               <label class="field-label" for="patientNationalIdInput">เลขประจำตัวประชาชน / HN (ไม่บังคับ)</label>
-              <input type="text" id="patientNationalIdInput" class="input-control" value="1-1005-00124-89-1"
+              <input type="text" id="patientNationalIdInput" class="input-control" value="" placeholder="เช่น HN-XXXXXX หรือเลขประจำตัว (ไม่บังคับ)"
                 oninput="syncDemographics()" />
               <span class="field-hint clinician-only">เข้ารหัสทางเดียว (Salted Hash) เพื่อสร้าง Tokenized Key: <strong
                   id="livePseudonymTokenBadge">PSN-...</strong></span>
             </div>
             <div class="field-group">
               <label class="field-label" for="patientAgeInput">อายุ (ปี) *</label>
-              <input type="number" id="patientAgeInput" class="input-control" min="40" max="110" value="71"
+              <input type="number" id="patientAgeInput" class="input-control" min="40" max="110" value="" placeholder="เช่น 71"
                 onchange="syncDemographics()" />
               <span class="field-hint clinician-only">เกณฑ์ปรับเวลา Visual-Motor อัตโนมัติหากอายุตั้งแต่ 75 ปีขึ้นไป</span>
             </div>
             <div class="field-group">
               <label class="field-label" for="patientEduInput">จำนวนปีที่ได้รับการศึกษาในระบบ (ปี) *</label>
-              <input type="number" id="patientEduInput" class="input-control" min="0" max="30" value="12"
+              <input type="number" id="patientEduInput" class="input-control" min="0" max="30" value="" placeholder="เช่น 12"
                 onchange="syncDemographics()" />
               <span class="field-hint">เช่น ประถมศึกษา = 6 ปี, มัธยมศึกษา = 12 ปี, ปริญญาตรี = 16 ปี</span>
             </div>
@@ -3203,6 +3203,12 @@
       </div>
 
       <div id="completeAssessmentReportContainer">
+        <!-- Prominent Synthetic Prototype Banner -->
+        <div class="no-print" style="margin-bottom:1rem; padding:0.65rem 1rem; border-radius:8px; background:#FEF3C7; border:1px solid #F59E0B; color:#92400E; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; font-size:0.92rem; font-weight:700;">
+          <span>⚠️ <strong>รายงานสำหรับสาธิตต้นแบบทางวิชาการ (Prototype Demo / Synthetic Data Only):</strong> ข้อมูลและผลลัพธ์บนหน้านี้เป็นข้อมูลสังเคราะห์เพื่อแสดงผลสถาปัตยกรรมทางคลินิกเท่านั้น มิใช่การวินิจฉัยโรคจริง</span>
+          <span style="font-size:0.8rem; background:#FDE68A; padding:0.2rem 0.5rem; border-radius:4px;">SaMD-Inspired Concept</span>
+        </div>
+
         <!-- ==================================================================
              Formal Corporate Print Document Header (Visible only in Print Layout)
              ================================================================== -->
@@ -3214,10 +3220,10 @@
               </div>
               <div style="font-size:11pt; color:#333333; line-height:1.35;">
                 <div style="font-weight:800; font-size:11.5pt; color:#111827; letter-spacing:0.01em;">
-                  หน่วยประเมินภาวะรู้คิดและประสาทวิทยาศาสตร์จำลอง (Prototype Cognitive Screening Unit)
+                  ศูนย์ตัวอย่างเพื่อการสาธิต (Demo Center - Simulated Cognitive Care Unit)
                 </div>
                 <div style="font-weight:600; font-size:10pt; color:#4B5563;">
-                  Simulated Center for Cognitive &amp; Neurological Assessment (Proof-of-Concept Prototype)
+                  Demo Cognitive Screening &amp; Assessment Center (Academic Prototype)
                 </div>
                 <div style="font-size:9pt; color:#6B7280; margin-top:2px;">
                   ระบบต้นแบบจำลองทางวิชาการ • ชุดข้อมูลสังเคราะห์ (Synthetic Data Only) • มิใช่การวินิจฉัยโรคทางการแพทย์จริง
@@ -3233,8 +3239,8 @@
                 Patient Cognitive Health &amp; Care Management Report (Prototype)
               </div>
               <div style="margin-top:6px; border:1px solid #444444; border-radius:4px; padding:4px 8px; background:#F9FAFB; font-size:9pt; text-align:left; display:inline-block;">
-                <div><strong>เลขที่เอกสาร (Doc No.):</strong> <span id="printDocumentNumberDisplay">DOC-XXXXXX-XX</span></div>
-                <div><strong>วันที่ออกรายงาน:</strong> <span id="printReportDateDisplay">--/--/----</span></div>
+                <div><strong>เลขที่เอกสาร (Doc No.):</strong> <span id="printDocumentNumberDisplay">—</span></div>
+                <div><strong>วันที่ออกรายงาน:</strong> <span id="printReportDateDisplay">—</span></div>
               </div>
             </div>
           </div>
@@ -3250,15 +3256,15 @@
             <tbody>
               <tr>
                 <td style="width:20%; background:#F9FAFB; font-weight:700;">ชื่อ-นามสกุล:</td>
-                <td style="width:30%; font-weight:600;" id="printPatientNameCell">[รอข้อมูลผู้รับการประเมิน]</td>
+                <td style="width:30%; font-weight:600;" id="printPatientNameCell">—</td>
                 <td style="width:20%; background:#F9FAFB; font-weight:700;">HN / รหัสผู้ป่วย:</td>
-                <td style="width:30%; font-weight:600;" id="printPatientHnCell">[HN-XXXXXX]</td>
+                <td style="width:30%; font-weight:600;" id="printPatientHnCell">—</td>
               </tr>
               <tr>
                 <td style="background:#F9FAFB; font-weight:700;">อายุ / การศึกษา:</td>
-                <td id="printPatientAgeEduCell">[รอข้อมูลอายุ / การศึกษา]</td>
+                <td id="printPatientAgeEduCell">—</td>
                 <td style="background:#F9FAFB; font-weight:700;">รหัสแฝงกำกับผลตรวจ:</td>
-                <td id="printPatientTokenCell" style="font-family:monospace; font-weight:700;">PSN-XXXX-XXXXXXXX-XXXX</td>
+                <td id="printPatientTokenCell" style="font-family:monospace; font-weight:700;">—</td>
               </tr>
             </tbody>
           </table>
@@ -3269,12 +3275,12 @@
              ================================================================== -->
         <div class="card-box no-print" style="background:var(--bg-card); border-left:6px solid var(--primary-bg); margin-bottom:1.25rem; padding:1.25rem 1.5rem;">
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.9rem; font-size:1.05rem;">
-            <div>👤 <strong>ชื่อ-นามสกุล:</strong> <span id="dashPatientName">[รอข้อมูลผู้รับการประเมิน หรือกดโหลดเคสจำลอง]</span></div>
-            <div>🆔 <strong>HN:</strong> <span id="dashPatientHn">[HN-XXXXXX]</span></div>
-            <div>🎂 <strong>อายุ:</strong> <span id="dashPatientAge">--</span> ปี</div>
-            <div>🎓 <strong>การศึกษา:</strong> <span id="dashPatientEdu">--</span> ปี</div>
-            <div>📅 <strong>วันที่ตรวจ:</strong> <span id="dashPatientDate">[ยังไม่ได้ประเมิน]</span></div>
-            <div class="clinician-only">🏷️ <strong>Token:</strong> <code id="dashPatientToken">PSN-XXXX</code></div>
+            <div>👤 <strong>ชื่อ-นามสกุล:</strong> <span id="dashPatientName">— (รอเริ่มทำแบบประเมิน หรือกดโหลดเคสจำลอง)</span></div>
+            <div>🆔 <strong>HN:</strong> <span id="dashPatientHn">—</span></div>
+            <div>🎂 <strong>อายุ:</strong> <span id="dashPatientAge">—</span> ปี</div>
+            <div>🎓 <strong>การศึกษา:</strong> <span id="dashPatientEdu">—</span> ปี</div>
+            <div>📅 <strong>วันที่ตรวจ:</strong> <span id="dashPatientDate">—</span></div>
+            <div class="clinician-only">🏷️ <strong>Token:</strong> <code id="dashPatientToken">—</code></div>
           </div>
         </div>
 
@@ -3606,7 +3612,7 @@
               <!-- Dynamic Horizontal Contribution Bars rendered by renderRiskStratificationReport() -->
             </div>
             <div style="margin-top:0.75rem; padding:0.6rem 0.85rem; border-radius:6px; background:var(--bg-surface); border:1px solid var(--border-subtle); font-size:0.82rem; color:var(--text-secondary);">
-              ℹ️ <strong>หลักการโปร่งใส (Glass-Box Principle):</strong> สัดส่วนน้ำหนักปัจจัยสูงสุดรวม 100% ตามหลักฐานทางคลินิก: Mini-Cog Recall มีน้ำหนักสูงสุด (โควตา 30%) ร่วมกับ AD8 (22%), ผลแล็บ p-tau217/Aβ (20%), ภาระยา ACB (14%), ความเร็ว Visual-Motor/CDT (9%) และปัจจัยอายุ (5%) โดยกรองความสั่นของกล้ามเนื้อ (Motor Tremor) ออกจากการรู้คิด
+              ℹ️ <strong>หลักการโปร่งใส (Glass-Box Principle):</strong> สัดส่วนน้ำหนักปัจจัยสูงสุดรวม 100% ตามหลักฐานทางคลินิก: Mini-Cog (30%), AD8 (22%), Biomarker p-tau217/Aβ (22%), ภาระยา ACB (16%) และความเร็ว Visual-Motor/CDT (10%) โดยกรองความสั่นของกล้ามเนื้อ (Motor Tremor) ออกจากการรู้คิด
             </div>
           </div>
 
@@ -3988,10 +3994,10 @@
               <div class="field-group">
                 <label class="field-label" for="referralHospitalSelect">โรงพยาบาล / แผนกเฉพาะทางปลายทาง (Mock Referral Centers)</label>
                 <select id="referralHospitalSelect" class="input-control">
-                  <option value="MOCK_TERTIARY_A">[จำลอง] โรงพยาบาลศูนย์ตติยภูมิ ก (Mock Tertiary Care Center A - Memory Clinic)</option>
-                  <option value="MOCK_UNIVERSITY_B">[จำลอง] โรงพยาบาลมหาวิทยาลัย ข (Mock University Hospital B - Geriatrics)</option>
-                  <option value="MOCK_PROVINCIAL_C">[จำลอง] โรงพยาบาลทั่วไปประจำจังหวัด ค (Mock Provincial Hospital C)</option>
-                  <option value="MOCK_COMMUNITY_D">[จำลอง] โรงพยาบาลชุมชน / รพ.สต. เครือข่าย (Mock Primary Care Unit D)</option>
+                  <option value="MOCK_TERTIARY_A">[จำลอง] โรงพยาบาลตัวอย่าง A (Mock Hospital A - Memory Clinic)</option>
+                  <option value="MOCK_UNIVERSITY_B">[จำลอง] โรงพยาบาลตัวอย่าง B (Mock Hospital B - Geriatrics)</option>
+                  <option value="MOCK_PROVINCIAL_C">[จำลอง] โรงพยาบาลตัวอย่าง C (Mock Hospital C - General OPD)</option>
+                  <option value="MOCK_COMMUNITY_D">[จำลอง] โรงพยาบาลตัวอย่าง D (Mock Hospital D - Primary Care)</option>
                   <option value="CUSTOM_GATEWAY">[จำลอง] กำหนด Sandbox EMR Endpoint เอง (Custom Prototype Gateway)</option>
                 </select>
               </div>
@@ -4552,7 +4558,7 @@
               <li><strong>TypeScript 5.x / Modern ES2022:</strong> เขียน Logic แบบ Pure Deterministic Type-Safe</li>
               <li><strong>HTML5 Canvas 2D API:</strong> คำนวณ Kinematic Stroke Latency, Tremor RMS Filter (4-12 Hz), และ Perspective Auto-Crop</li>
               <li><strong>Web Speech API:</strong> ระบบอ่านออกเสียงคำแนะนำภาษาไทยสำหรับผู้สูงอายุ</li>
-              <li><strong>Zero-Dependency Architecture:</strong> รันแบบ Standalone Offline 100% ปราศจาก External CDN Tracking</li>
+              <li><strong>Zero-dependency (ไม่มี CDN) ในหน้าหลัก:</strong> รันแบบ Standalone Offline ปราศจาก External CDN Tracking ในหน้าคัดกรองหลัก</li>
             </ul>
           </div>
 
@@ -4561,7 +4567,7 @@
             <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
               <li><strong>HL7 FHIR Release 4:</strong> จัดโครงสร้าง Collection Bundle (Patient, Observation, RiskAssessment) พร้อม Local CodeSystem สำหรับคะแนนเฉพาะบริบทไทย</li>
               <li><strong>LOINC-Mapped Standards:</strong> กำกับรหัสมาตรฐานสากลครบ 17 รายการตรวจหลัก (27 ฟิลด์มาตรฐาน) โดยแยก <em>Exact LOINC</em> (เช่น Plasma p-tau217 <code>104663-0</code>, Aβ42/40 <code>106941-8</code>, APOE <code>42315-2</code>, AD8 <code>71722-3</code>, Mini-Cog <code>72233-0</code>), <em>Closest Match</em> และ <em>Local FHIR CodeSystem</em> (ปราศจาก LP* Part Codes)</li>
-              <li><strong>SaMD-Inspired CDS Concept:</strong> ออกแบบตามแนวคิด US FDA Software as a Medical Device (Clinical Decision Support Prototype)</li>
+              <li><strong>SaMD-inspired CDS prototype:</strong> ออกแบบตามแนวคิดต้นแบบ Software as a Medical Device (Clinical Decision Support Prototype) สำหรับคัดกรองเบื้องต้น</li>
               <li><strong>Clinician Decision Override:</strong> มีระบบบันทึกและทบทวนผลโดยแพทย์พร้อมเลข ว. ใบอนุญาต</li>
             </ul>
           </div>
@@ -4569,7 +4575,7 @@
           <div style="background:var(--bg-card); padding:1rem; border-radius:8px; border:1px solid var(--border-subtle);">
             <div style="font-size:1.1rem; font-weight:800; color:#D97706; margin-bottom:0.35rem;">🔒 Privacy &amp; Accessibility</div>
             <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
-              <li><strong>Designed with PDPA &amp; HIPAA Principles:</strong> แยก Schema A (PII) ออกจาก Schema B (Clinical) ด้วย Salted Hashing</li>
+              <li><strong>Designed with PDPA/HIPAA principles (prototype, synthetic data):</strong> ออกแบบโดยยึดหลัก Privacy-by-Design แยก Schema A (PII) ออกจาก Schema B (Clinical) ด้วย Salted Hashing บนชุดข้อมูลสังเคราะห์</li>
               <li><strong>Zero Raw PII Persistence:</strong> ไม่จัดเก็บข้อมูลส่วนตัวแบบ Unencrypted ลงใน LocalStorage</li>
               <li><strong>Tamper-Evident Audit Trail:</strong> บันทึกประวัติการเข้าถึงเวชระเบียนด้วย Hash-Chaining</li>
               <li><strong>WCAG 2.1 Level AAA Target:</strong> Contrast Ratio &gt; 7:1, ตัวหนังสือ &ge; 20px, ปุ่ม &ge; 60x60px</li>
@@ -5988,15 +5994,15 @@
       const sesEl = document.getElementById("currentSessionIdInput");
       if (sesEl) sesEl.value = appState.sessionId;
 
-      // Reset DOM input values to fresh initial state
+      // Reset DOM input values to fresh initial blank state
       const nameEl = document.getElementById("patientNameInput");
-      if (nameEl) nameEl.value = "คุณสมชาย ใจดี (HN-690412)";
+      if (nameEl) nameEl.value = "";
       const nidEl = document.getElementById("patientNationalIdInput");
-      if (nidEl) nidEl.value = "1-1005-00124-89-1";
+      if (nidEl) nidEl.value = "";
       const ageEl = document.getElementById("patientAgeInput");
-      if (ageEl) ageEl.value = 71;
+      if (ageEl) ageEl.value = "";
       const eduEl = document.getElementById("patientEduInput");
-      if (eduEl) eduEl.value = 12;
+      if (eduEl) eduEl.value = "";
 
       const nonLit = document.getElementById("nonLiterateToggle");
       if (nonLit) nonLit.checked = false;
@@ -10046,30 +10052,23 @@
             {
               name: "🧬 ตัวชี้วัดทางห้องปฏิบัติการ (Plasma p-tau217 / Biomarkers)",
               detail: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? "ผลตรวจ Plasma p-tau217 เป็นบวก (Specific AD Pathology)" : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? "Plasma p-tau217 ก้ำกึ่ง (Intermediate)" : "ผลตรวจปกติ หรือ ไม่ได้ตรวจ"),
-              weight: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? 20 : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? 10 : 0),
-              maxShare: 20,
+              weight: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? 22 : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? 11 : 0),
+              maxShare: 22,
               color: (input.labs?.ptau217_status === "POSITIVE" || input.labs?.ptau217Status === "POSITIVE" || (input.labs?.plasma_ptau217_pg_mL ?? input.labs?.ptauVal ?? input.labs?.ptau217PgMl ?? 0) >= 0.40) ? "#DC2626" : ((input.labs?.ptau217_status === "BORDERLINE" || input.labs?.ptau217Status === "BORDERLINE") ? "#F59E0B" : "#64748B")
             },
             {
               name: "💊 ภาระยาต้านโคลิเนอร์จิก (Anticholinergic Burden - ACB)",
               detail: acbVal >= 3 ? `ACB = ${acbVal} (ภาระยาสูง เสี่ยงกดสมอง/บดบังการรู้คิด)` : (acbVal >= 1 ? `ACB = ${acbVal} (มีความเสี่ยงเล็กน้อย)` : "ACB = 0 (ไม่มียากลุ่มเสี่ยง)"),
-              weight: acbVal >= 3 ? 14 : (acbVal >= 1 ? 6 : 0),
-              maxShare: 14,
+              weight: acbVal >= 3 ? 16 : (acbVal >= 1 ? 8 : 0),
+              maxShare: 16,
               color: acbVal >= 3 ? "#D97706" : (acbVal >= 1 ? "#F59E0B" : "#10B981")
             },
             {
               name: "⏱️ ความเร็วการลากเส้นและมิติสัมพันธ์ (Visual-Motor & CDT)",
               detail: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? `ลากเส้นช้าหรือบิดเบี้ยว (Motor Tremor: ${input.cdtMotorTremorDetected ? "ตรวจพบ/กรองแล้ว" : "ปกติ"})` : "การลากเส้นและวาดภาพนาฬิกาปกติ",
-              weight: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? 9 : 0,
-              maxShare: 9,
+              weight: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? 10 : 0,
+              maxShare: 10,
               color: (_meta?.vmt?.isImpaired || _meta?.vmt?.isTimeProlonged || _meta?.vmt?.isErrorElevated || input.cdtResult === "ABNORMAL") ? "#F59E0B" : "#10B981"
-            },
-            {
-              name: "👴 ปัจจัยพื้นฐานทางอายุ (Age Risk Baseline)",
-              detail: input.age >= 75 ? `อายุ ${input.age} ปี (เข้าเกณฑ์กลุ่มเสี่ยงสูงตามวัย >= 75 ปี)` : `อายุ ${input.age} ปี`,
-              weight: input.age >= 75 ? 5 : (input.age >= 65 ? 3 : 1),
-              maxShare: 5,
-              color: input.age >= 75 ? "#3B82F6" : "#64748B"
             }
           ];
 

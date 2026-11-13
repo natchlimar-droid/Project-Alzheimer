@@ -58,12 +58,12 @@ Used in the synthetic in-browser triage demo (`dashboard.html`) to visualize rel
 
 | Screening Feature Domain | Normalized Weight | Clinical Rationale |
 | :--- | :---: | :--- |
-| Delayed Word Recall / Verbal Fluency | **30%** | Primary episodic memory / semantic retrieval signal |
-| AD8 Informant Functional Change | **22%** | Longitudinal informant-reported daily cognitive decline |
-| AD Biomarkers (Plasma p-tau217 / Aβ42-40) | **20%** | Alzheimer's-specific pathophysiology indicator (symptomatic workup only) |
-| Clock Drawing / Visuospatial-Executive | **18%** | Executive planning and visuospatial construction |
-| Affective (2Q) & Medication Burden (ACB) | **10%** | Reversible pseudodementia and drug-induced confounder weight |
-| **Total Normalized Feature Budget** | **100%** | Explicitly normalized across all 5 triage dimensions |
+| **Mini-Cog (Delayed Word Recall / Verbal Fluency)** | **30%** | Primary episodic memory / semantic retrieval signal |
+| **AD8 Informant Functional Change** | **22%** | Longitudinal informant-reported daily cognitive decline |
+| **AD Biomarkers (Plasma p-tau217 / Aβ42-40)** | **22%** | Alzheimer's-specific pathophysiology indicator (symptomatic workup only) |
+| **Medication Burden (Anticholinergic Burden - ACB)** | **16%** | Reversible drug-induced cognitive impairment confounder weight |
+| **Visual-Motor Trail Latency & Executive Function** | **10%** | Executive planning speed and visuospatial motor coordination |
+| **Total Normalized Feature Budget** | **100%** | Explicitly normalized across all 5 clinical dimensions |
 
 > **ML Triage Framing:** The in-browser Logistic Regression model in `dashboard.html` runs strictly as an **educational demo trained on 25 synthetic cases**. Targeting high frontline sensitivity (`>= 90%`) is a **design goal** for the triage prototype, not a clinically validated performance metric on real patient cohorts.
 
@@ -103,7 +103,7 @@ The system encompasses **17 core clinical assessment & lab categories** structur
 | **Serum Folate** | `serum_folate_ng_mL` | `2284-8` | `EXACT_LOINC` | `< 2.0 ng/mL` deficient |
 | **Serum Sodium (Na+)** | `sodium_mEq_L` | `2951-2` | `EXACT_LOINC` | `< 130` severe / `< 135 mEq/L` mild |
 | **Serum Calcium** | `calcium_mg_dL` | `17861-6` | `EXACT_LOINC` | `< 8.5` or `> 10.5 mg/dL` |
-| **Fasting Blood Glucose** | `fasting_glucose_mg_dL` | `1558-6` | `EXACT_LOINC` | `< 50 mg/dL` severe hypoglycemia |
+| **Fasting Blood Glucose** | `fasting_glucose_mg_dL` | `1558-6` | `EXACT_LOINC` | `< 54 mg/dL` severe hypoglycemia (`< 70` low) |
 | **Hemoglobin A1c (HbA1c)** | `hba1c_percent` | `4548-4` | `EXACT_LOINC` | `>= 6.5%` |
 | **LDL Cholesterol** | `ldl_mg_dL` | `2089-1` | `EXACT_LOINC` | `mg/dL` |
 | **HDL Cholesterol** | `hdl_mg_dL` | `2085-9` | `EXACT_LOINC` | `mg/dL` |
@@ -113,8 +113,8 @@ The system encompasses **17 core clinical assessment & lab categories** structur
 | **ALT (SGPT)** | `alt_u_L` | `1742-6` | `EXACT_LOINC` | `> 100` watch / `> 200 U/L` severe |
 | **AST (SGOT)** | `ast_u_L` | `1920-8` | `EXACT_LOINC` | `> 100` watch / `> 200 U/L` severe |
 | **APOE Targeted Mutation** | `apoe_genotype` | `42315-2` | `EXACT_LOINC` | `e2/e2`, `e3/e3`, `e3/e4`, `e4/e4` |
-| **Plasma p-tau217** | `plasma_ptau217_pg_mL` | `104663-0` | `EXACT_LOINC` | `>= 0.40 pg/mL` positive |
-| **Plasma Aβ42/Aβ40 Ratio** | `abeta_42_40_ratio` | `106941-8` | `EXACT_LOINC` | `<= 0.067`–`0.090 {ratio}` |
+| **Plasma p-tau217** | `plasma_ptau217_pg_mL` | `104663-0` | `EXACT_LOINC` | `>= 0.40 pg/mL` positive (`0.25–0.39` borderline) |
+| **Plasma Aβ42/Aβ40 Ratio** | `abeta_42_40_ratio` | `106941-8` | `EXACT_LOINC` | `< 0.090` amyloid positive (`>= 0.090` normal) |
 
 *(Breakdown across `27` unique clinical parameters in `LOINC_DATA_MAPPING`: **`20` Exact LOINC**, **`3` Closest Match**, **`4` Local CodeSystem**; lookup dictionary includes both Mini-Cog components `72170-4` / `72171-2` and lab field aliases.)*
 

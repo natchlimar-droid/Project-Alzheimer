@@ -208,7 +208,7 @@ const ALGORITHM_VERSION = "2.4.1-clinical-multiaxis-hardened";
  
 
 /**
- * Informed Consent & Governance for Speech Telemetry (PDPA Compliant)
+ * Informed Consent & Governance for Speech Telemetry (Designed with PDPA principles)
  */
                                       
                           

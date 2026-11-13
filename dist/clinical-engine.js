@@ -210,7 +210,7 @@
    
 
   /**
-   * Informed Consent & Governance for Speech Telemetry (PDPA Compliant)
+   * Informed Consent & Governance for Speech Telemetry (Designed with PDPA principles)
    */
                                         
                             

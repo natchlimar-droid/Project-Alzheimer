@@ -21,9 +21,9 @@ flowchart TD
     Calib --> Mod3["โมดูลที่ 3: Visual-Motor Task 8 จุด\n(1 -> ก -> 2 -> ข -> 3 -> ค -> 4 -> ง)\nคำนวณเวลาสุทธิหลังชดเชย + UX ป้องกัน Frustration"]
     Mod3 --> Mod4["โมดูลที่ 4: ผลตรวจทางห้องปฏิบัติการ (LOINC / FHIR R4)"]
 
-    Mod4 --> Tier1{"Tier 1: พบสาเหตุที่รักษา/ปรับลดได้หรือไม่?\n- High ACB Burden (acbTotalScore >= 3) หรือ\n- B12 < 200 pg/mL หรือ TSH > 4.5 / < 0.4 หรือ Na ผิดปกติ"}
+    Mod4 --> Tier1{"Tier 1: พบสาเหตุที่รักษา/ปรับลดได้หรือไม่?\n- High ACB Burden (acbTotalScore >= 3) หรือ\n- B12 < 200 pg/mL หรือ TSH > 4.2 / < 0.4 หรือ\n- น้ำตาล < 54 mg/dL หรือ Na < 130 หรือ Ca ผิดปกติ"}
     Tier1 -->|"พบ"| OutRev["REVERSIBLE_FLAG\nส่งพบอายุรแพทย์/เภสัชกรคลินิกเพื่อรักษาสาเหตุเมตาบอลิก\nและปรับลดยา (Deprescribing) เป็นลำดับแรก"]
-    Tier1 -->|"ไม่พบ"| Tier2{"Tier 2: ผลบวก AD Biomarker\n(p-tau217 POSITIVE หรือ Aβ42/40 < 0.065)\nร่วมกับความบกพร่องทางการรู้คิด?"}
+    Tier1 -->|"ไม่พบ"| Tier2{"Tier 2: ผลบวก AD Biomarker\n(p-tau217 POSITIVE >= 0.40 หรือ Aβ42/40 < 0.090)\nร่วมกับความบกพร่องทางการรู้คิด?"}
 
     Tier2 -->|"พบ"| OutAD["VERY_HIGH_ALZHEIMERS\nส่งต่อแพทย์ระบบประสาท / Memory Clinic โดยเร็ว"]
     Tier2 -->|"ไม่พบ"| LongCheck["คำนวณอัตราการเปลี่ยนแปลงระยะยาว (Δ-Decline Rate)\nเทียบกับ previous_session_id (ถ้ามี)"]

@@ -1573,18 +1573,29 @@
                 adviceEl.textContent = "สมรรถภาพสมองอยู่ในเกณฑ์ปกติ แนะนำดูแลสุขภาพสมองเชิงป้องกัน ออกกำลังกายสม่ำเสมอ และตรวจคัดกรองซ้ำประจำปี";
             }
 
-            // SHAP-like Feature Contribution Breakdown
+            // SHAP-like Feature Contribution Breakdown (Normalized to 100% total)
             const normVec = extractNormalizedFeatures(inputObj);
             const contribs = FEATURE_META.map((f, idx) => ({
                 label: f.label,
-                score: normVec[idx] * mlModel.weights[idx]
+                score: Math.max(0, normVec[idx] * mlModel.weights[idx])
             })).sort((a, b) => b.score - a.score);
 
-            const totalContrib = contribs.reduce((s, c) => s + Math.max(0, c.score), 0) || 1;
-            const top3 = contribs.slice(0, 4);
+            const activeContribs = contribs.filter(c => c.score > 0);
+            const displayed = (activeContribs.length > 0 ? activeContribs : contribs).slice(0, 5);
+            const displayedTotal = displayed.reduce((s, c) => s + c.score, 0) || 1;
 
-            document.getElementById('calc-shap-list').innerHTML = top3.map(c => {
-                const share = Math.round((Math.max(0, c.score) / totalContrib) * 100);
+            let runningSum = 0;
+            const shares = displayed.map((c, i) => {
+                if (i === displayed.length - 1) {
+                    return Math.max(0, 100 - runningSum);
+                }
+                const s = Math.round((c.score / displayedTotal) * 100);
+                runningSum += s;
+                return s;
+            });
+
+            document.getElementById('calc-shap-list').innerHTML = displayed.map((c, i) => {
+                const share = shares[i];
                 return `
                     <div class="flex items-center justify-between gap-2">
                         <span class="text-slate-600 truncate">${c.label}</span>
