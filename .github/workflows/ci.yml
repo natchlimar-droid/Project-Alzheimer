@@ -27,3 +27,4 @@ jobs:
 
       - name: Validate HL7 FHIR R4 Bundle & LOINC terminology
         run: node scripts/validate-fhir.mjs
+

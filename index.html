@@ -11259,7 +11259,910 @@
     function proceedWizToCdt() {
       document.getElementById("wizMiniCogSub-Words").style.display = "none";
       document.getElementById("wizMiniCogSub-Cdt").style.display = "block";
-      
+      }).join('');
+
+      const countImpaired = responses.filter(r => r === true).length;
+      const answeredCount = responses.filter(r => r !== null).length;
+      const badge = document.getElementById("iadlLiveScoreBadge");
+      const banner = document.getElementById("iadlStatusBanner");
+      if (badge) {
+        if (answeredCount === 4) {
+          badge.textContent = `${countImpaired} / 4 ข้อ (${countImpaired >= 1 ? "⚠️ มีความบกพร่อง IADL" : "✅ กิจวัตรปกติ"})`;
+          badge.style.color = countImpaired >= 1 ? "var(--status-high-text)" : "var(--status-low-text)";
+        } else {
+          badge.textContent = `ประเมินแล้ว ${answeredCount}/4 ข้อ`;
+          badge.style.color = "var(--text-secondary)";
+        }
+      }
+      if (banner && answeredCount === 4) {
+        const isMciOrDementia = countImpaired >= 1
+          ? "⚠️ บกพร่องอย่างน้อย 1 กิจวัตร: สอดคล้องกับภาวะสมองเสื่อม (Dementia Stage) มากกว่า MCI"
+          : "✅ กิจวัตรประจำวันยังทำได้อิสระ: สอดคล้องกับภาวะรู้คิดบกพร่องเล็กน้อย (MCI Stage) หากมีปัญหาความจำ";
+        banner.innerHTML = `<strong>ผลการประเมิน IADL:</strong> ${isMciOrDementia}`;
+        banner.style.color = countImpaired >= 1 ? "var(--status-high-text)" : "var(--status-low-text)";
+      }
+    }
+
+    function setIadlResponse(index, value) {
+      appState.briefIadlResponses[index] = value;
+      renderBriefIadl();
+      recordAuditLog("IADL_RESPONSE_UPDATE", `Updated IADL item ${index} to ${value}`);
+    }
+
+    /* ------------------------------------------------------------------------
+       8. Module 2: Mini-Cog (Word Registration, CDT Canvas, Delayed Recall)
+       ------------------------------------------------------------------------ */
+    function renderWordRegistration() {
+      const set = WORD_SETS[appState.activeWordSetIndex];
+      const display = document.getElementById("registeredWordsDisplay");
+      display.innerHTML = "";
+
+      if (appState.wordsLocked) {
+        display.innerHTML = `
+          <div class="card-box" style="grid-column: 1 / -1; text-align:center; margin:0;">
+            🔒 <strong>ซ่อนคำศัพท์ทั้ง 3 คำแล้ว</strong> เพื่อเข้าสู่ขั้นตอนการวาดหน้าปัดนาฬิกา (Distractor Task) และทดสอบความจำย้อนหลัง
+            <button type="button" class="btn" style="margin-left:1rem;" onclick="unlockWordsAndRestartTimer()">👁️ แสดงคำศัพท์อีกครั้ง (เริ่มนับ 5 วินาทีใหม่)</button>
+          </div>
+        `;
+      } else {
+        set.words.forEach((word, i) => {
+          const card = document.createElement("div");
+          card.className = "word-registration-card";
+          card.innerHTML = `<div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:0.25rem;">คำที่ ${i + 1}</div>${word}`;
+          display.appendChild(card);
+        });
+      }
+
+      renderRecognitionChips();
+    }
+
+    function startFiveSecondWordLock() {
+      if (wordRegistrationInterval) clearInterval(wordRegistrationInterval);
+      appState.wordsLocked = false;
+      renderWordRegistration();
+
+      const btn = document.getElementById("proceedToCdtBtn");
+      const statusText = document.getElementById("registrationLockStatus");
+      const countdownText = document.getElementById("registrationCountdownText");
+      const bar = document.getElementById("registrationTimerBar");
+
+      btn.disabled = true;
+      btn.textContent = "⏳ กรุณาจำคำศัพท์ (บังคับแสดงผล 5 วินาที)...";
+      bar.style.width = "0%";
+
+      const durationMs = 5000;
+      const startTime = performance.now();
+
+      wordRegistrationInterval = setInterval(() => {
+        const elapsed = performance.now() - startTime;
+        const pct = Math.min(100, (elapsed / durationMs) * 100);
+        const remainingSec = Math.max(0, (durationMs - elapsed) / 1000).toFixed(1);
+
+        bar.style.width = pct + "%";
+        countdownText.textContent = `${remainingSec} วินาที`;
+
+        if (elapsed >= durationMs) {
+          clearInterval(wordRegistrationInterval);
+          wordRegistrationInterval = null;
+          statusText.textContent = "✅ ครบกำหนดเวลา 5 วินาทีแล้ว สามารถกดปุ่มเพื่อซ่อนคำศัพท์และเริ่มวาดนาฬิกาได้";
+          countdownText.textContent = "ครบ 5.0 วินาที";
+          btn.disabled = false;
+          btn.textContent = "✅ จำคำศัพท์แล้ว เริ่มวาดหน้าปัดนาฬิกา (ซ่อนคำศัพท์)";
+        }
+      }, 100);
+    }
+
+    function unlockWordsAndRestartTimer() {
+      startFiveSecondWordLock();
+    }
+
+    function lockWordsAndStartCDT() {
+      appState.wordsLocked = true;
+      renderWordRegistration();
+      document.getElementById("minicogSubstep2").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function randomizeWordSet() {
+      appState.activeWordSetIndex = (appState.activeWordSetIndex + 1) % WORD_SETS.length;
+      const set = WORD_SETS[appState.activeWordSetIndex];
+      appState.selectedRecognitionWords = [...set.words];
+      appState.delayedRecallScore = 3;
+      startFiveSecondWordLock();
+      updateDelayedRecallBadge();
+    }
+
+    function speakRegisteredWords(btnEl) {
+      const set = WORD_SETS[appState.activeWordSetIndex];
+      speakThai(`โปรดจำคำศัพท์ 3 คำต่อไปนี้ คำที่หนึ่ง ${set.words[0]} คำที่สอง ${set.words[1]} คำที่สาม ${set.words[2]}`, btnEl);
+    }
+
+    /* --- Clock Drawing Test (CDT) Mode Switcher & Paper Drawing Upload --- */
+    function switchCdtInputMode(mode) {
+      appState.cdtTelemetry.inputMode = mode;
+      const screenCont = document.getElementById("cdtScreenCanvasContainer");
+      const paperCont = document.getElementById("cdtPaperUploadContainer");
+      const screenTab = document.getElementById("cdtTabScreenBtn");
+      const paperTab = document.getElementById("cdtTabPaperBtn");
+      const sourceText = document.getElementById("cdtInputSourceText");
+
+      if (mode === "PAPER") {
+        if (screenCont) screenCont.style.display = "none";
+        if (paperCont) paperCont.style.display = "block";
+        if (screenTab) screenTab.classList.remove("btn-primary");
+        if (paperTab) paperTab.classList.add("btn-primary");
+        if (sourceText) sourceText.textContent = "วาดบนกระดาษจริง (Paper Drawing Upload)";
+        appState.cdtTelemetry.sourceType = "PAPER_UPLOAD";
+      } else {
+        if (screenCont) screenCont.style.display = "block";
+        if (paperCont) paperCont.style.display = "none";
+        if (paperTab) paperTab.classList.remove("btn-primary");
+        if (screenTab) screenTab.classList.add("btn-primary");
+        if (sourceText) sourceText.textContent = "หน้าจอสัมผัส (Touchscreen / Canvas)";
+        appState.cdtTelemetry.sourceType = "SCREEN_DRAWING";
+      }
+      recordAuditLog("CDT_INPUT_MODE_SWITCH", `Switched CDT input mode to ${mode}`);
+    }
+
+    function handlePaperClockUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        appState.cdtTelemetry.imageDataUrl = dataUrl;
+        appState.cdtTelemetry.sourceType = "PAPER_UPLOAD";
+
+        // Auto-Crop, Perspective Square Centering & Contrast Normalization
+        const canvas = document.getElementById("cdtCanvas");
+        if (canvas) {
+          const img = new Image();
+          img.onload = () => {
+            processPaperClockAutoCrop(img, canvas);
+          };
+          img.src = dataUrl;
+        }
+
+        const previewBox = document.getElementById("paperClockPreviewBox");
+        const previewImg = document.getElementById("paperClockImgPreview");
+        const clearBtn = document.getElementById("clearPaperImgBtn");
+        if (previewImg) previewImg.src = dataUrl;
+        if (previewBox) previewBox.style.display = "block";
+        if (clearBtn) clearBtn.style.display = "inline-flex";
+
+        const exportStatus = document.getElementById("cdtExportStatusText");
+        if (exportStatus) exportStatus.textContent = "บันทึกภาพวาดบนกระดาษจริงเรียบร้อย (Paper Photo Ready)";
+
+        showToast("📷 บันทึกภาพวาดนาฬิกาบนกระดาษจริงเรียบร้อยแล้ว", "success");
+        recordAuditLog("CDT_PAPER_IMAGE_UPLOADED", `Uploaded paper clock image (${Math.round(file.size / 1024)} KB)`);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearPaperClockUpload() {
+      appState.cdtTelemetry.imageDataUrl = "";
+      appState.cdtTelemetry.sourceType = "SCREEN_DRAWING";
+      const previewBox = document.getElementById("paperClockPreviewBox");
+      const clearBtn = document.getElementById("clearPaperImgBtn");
+      const input = document.getElementById("paperClockFileInput");
+      if (previewBox) previewBox.style.display = "none";
+      if (clearBtn) clearBtn.style.display = "none";
+      if (input) input.value = "";
+      clearCdtCanvas();
+      showToast("ลบภาพวาดบนกระดาษแล้ว", "info");
+    }
+
+    /* --- Clock Drawing Test (CDT) Interactive Canvas & Telemetry --- */
+    let cdtStrokes = [];
+    let currentStroke = null;
+    let cdtFirstStrokeStartMs = null;
+    let cdtLastStrokeEndMs = null;
+    let cdtLastPoint = null;
+    let cdtLastTimestamp = 0;
+
+    function initCdtCanvas() {
+      const canvas = document.getElementById("cdtCanvas");
+      if (!canvas) return;
+      attachTouchStylusEnforcer();
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      const baseWidth = 460;
+      const baseHeight = 460;
+
+      canvas.width = Math.round(baseWidth * dpr);
+      canvas.height = Math.round(baseHeight * dpr);
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#0A0E17";
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, baseWidth, baseHeight);
+      canvas.style.touchAction = "none";
+
+      function getCanvasPoint(e) {
+        const rect = canvas.getBoundingClientRect();
+        // Dynamic scale calculation guarantees pixel-perfect drawing across all responsive viewports & DPR
+        const scaleX = baseWidth / (rect.width || baseWidth);
+        const scaleY = baseHeight / (rect.height || baseHeight);
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        if (e.touches && e.touches.length > 0) {
+          clientX = e.touches[0].clientX;
+          clientY = e.touches[0].clientY;
+        }
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      }
+
+      function startStroke(e) {
+        if (e.cancelable) e.preventDefault();
+        if (e.pointerId !== undefined && typeof canvas.setPointerCapture === "function") {
+          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+        }
+        const now = performance.now();
+        if (cdtFirstStrokeStartMs === null) {
+          cdtFirstStrokeStartMs = now;
+          appState.cdtTelemetry.firstStrokeStartMs = now;
+          if (appState.cdtTelemetry.screenShownMs) {
+            appState.cdtTelemetry.initiationLatencyMs = Math.round(now - appState.cdtTelemetry.screenShownMs);
+          }
+        }
+        if (cdtLastStrokeEndMs !== null) {
+          const hesitationMs = Math.round(now - cdtLastStrokeEndMs);
+          appState.cdtTelemetry.hesitationIntervalsMs.push(hesitationMs);
+        }
+
+        const pt = getCanvasPoint(e);
+        currentStroke = [pt];
+        cdtLastPoint = pt;
+        cdtLastTimestamp = now;
+
+        ctx.beginPath();
+        ctx.moveTo(pt.x, pt.y);
+      }
+
+      function moveStroke(e) {
+        if (!currentStroke) return;
+        if (e.cancelable) e.preventDefault();
+        const pt = getCanvasPoint(e);
+        currentStroke.push(pt);
+        ctx.lineTo(pt.x, pt.y);
+        ctx.stroke();
+
+        const now = performance.now();
+        if (cdtLastPoint) {
+          const dx = pt.x - cdtLastPoint.x;
+          const dy = pt.y - cdtLastPoint.y;
+          const dist = Math.hypot(dx, dy);
+          appState.cdtTelemetry.totalPathLengthPx = (appState.cdtTelemetry.totalPathLengthPx || 0) + dist;
+          appState.cdtTelemetry.activeDrawingDurationMs = (appState.cdtTelemetry.activeDrawingDurationMs || 0) + Math.max(1, now - cdtLastTimestamp);
+        }
+        cdtLastPoint = pt;
+        cdtLastTimestamp = now;
+      }
+
+      function endStroke(e) {
+        if (!currentStroke) return;
+        if (e && e.cancelable) e.preventDefault();
+        if (e && e.pointerId !== undefined && typeof canvas.releasePointerCapture === "function") {
+          try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+        }
+        cdtStrokes.push(currentStroke);
+        currentStroke = null;
+        cdtLastStrokeEndMs = performance.now();
+        appState.cdtTelemetry.penLiftsCount = (appState.cdtTelemetry.penLiftsCount || 0) + 1;
+
+        appState.cdtTelemetry.strokeCount = cdtStrokes.length;
+        appState.cdtTelemetry.totalDurationMs = Math.round(cdtLastStrokeEndMs - cdtFirstStrokeStartMs);
+        if (appState.cdtTelemetry.activeDrawingDurationMs > 0) {
+          appState.cdtTelemetry.strokeVelocityPxPerSec = Math.round(
+            (appState.cdtTelemetry.totalPathLengthPx / (appState.cdtTelemetry.activeDrawingDurationMs / 1000))
+          );
+        }
+        syncCdtTelemetryDisplay();
+      }
+
+      if (window.PointerEvent) {
+        canvas.addEventListener("pointerdown", startStroke, { passive: false });
+        canvas.addEventListener("pointermove", moveStroke, { passive: false });
+        canvas.addEventListener("pointerup", endStroke, { passive: false });
+        canvas.addEventListener("pointercancel", endStroke, { passive: false });
+      } else {
+        canvas.addEventListener("mousedown", startStroke);
+        canvas.addEventListener("mousemove", moveStroke);
+        window.addEventListener("mouseup", endStroke);
+
+        canvas.addEventListener("touchstart", startStroke, { passive: false });
+        canvas.addEventListener("touchmove", moveStroke, { passive: false });
+        canvas.addEventListener("touchend", endStroke, { passive: false });
+        canvas.addEventListener("touchcancel", endStroke, { passive: false });
+      }
+
+      simulateNormalClockDrawing();
+    }
+
+    function redrawAllCdtStrokes() {
+      const canvas = document.getElementById("cdtCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const baseWidth = 460;
+      const baseHeight = 460;
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+
+      ctx.strokeStyle = "#0A0E17";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      cdtStrokes.forEach(stroke => {
+        if (stroke.length === 0) return;
+        ctx.beginPath();
+        ctx.moveTo(stroke[0].x, stroke[0].y);
+        for (let i = 1; i < stroke.length; i++) {
+          ctx.lineTo(stroke[i].x, stroke[i].y);
+        }
+        ctx.stroke();
+      });
+    }
+
+    function drawPreprintedCircleGuide() {
+      const cx = 230, cy = 230, r = 180;
+      const circleStroke = [];
+      for (let angle = 0; angle <= 360; angle += 5) {
+        const rad = (angle * Math.PI) / 180;
+        circleStroke.push({
+          x: cx + r * Math.cos(rad),
+          y: cy + r * Math.sin(rad)
+        });
+      }
+      cdtStrokes.push(circleStroke);
+      appState.cdtTelemetry.strokeCount = cdtStrokes.length;
+      redrawAllCdtStrokes();
+      syncCdtTelemetryDisplay();
+    }
+
+    function undoLastCdtStroke() {
+      if (cdtStrokes.length > 0) {
+        cdtStrokes.pop();
+        appState.cdtTelemetry.hesitationIntervalsMs.pop();
+        appState.cdtTelemetry.strokeCount = cdtStrokes.length;
+        appState.cdtTelemetry.undoCount = (appState.cdtTelemetry.undoCount || 0) + 1;
+        redrawAllCdtStrokes();
+        syncCdtTelemetryDisplay();
+      }
+    }
+
+    function clearCdtCanvas() {
+      cdtStrokes = [];
+      cdtFirstStrokeStartMs = null;
+      cdtLastStrokeEndMs = null;
+      appState.cdtTelemetry.strokeCount = 0;
+      appState.cdtTelemetry.totalDurationMs = 0;
+      appState.cdtTelemetry.hesitationIntervalsMs = [];
+      appState.cdtTelemetry.undoCount = (appState.cdtTelemetry.undoCount || 0) + 1;
+      appState.cdtTelemetry.penLiftsCount = 0;
+      appState.cdtTelemetry.totalPathLengthPx = 0;
+      appState.cdtTelemetry.activeDrawingDurationMs = 0;
+      redrawAllCdtStrokes();
+      syncCdtTelemetryDisplay();
+    }
+
+    function simulateNormalClockDrawing() {
+      cdtStrokes = [];
+      const cx = 230, cy = 230, r = 180;
+      // Outer circle
+      const circleStroke = [];
+      for (let angle = 0; angle <= 360; angle += 6) {
+        const rad = (angle * Math.PI) / 180;
+        circleStroke.push({ x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) });
+      }
+      cdtStrokes.push(circleStroke);
+
+      // Tick marks for 12 hours
+      for (let h = 1; h <= 12; h++) {
+        const rad = ((h * 30 - 90) * Math.PI) / 180;
+        cdtStrokes.push([
+          { x: cx + (r - 22) * Math.cos(rad), y: cy + (r - 22) * Math.sin(rad) },
+          { x: cx + (r - 8) * Math.cos(rad), y: cy + (r - 8) * Math.sin(rad) }
+        ]);
+      }
+
+      // Hands pointing to target time
+      const target = appState.clockTargetConfig || CLINICAL_CLOCK_TARGETS[appState.targetClockTime || "11:10"] || CLINICAL_CLOCK_TARGETS["11:10"];
+      const hourDeg = (target.shortHandNum * 30 - 90);
+      const radHour = (hourDeg * Math.PI) / 180;
+      cdtStrokes.push([
+        { x: cx, y: cy },
+        { x: cx + 95 * Math.cos(radHour), y: cy + 95 * Math.sin(radHour) }
+      ]);
+
+      const minDeg = (target.longHandNum * 30 - 90);
+      const radMin = (minDeg * Math.PI) / 180;
+      cdtStrokes.push([
+        { x: cx, y: cy },
+        { x: cx + 140 * Math.cos(radMin), y: cy + 140 * Math.sin(radMin) }
+      ]);
+
+      redrawAllCdtStrokes();
+
+      // Add hour numbers on canvas for visual clarity
+      const canvas = document.getElementById("cdtCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#0A0E17";
+      ctx.font = "bold 22px Sarabun, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let h = 1; h <= 12; h++) {
+        const rad = ((h * 30 - 90) * Math.PI) / 180;
+        ctx.fillText(String(h), cx + (r - 42) * Math.cos(rad), cy + (r - 42) * Math.sin(rad));
+      }
+
+      appState.cdtTelemetry.strokeCount = cdtStrokes.length;
+      appState.cdtTelemetry.totalDurationMs = 18400;
+      appState.cdtTelemetry.initiationLatencyMs = 1850;
+      appState.cdtTelemetry.penLiftsCount = cdtStrokes.length;
+      appState.cdtTelemetry.strokeVelocityPxPerSec = 145;
+      appState.cdtTelemetry.hesitationIntervalsMs = [620, 480, 510, 490, 530, 610, 580, 490, 520, 640, 590, 510, 1120, 950];
+      syncCdtTelemetryDisplay();
+      runCdtHeuristicAnalysis();
+    }
+
+    function simulateAbnormalClockDrawing() {
+      cdtStrokes = [];
+      const cx = 230, cy = 230, r = 175;
+      // Distorted oval contour
+      const circleStroke = [];
+      for (let angle = 0; angle <= 360; angle += 8) {
+        const rad = (angle * Math.PI) / 180;
+        circleStroke.push({ x: cx + r * 0.9 * Math.cos(rad), y: cy + r * 0.72 * Math.sin(rad) });
+      }
+      cdtStrokes.push(circleStroke);
+
+      // Spatial neglect: ticks clustered only on the right half (-75 deg to +85 deg)
+      for (let i = 0; i < 8; i++) {
+        const deg = -75 + i * 22;
+        const rad = (deg * Math.PI) / 180;
+        cdtStrokes.push([
+          { x: cx + (r * 0.72) * Math.cos(rad), y: cy + (r * 0.62) * Math.sin(rad) },
+          { x: cx + (r * 0.85) * Math.cos(rad), y: cy + (r * 0.70) * Math.sin(rad) }
+        ]);
+      }
+
+      // Stimulus-bound error: hand pointing to 10 (-150 deg) and 11 (-120 deg) instead of 11 and 2
+      const rad11 = (-120 * Math.PI) / 180;
+      const rad10 = (-150 * Math.PI) / 180;
+      cdtStrokes.push([{ x: cx, y: cy }, { x: cx + 95 * Math.cos(rad11), y: cy + 95 * Math.sin(rad11) }]);
+      cdtStrokes.push([{ x: cx, y: cy }, { x: cx + 125 * Math.cos(rad10), y: cy + 125 * Math.sin(rad10) }]);
+
+      redrawAllCdtStrokes();
+      appState.cdtTelemetry.strokeCount = cdtStrokes.length;
+      appState.cdtTelemetry.totalDurationMs = 44200;
+      appState.cdtTelemetry.hesitationIntervalsMs = [1400, 2100, 1900, 3200, 5800, 4600, 6200, 3900];
+      syncCdtTelemetryDisplay();
+      runCdtHeuristicAnalysis();
+    }
+
+    /* --- Enhancement 6: Motor Tremor Filtering & Heuristic Analyzer --- */
+    function smoothStrokeForTremor(stroke, windowSize = 5) {
+      if (!stroke || stroke.length <= 2) return stroke ? [...stroke] : [];
+      const half = Math.floor(windowSize / 2);
+      const smoothed = [];
+      for (let i = 0; i < stroke.length; i++) {
+        let sumX = 0, sumY = 0, count = 0;
+        for (let j = -half; j <= half; j++) {
+          const idx = i + j;
+          if (idx >= 0 && idx < stroke.length) {
+            sumX += stroke[idx].x;
+            sumY += stroke[idx].y;
+            count++;
+          }
+        }
+        smoothed.push({ x: sumX / count, y: sumY / count });
+      }
+      return smoothed;
+    }
+
+    function detectMotorTremorFromStrokes(strokes) {
+      let totalJitterSq = 0;
+      let sampleCount = 0;
+      let reversals = 0;
+      let segmentsCount = 0;
+
+      strokes.forEach(stroke => {
+        if (!stroke || stroke.length < 5) return;
+        const smoothed = smoothStrokeForTremor(stroke, 5);
+        let prevDeltaX = 0, prevDeltaY = 0;
+
+        for (let i = 0; i < stroke.length; i++) {
+          const raw = stroke[i];
+          const sm = smoothed[i];
+          const dx = raw.x - sm.x;
+          const dy = raw.y - sm.y;
+          totalJitterSq += dx * dx + dy * dy;
+          sampleCount++;
+
+          if (i > 0) {
+            const segDx = raw.x - stroke[i - 1].x;
+            const segDy = raw.y - stroke[i - 1].y;
+            if (i > 1) {
+              const dot = segDx * prevDeltaX + segDy * prevDeltaY;
+              if (dot < 0) reversals++;
+              segmentsCount++;
+            }
+            prevDeltaX = segDx;
+            prevDeltaY = segDy;
+          }
+        }
+      });
+
+      const tremorRmsJitterPx = sampleCount > 0 ? Number(Math.sqrt(totalJitterSq / sampleCount).toFixed(2)) : 0;
+      const tremorDirectionReversalRate = segmentsCount > 0 ? Number((reversals / segmentsCount).toFixed(2)) : 0;
+      const motorTremorDetected = tremorRmsJitterPx >= 1.75 && tremorDirectionReversalRate >= 0.22;
+
+      return {
+        motorTremorDetected,
+        tremorRmsJitterPx,
+        tremorDirectionReversalRate,
+        samplePointCount: sampleCount
+      };
+    }
+
+    function simulateTremorNormalClockDrawing() {
+      cdtStrokes = [];
+      const cx = 230, cy = 230, r = 180;
+      const jitterAmp = 4.2;
+
+      // Circle contour with Parkinson/Essential high-frequency oscillatory tremor
+      const circleStroke = [];
+      for (let angle = 0; angle <= 360; angle += 3) {
+        const rad = (angle * Math.PI) / 180;
+        const jitter = Math.sin(angle * 14) * jitterAmp + (Math.random() - 0.5) * 2.2;
+        circleStroke.push({
+          x: cx + (r + jitter) * Math.cos(rad),
+          y: cy + (r + jitter) * Math.sin(rad)
+        });
+      }
+      cdtStrokes.push(circleStroke);
+
+      // 12 Ticks with tremor
+      for (let h = 1; h <= 12; h++) {
+        const rad = ((h * 30 - 90) * Math.PI) / 180;
+        const tick = [];
+        for (let step = 0; step <= 6; step++) {
+          const dist = (r - 22) + (step / 6) * 14;
+          const j = Math.sin(step * 3.5) * (jitterAmp * 0.85);
+          tick.push({
+            x: cx + dist * Math.cos(rad) + j,
+            y: cy + dist * Math.sin(rad) + j
+          });
+        }
+        cdtStrokes.push(tick);
+      }
+
+      // Hour hand to 11 (-120 deg) with oscillatory tremor
+      const rad11 = (-120 * Math.PI) / 180;
+      const hand11 = [];
+      for (let step = 0; step <= 10; step++) {
+        const dist = (step / 10) * 95;
+        const j = Math.sin(step * 3) * jitterAmp;
+        hand11.push({
+          x: cx + dist * Math.cos(rad11) + j,
+          y: cy + dist * Math.sin(rad11) + j
+        });
+      }
+      cdtStrokes.push(hand11);
+
+      // Minute hand to 2 (-30 deg) with oscillatory tremor
+      const rad2 = (-30 * Math.PI) / 180;
+      const hand2 = [];
+      for (let step = 0; step <= 14; step++) {
+        const dist = (step / 14) * 140;
+        const j = Math.sin(step * 3) * jitterAmp;
+        hand2.push({
+          x: cx + dist * Math.cos(rad2) + j,
+          y: cy + dist * Math.sin(rad2) + j
+        });
+      }
+      cdtStrokes.push(hand2);
+
+      redrawAllCdtStrokes();
+
+      // Render numbers on canvas
+      const canvas = document.getElementById("cdtCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#0A0E17";
+      ctx.font = "bold 22px Sarabun, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let h = 1; h <= 12; h++) {
+        const rad = ((h * 30 - 90) * Math.PI) / 180;
+        ctx.fillText(String(h), cx + (r - 42) * Math.cos(rad), cy + (r - 42) * Math.sin(rad));
+      }
+
+      appState.cdtTelemetry.strokeCount = cdtStrokes.length;
+      appState.cdtTelemetry.totalDurationMs = 28600;
+      appState.cdtTelemetry.hesitationIntervalsMs = [780, 820, 690, 710, 840, 920, 810, 760, 800, 890, 910, 830, 1420, 1100];
+      syncCdtTelemetryDisplay();
+      runCdtHeuristicAnalysis();
+    }
+
+    function analyzeClockDrawingStrokes(strokes) {
+      const findingsTh = [];
+      if (!strokes || strokes.length < 3) {
+        return {
+          suggestedResult: "ABNORMAL",
+          contourPresent: false,
+          quadrantCoverage: [false, false, false, false],
+          handTo11Detected: false,
+          handTo2Detected: false,
+          motorTremorDetected: false,
+          tremorRmsJitterPx: 0,
+          tremorDirectionReversalRate: 0,
+          findingsTh: ["จำนวนเส้นที่วาดน้อยเกินไป (< 3 เส้น) ไม่พบองค์ประกอบหน้าปัดที่สมบูรณ์"]
+        };
+      }
+
+      const tremorAnalysis = detectMotorTremorFromStrokes(strokes);
+      const smoothedStrokes = strokes.map(s => smoothStrokeForTremor(s, 5));
+
+      const allPts = smoothedStrokes.flat();
+      const xs = allPts.map(p => p.x);
+      const ys = allPts.map(p => p.y);
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const minY = Math.min(...ys), maxY = Math.max(...ys);
+      const w = maxX - minX, h = maxY - minY;
+      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+      const rEst = Math.max(w, h) / 2;
+      const aspect = h > 0 ? w / h : 0;
+      const contourPresent = w >= 160 && h >= 160 && aspect >= 0.65 && aspect <= 1.45;
+
+      const qCounts = [0, 0, 0, 0];
+      allPts.forEach(pt => {
+        if (pt.x >= cx && pt.y < cy) qCounts[0]++;
+        else if (pt.x >= cx && pt.y >= cy) qCounts[1]++;
+        else if (pt.x < cx && pt.y >= cy) qCounts[2]++;
+        else qCounts[3]++;
+      });
+      const minPerQ = Math.max(3, Math.floor(allPts.length * 0.05));
+      const quadrantCoverage = qCounts.map(c => c >= minPerQ);
+      const coveredCount = quadrantCoverage.filter(Boolean).length;
+
+      let handTo11Detected = false;
+      let handTo2Detected = false;
+      const centerTol = rEst * 0.42;
+      const isNear = (ang, target, tol) => Math.abs(((ang - target + 540) % 360) - 180) <= tol;
+
+      const target = appState.clockTargetConfig || CLINICAL_CLOCK_TARGETS[appState.targetClockTime || "11:10"] || CLINICAL_CLOCK_TARGETS["11:10"];
+      const targetHourDeg = ((target.shortHandNum * 30 - 90 + 360) % 360);
+      const targetMinDeg = ((target.longHandNum * 30 - 90 + 360) % 360);
+
+      smoothedStrokes.forEach(s => {
+        if (s.length < 2) return;
+        const a = s[0], b = s[s.length - 1];
+        const da = Math.hypot(a.x - cx, a.y - cy);
+        const db = Math.hypot(b.x - cx, b.y - cy);
+        if (da <= centerTol && db > rEst * 0.28) {
+          const deg = ((Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI) + 360) % 360;
+          if (isNear(deg, targetHourDeg, 30)) handTo11Detected = true;
+          if (isNear(deg, targetMinDeg, 30)) handTo2Detected = true;
+        } else if (db <= centerTol && da > rEst * 0.28) {
+          const deg = ((Math.atan2(a.y - b.y, a.x - b.x) * 180 / Math.PI) + 360) % 360;
+          if (isNear(deg, targetHourDeg, 30)) handTo11Detected = true;
+          if (isNear(deg, targetMinDeg, 30)) handTo2Detected = true;
+        }
+      });
+
+      if (tremorAnalysis.motorTremorDetected) {
+        findingsTh.push(`🔬 ตรวจพบ Motor Tremor ชัดเจน (RMS Jitter = ${tremorAnalysis.tremorRmsJitterPx} px, Reversal Rate = ${Math.round(tremorAnalysis.tremorDirectionReversalRate * 100)}%) — ระบบใช้เส้นผ่านการกรองความสั่น (Smoothed) เพื่อตัดสินตำแหน่งตัวเลข`);
+      }
+
+      findingsTh.push(contourPresent ? "✅ โครงร่างวงกลมสมมาตร" : "⚠️ โครงร่างวงกลมบิดเบี้ยวหรือเล็กเกินไป");
+      findingsTh.push(coveredCount === 4 ? "✅ กระจายตัวครบ 4 จตุภาค" : `⚠️ กระจายตัวเพียง ${coveredCount}/4 จตุภาค (สงสัย Spatial Neglect)`);
+      findingsTh.push(handTo11Detected && handTo2Detected ? `✅ ตรวจพบเข็มชี้เวลา ${target.labelTh} ครบทั้ง 2 เข็ม` : `⚠️ ไม่พบเข็มชี้เวลา ${target.labelTh} ครบถ้วน`);
+
+      const isNormal = contourPresent && coveredCount === 4 && handTo11Detected && handTo2Detected && strokes.length >= 6;
+      return {
+        suggestedResult: isNormal ? "NORMAL" : "ABNORMAL",
+        contourPresent,
+        quadrantCoverage,
+        coveredCount,
+        handTo11Detected,
+        handTo2Detected,
+        motorTremorDetected: tremorAnalysis.motorTremorDetected,
+        tremorRmsJitterPx: tremorAnalysis.tremorRmsJitterPx,
+        tremorDirectionReversalRate: tremorAnalysis.tremorDirectionReversalRate,
+        findingsTh
+      };
+    }
+
+    function runCdtHeuristicAnalysis() {
+      const res = analyzeClockDrawingStrokes(cdtStrokes);
+      document.getElementById("cdtCrit1").checked = res.contourPresent && cdtStrokes.length >= 6;
+      document.getElementById("cdtCrit2").checked = res.coveredCount === 4;
+      document.getElementById("cdtCrit3").checked = res.handTo11Detected && res.handTo2Detected;
+      setCdtResult(res.suggestedResult, true);
+
+      appState.cdtTelemetry.motorTremorDetected = res.motorTremorDetected;
+      appState.cdtTelemetry.tremorRmsJitterPx = res.tremorRmsJitterPx;
+      appState.cdtTelemetry.tremorDirectionReversalRate = res.tremorDirectionReversalRate;
+      syncCdtTelemetryDisplay();
+
+      const box = document.getElementById("cdtHeuristicBox");
+      if (box) {
+        box.innerHTML = `<strong>ผลวิเคราะห์ Geometric Heuristic: ${res.suggestedResult}</strong>` +
+          (res.motorTremorDetected ? ` <span style="color:var(--status-rev-text);">[ตรวจพบ Motor Tremor แต่ตำแหน่งถูกต้อง]</span>` : "") +
+          `<br/>` + res.findingsTh.join("<br/>");
+      }
+    }
+
+    function exportCdtSvgDataUrl() {
+      const paths = cdtStrokes.map(stroke => {
+        if (!stroke.length) return "";
+        const d = stroke.map((pt, idx) => `${idx === 0 ? "M" : "L"}${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`).join(" ");
+        return `<path d="${d}" stroke="#0A0E17" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+      }).join("");
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 460" width="460" height="460"><rect width="100%" height="100%" fill="#FFFFFF"/>${paths}</svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    function syncCdtTelemetryDisplay() {
+      const canvas = document.getElementById("cdtCanvas");
+      if (canvas) {
+        appState.cdtTelemetry.imageDataUrl = canvas.toDataURL("image/png");
+        appState.cdtTelemetry.svgDataUrl = exportCdtSvgDataUrl();
+      }
+      const elStroke = document.getElementById("cdtStrokeCountText");
+      if (elStroke) elStroke.textContent = appState.cdtTelemetry.strokeCount || 0;
+
+      const elDuration = document.getElementById("cdtTotalDurationText");
+      if (elDuration) elDuration.textContent = appState.cdtTelemetry.totalDurationMs || 0;
+
+      const elLatency = document.getElementById("cdtLatencyText");
+      if (elLatency) elLatency.textContent = appState.cdtTelemetry.initiationLatencyMs !== null && appState.cdtTelemetry.initiationLatencyMs !== undefined ? appState.cdtTelemetry.initiationLatencyMs : "-";
+
+      const elPenLifts = document.getElementById("cdtPenLiftsText");
+      if (elPenLifts) elPenLifts.textContent = appState.cdtTelemetry.penLiftsCount || 0;
+
+      const elVelocity = document.getElementById("cdtVelocityText");
+      if (elVelocity) elVelocity.textContent = appState.cdtTelemetry.strokeVelocityPxPerSec || "-";
+
+      const hes = appState.cdtTelemetry.hesitationIntervalsMs || [];
+      const meanHes = hes.length ? Math.round(hes.reduce((a, b) => a + b, 0) / hes.length) : 0;
+      const elHes = document.getElementById("cdtHesitationText");
+      if (elHes) elHes.textContent = `${meanHes} ms (สูงสุด ${hes.length ? Math.max(...hes) : 0} ms)`;
+
+      const tremorEl = document.getElementById("cdtTremorStatusText");
+      if (tremorEl) {
+        tremorEl.innerHTML = appState.cdtTelemetry.motorTremorDetected
+          ? `<span style="color:var(--status-rev-text); font-weight:800;">⚠️ ตรวจพบ Motor Tremor (${appState.cdtTelemetry.tremorRmsJitterPx} px) — กรองเส้นอัตโนมัติ</span>`
+          : `<span style="color:var(--status-low-text);">ปกติ (ไม่พบ Motor Tremor)</span>`;
+      }
+    }
+
+    function updateCdtChecklist() {
+      const c1 = document.getElementById("cdtCrit1").checked;
+      const c2 = document.getElementById("cdtCrit2").checked;
+      const c3 = document.getElementById("cdtCrit3").checked;
+      setCdtResult(c1 && c2 && c3 ? "NORMAL" : "ABNORMAL", true);
+    }
+
+    function setCdtResult(result, fromChecklist) {
+      appState.cdtResult = result;
+      if (!fromChecklist) {
+        const checked = result === "NORMAL";
+        document.getElementById("cdtCrit1").checked = checked;
+        document.getElementById("cdtCrit2").checked = checked;
+        document.getElementById("cdtCrit3").checked = checked;
+      }
+      const btnNorm = document.getElementById("cdtBtnNormal");
+      const btnAbn = document.getElementById("cdtBtnAbnormal");
+      btnNorm.className = result === "NORMAL" ? "btn btn-primary" : "btn";
+      btnAbn.className = result === "ABNORMAL" ? "btn btn-primary" : "btn";
+    }
+
+    /* --- Delayed Recall Logic --- */
+    function switchRecallMode(mode) {
+      appState.recallMode = mode;
+      document.getElementById("recognitionModeContainer").style.display = mode === "RECOGNITION" ? "block" : "none";
+      document.getElementById("freeRecallModeContainer").style.display = mode === "FREE_RECALL" ? "block" : "none";
+      document.getElementById("modeBtnRecognition").className = mode === "RECOGNITION" ? "btn btn-primary" : "btn";
+      document.getElementById("modeBtnFree").className = mode === "FREE_RECALL" ? "btn btn-primary" : "btn";
+    }
+
+    function renderRecognitionChips() {
+      const set = WORD_SETS[appState.activeWordSetIndex];
+      const allOptions = [...set.words, ...set.distractors];
+      // Deterministic ordering by character code so it doesn't jump on re-render
+      allOptions.sort((a, b) => a.localeCompare(b, "th"));
+
+      const grid = document.getElementById("recognitionChipsGrid");
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      allOptions.forEach(word => {
+        const isSelected = appState.selectedRecognitionWords.includes(word);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `recall-chip ${isSelected ? "selected" : ""}`;
+        btn.textContent = (isSelected ? "☑️ " : "⬜ ") + word;
+        btn.onclick = () => toggleRecognitionWord(word);
+        grid.appendChild(btn);
+      });
+
+      calculateRecognitionScore();
+    }
+
+    function toggleRecognitionWord(word) {
+      const idx = appState.selectedRecognitionWords.indexOf(word);
+      if (idx >= 0) {
+        appState.selectedRecognitionWords.splice(idx, 1);
+      } else {
+        if (appState.selectedRecognitionWords.length >= 3) {
+          appState.selectedRecognitionWords.shift();
+        }
+        appState.selectedRecognitionWords.push(word);
+      }
+      renderRecognitionChips();
+    }
+
+    function calculateRecognitionScore() {
+      const targets = WORD_SETS[appState.activeWordSetIndex].words;
+      let correct = 0;
+      appState.selectedRecognitionWords.forEach(w => {
+        if (targets.includes(w)) correct++;
+      });
+      // Cued Recognition is auxiliary only — does not drive the primary delayedRecallScore
+      appState.cuedRecognitionScore = correct;
+      updateDelayedRecallBadge();
+    }
+
+    function evaluateFreeRecallInputs() {
+      const targets = WORD_SETS[appState.activeWordSetIndex].words;
+      const inputs = [
+        document.getElementById("freeWord1").value.trim(),
+        document.getElementById("freeWord2").value.trim(),
+        document.getElementById("freeWord3").value.trim()
+      ];
+      let matched = 0;
+      targets.forEach(target => {
+        if (inputs.some(inp => inp === target || (inp.length >= 2 && target.includes(inp)))) {
+          matched++;
+        }
+      });
+      appState.delayedRecallScore = matched;
+      updateDelayedRecallBadge();
+    }
+
+    function setDirectRecallScore(score) {
+      appState.delayedRecallScore = score;
+      updateDelayedRecallBadge();
+    }
+
+    function updateDelayedRecallBadge() {
+      const badge = document.getElementById("delayedRecallScoreBadge");
+      if (badge) {
+        if (appState.delayedRecallScore !== null) {
+          badge.textContent = `${appState.delayedRecallScore} / 3 คะแนน` +
+            (appState.cuedRecognitionScore !== null ? ` (Recognition: ${appState.cuedRecognitionScore}/3)` : "");
+          badge.style.color = appState.delayedRecallScore === 0 ? "var(--status-high-text)" : (appState.delayedRecallScore <= 1 ? "var(--status-mod-text)" : "var(--status-low-text)");
+        } else {
+          badge.textContent = "ยังไม่ได้ระบุ (คลิกเลือกคะแนนหรือกรอกคำศัพท์)";
+          badge.style.color = "var(--text-secondary)";
+        }
+      }
+    }
+
+    /* ---------------------------------------------------------------
       // Initialize Kinematic Telemetry session
       if (!appState.cdtTelemetry) appState.cdtTelemetry = {};
       appState.cdtTelemetry.screenShownMs = performance.now();
