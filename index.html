@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ระบบคัดกรองความเสี่ยงภาวะสมองรู้คิดบกพร่องและอัลไซเมอร์เบื้องต้น (Multimodal Cognitive Screening & Biomarker
     Triage)</title>
+  <!-- PWA Manifest & Single-Source-of-Truth Clinical Engine -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <script src="dist/clinical-engine.js"></script>
   <!-- Google Fonts: Sarabun for optimal Thai readability (with system fallback) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2720,7 +2723,7 @@
       <div class="footer-nav">
         <button type="button" class="btn" onclick="goToStep(0)">⬅️ ย้อนกลับ</button>
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-          <button type="button" class="btn" onclick="fillAllAd8('NO')">ตั้งค่าเริ่มต้น "ไม่มีปัญหา (0)" ทั้งหมด</button>
+          <button type="button" class="btn" onclick="resetAd8AndIadl()" title="ล้างคำตอบเพื่อป้องกันการข้ามการประเมินโดยไม่ตั้งใจ (Null-Protection)">↺ ล้างคำตอบเพื่อประเมินใหม่</button>
           <button type="button" class="btn btn-primary" onclick="goToStep(2)">ถัดไป: โมดูลที่ 2 (Mini-Cog) ➡️</button>
         </div>
       </div>
@@ -4556,8 +4559,8 @@
           <div style="background:var(--bg-card); padding:1rem; border-radius:8px; border:1px solid var(--border-subtle);">
             <div style="font-size:1.1rem; font-weight:800; color:#059669; margin-bottom:0.35rem;">🏥 Health Informatics Standards</div>
             <ul style="margin:0; padding-left:1.2rem; font-size:0.95rem; line-height:1.6;">
-              <li><strong>HL7 FHIR Release 4:</strong> จัดโครงสร้าง Collection Bundle (Patient, QuestionnaireResponse, Observation, DiagnosticReport, ServiceRequest)</li>
-              <li><strong>LOINC Standard Codes:</strong> กำกับรหัสมาตรฐานสากลครบ 17 รายการตรวจหลัก (26 ฟิลด์มาตรฐาน) (เช่น Plasma p-tau217 LOINC <code>104352-0</code>)</li>
+              <li><strong>HL7 FHIR Release 4:</strong> จัดโครงสร้าง Collection Bundle (Patient, Observation, RiskAssessment) พร้อม Local CodeSystem สำหรับคะแนนเฉพาะบริบทไทย</li>
+              <li><strong>LOINC-Mapped Standards:</strong> กำกับรหัสมาตรฐานสากลครบ 17 รายการตรวจหลัก (27 ฟิลด์มาตรฐาน) โดยแยก <em>Exact LOINC</em> (เช่น Plasma p-tau217 <code>104663-0</code>, Aβ42/40 <code>106941-8</code>, APOE <code>42315-2</code>, AD8 <code>71722-3</code>, Mini-Cog <code>72233-0</code>), <em>Closest Match</em> และ <em>Local FHIR CodeSystem</em> (ปราศจาก LP* Part Codes)</li>
               <li><strong>SaMD-Inspired CDS Concept:</strong> ออกแบบตามแนวคิด US FDA Software as a Medical Device (Clinical Decision Support Prototype)</li>
               <li><strong>Clinician Decision Override:</strong> มีระบบบันทึกและทบทวนผลโดยแพทย์พร้อมเลข ว. ใบอนุญาต</li>
             </ul>
@@ -4569,7 +4572,7 @@
               <li><strong>Designed with PDPA &amp; HIPAA Principles:</strong> แยก Schema A (PII) ออกจาก Schema B (Clinical) ด้วย Salted Hashing</li>
               <li><strong>Zero Raw PII Persistence:</strong> ไม่จัดเก็บข้อมูลส่วนตัวแบบ Unencrypted ลงใน LocalStorage</li>
               <li><strong>Tamper-Evident Audit Trail:</strong> บันทึกประวัติการเข้าถึงเวชระเบียนด้วย Hash-Chaining</li>
-              <li><strong>WCAG 2.1 Level AAA:</strong> Contrast Ratio &gt; 7:1, ตัวหนังสือ &ge; 20px, ปุ่ม &ge; 60x60px</li>
+              <li><strong>WCAG 2.1 Level AAA Target:</strong> Contrast Ratio &gt; 7:1, ตัวหนังสือ &ge; 20px, ปุ่ม &ge; 60x60px</li>
             </ul>
           </div>
         </div>
@@ -5293,256 +5296,13 @@
       };
     }
 
+    // Delegated directly to Single-Source-of-Truth Bundle (dist/clinical-engine.js)
     function evaluateReversibleAxis(labs = {}, acbTotalScore = 0) {
-      const categories = [];
-      const flags = [];
-
-      if (acbTotalScore >= 3) {
-        categories.push("HIGH_ACB_BURDEN");
-        flags.push(`[HIGH ACB BURDEN] ภาระยาต้านโคลิเนอร์จิกสูง (ACB Score = ${acbTotalScore}) เสี่ยงต่อสมองตื้อจากยา แนะนำ Deprescribing`);
-      }
-
-      const hasAnyLab =
-        labs.tsh_uIU_mL !== undefined ||
-        labs.free_t4_ng_dL !== undefined ||
-        labs.vitamin_b12_pg_mL !== undefined ||
-        labs.folate_ng_mL !== undefined ||
-        labs.sodium_mEq_L !== undefined ||
-        labs.calcium_mg_dL !== undefined ||
-        labs.fasting_glucose_mg_dL !== undefined ||
-        labs.hba1c_percent !== undefined ||
-        labs.hemoglobin_g_dL !== undefined ||
-        labs.serum_creatinine_mg_dL !== undefined ||
-        labs.egfr_mL_min !== undefined ||
-        labs.alt_U_L !== undefined ||
-        labs.ast_U_L !== undefined;
-
-      if (!hasAnyLab) {
-        if (categories.length === 0) categories.push("UNASSESSED");
-        return { categories, flags };
-      }
-
-      // 1. Glucose & Glycemic Control
-      const glu = labs.fasting_glucose_mg_dL;
-      if (glu !== undefined && glu !== null) {
-        if (glu < 54) {
-          categories.push("SEVERE_HYPOGLYCEMIA");
-          flags.push(`[CRITICAL RED FLAG: SEVERE HYPOGLYCEMIA] ระดับน้ำตาลในเลือดวิกฤติต่ำ (${glu} mg/dL < 54) เสี่ยงต่อหมดสติ สมองขาดน้ำตาล ต้องแก้ไขฉุกเฉินทันที`);
-        } else if (glu < 70) {
-          categories.push("HYPOGLYCEMIA_RISK");
-          flags.push(`[HYPOGLYCEMIA ALERT] น้ำตาลในเลือดต่ำ (${glu} mg/dL < 70) อาจเป็นสาเหตุของอาการมึนงง สับสน ความจำถดถอยเฉียบพลัน`);
-        } else if (glu >= 300) {
-          categories.push("SEVERE_HYPERGLYCEMIA");
-          flags.push(`[SEVERE HYPERGLYCEMIA] น้ำตาลในเลือดสูงมาก (${glu} mg/dL >= 300) เสี่ยงต่อภาวะ HHS และสับสน`);
-        }
-      }
-      const a1c = labs.hba1c_percent;
-      if (a1c !== undefined && a1c !== null && a1c >= 9.0) {
-        categories.push("POOR_GLYCEMIC_CONTROL_WATCH");
-        flags.push(`[POOR GLYCEMIC CONTROL] HbA1c สูงมาก (${a1c}% >= 9.0%) เพิ่มความเสี่ยง Vascular Cognitive Impairment`);
-      }
-
-      // 2. Anemia (Hemoglobin)
-      const hb = labs.hemoglobin_g_dL;
-      if (hb !== undefined && hb !== null) {
-        if (hb < 8.0) {
-          categories.push("SEVERE_ANEMIA");
-          flags.push(`[SEVERE ANEMIA] ภาวะซีดรุนแรง (Hb = ${hb} g/dL < 8.0) ทำให้สมองขาดออกซิเจนเรื้อรัง อ่อนเพลีย สมาธิถดถอย`);
-        } else if (hb < 11.0) {
-          categories.push("ANEMIA_WATCH");
-          flags.push(`[ANEMIA WATCH] มีภาวะโลหิตจาง (Hb = ${hb} g/dL < 11.0) ควรตรวจหาสาเหตุและรักษาเสริม`);
-        }
-      }
-
-      // 3. Renal Function & Uremic Encephalopathy
-      const cr = labs.serum_creatinine_mg_dL;
-      const egfr = labs.egfr_mL_min;
-      if (cr !== undefined && cr !== null) {
-        if (cr >= 3.0) {
-          categories.push("SEVERE_RENAL_FAILURE_UREMIC_RISK");
-          flags.push(`[SEVERE RENAL FAILURE] ค่าไตผิดปกติรุนแรง (Creatinine = ${cr} mg/dL >= 3.0) เสี่ยงต่อภาวะ Uremic Encephalopathy`);
-        } else if (cr >= 2.0) {
-          categories.push("RENAL_IMPAIRMENT");
-          flags.push(`[RENAL IMPAIRMENT] ไตบกพร่องชัดเจน (Creatinine = ${cr} mg/dL >= 2.0)`);
-        }
-      }
-      if (egfr !== undefined && egfr !== null) {
-        if (egfr < 15 && !categories.includes("SEVERE_RENAL_FAILURE_UREMIC_RISK")) {
-          categories.push("SEVERE_RENAL_FAILURE_UREMIC_RISK");
-          flags.push(`[ESRD WATCH] eGFR = ${egfr} mL/min/1.73m2 (< 15) เสี่ยงต่อภาวะซึม สับสนจากของเสียคั่ง`);
-        } else if (egfr < 30 && !categories.includes("RENAL_IMPAIRMENT") && !categories.includes("SEVERE_RENAL_FAILURE_UREMIC_RISK")) {
-          categories.push("RENAL_IMPAIRMENT");
-          flags.push(`[CKD STAGE 4] eGFR = ${egfr} mL/min/1.73m2 (< 30) การทำงานของไตลดลงอย่างมาก`);
-        }
-      }
-
-      // 4. Folate Deficiency
-      const folate = labs.folate_ng_mL;
-      if (folate !== undefined && folate !== null) {
-        if (folate < 3.0) {
-          categories.push("FOLATE_DEFICIENCY");
-          flags.push(`[FOLATE DEFICIENCY] ภาวะขาดกรดโฟลิก (${folate} ng/mL < 3.0) สัมพันธ์กับภาวะสมองเสื่อมที่รักษาได้`);
-        } else if (folate <= 4.0) {
-          categories.push("BORDERLINE_FOLATE_WATCH");
-          flags.push(`[BORDERLINE FOLATE] โฟเลตระดับก้ำกึ่ง (${folate} ng/mL; ช่วง 3.0–4.0) ควรตรวจติดตาม`);
-        }
-      }
-
-      // 5. Hepatic Dysfunction & Encephalopathy Risk
-      const alt = labs.alt_U_L;
-      const ast = labs.ast_U_L;
-      const maxTransaminase = Math.max(alt ?? 0, ast ?? 0);
-      if (maxTransaminase > 0) {
-        if (maxTransaminase >= 250) {
-          categories.push("SEVERE_HEPATIC_DYSFUNCTION");
-          flags.push(`[SEVERE HEPATIC DYSFUNCTION] เอนไซม์ตับสูงรุนแรง (ALT/AST = ${maxTransaminase} U/L >= 250) เสี่ยงต่อ Hepatic Encephalopathy`);
-        } else if (maxTransaminase >= 120) {
-          categories.push("HEPATIC_IMPAIRMENT_WATCH");
-          flags.push(`[HEPATIC WATCH] ตับอักเสบชัดเจน (ALT/AST = ${maxTransaminase} U/L >= 120)`);
-        }
-      }
-
-      // 6. Thyroid: Central vs Overt vs Subclinical vs Thyrotoxicosis
-      const tsh = labs.tsh_uIU_mL;
-      const ft4 = labs.free_t4_ng_dL;
-      if (tsh !== undefined && tsh !== null) {
-        const isFt4Low = ft4 !== undefined && ft4 !== null && ft4 < 0.8;
-        if (isFt4Low && tsh <= 4.5 && tsh >= 0.1) {
-          categories.push("CENTRAL_HYPOTHYROIDISM_SUSPECTED");
-          flags.push(`[CENTRAL HYPOTHYROIDISM SUSPECTED] FT4 ต่ำ (${ft4} ng/dL < 0.8) ร่วมกับ TSH ไม่สูง (${tsh} uIU/mL; ช่วง 0.1–4.5) บ่งชี้ภาวะพร่องฮอร์โมนจากต่อมใต้สมอง (Central) ต้องส่งต่อแพทย์ต่อมไร้ท่อด่วน`);
-        } else if (tsh > 10.0 || (tsh > 4.5 && isFt4Low)) {
-          categories.push("OVERT_HYPOTHYROIDISM");
-          flags.push(`[OVERT HYPOTHYROIDISM] ภาวะฮอร์โมนไทรอยด์ต่ำชัดเจน (TSH = ${tsh} uIU/mL, FT4 = ${ft4 ?? "ไม่ได้ตรวจ"}) เป็นสาเหตุสมองเสื่อมที่รักษาหายได้`);
-        } else if (tsh > 4.5) {
-          categories.push("SUBCLINICAL_THYROID_WATCH");
-          flags.push(`[SUBCLINICAL THYROID WATCH] TSH สูงระดับก้ำกึ่ง (${tsh} uIU/mL; ช่วง 4.5–10) โดย FT4 ปกติ แนะนำตรวจติดตามซ้ำใน 2–3 เดือนก่อนเริ่มยา`);
-        } else if (tsh < 0.35) {
-          categories.push("HYPERTHYROIDISM_THYROTOXICOSIS");
-          flags.push(`[HYPERTHYROIDISM / THYROTOXICOSIS] TSH ต่ำผิดปกติ (${tsh} uIU/mL < 0.35) บ่งชี้ภาวะไทรอยด์เป็นพิษ อาจทำให้เกิดอาการสับสน หรือ Apathetic Thyrotoxicosis ในผู้สูงอายุ`);
-        }
-      }
-
-      // 7. Vitamin B12
-      const b12 = labs.vitamin_b12_pg_mL;
-      if (b12 !== undefined && b12 !== null) {
-        if (b12 < 200) {
-          categories.push("VITAMIN_B12_DEFICIENCY");
-          flags.push(`[B12 DEFICIENCY] ภาวะขาดวิตามินบี 12 (${b12} pg/mL < 200) แนะนำให้วิตามินบี 12 เสริมทันที`);
-        } else if (b12 < 300) {
-          categories.push("BORDERLINE_B12_WATCH");
-          flags.push(`[BORDERLINE B12 WATCH] Vitamin B12 ก้ำกึ่งต่ำ (${b12} pg/mL; ช่วง 200–300) แนะนำตรวจ MMA หรือ Homocysteine เพิ่มเติม`);
-        }
-      }
-
-      // 8. Sodium: Mild vs Severe vs Hypernatremia
-      const na = labs.sodium_mEq_L;
-      if (na !== undefined && na !== null) {
-        if (na < 130) {
-          categories.push("SEVERE_HYPONATREMIA");
-          flags.push(`[SEVERE HYPONATREMIA] โซเดียมต่ำรุนแรง (${na} mEq/L < 130) เสี่ยงต่ออาการสับสน เพ้อ ชัก ต้องแก้ไขทางการแพทย์ทันที`);
-        } else if (na < 135) {
-          categories.push("MILD_HYPONATREMIA_WATCH");
-          flags.push(`[MILD HYPONATREMIA] โซเดียมต่ำระดับเล็กน้อย (${na} mEq/L; ช่วง 130–134) แนะนำทบทวนยาขับปัสสาวะ`);
-        } else if (na > 145) {
-          categories.push("HYPERNATREMIA");
-          flags.push(`[HYPERNATREMIA] โซเดียมสูง (${na} mEq/L > 145) สัมพันธ์กับภาวะขาดน้ำในผู้สูงอายุ`);
-        }
-      }
-
-      // 9. Calcium
-      const ca = labs.calcium_mg_dL;
-      if (ca !== undefined && ca !== null && (ca < 8.5 || ca > 10.5)) {
-        categories.push("CALCIUM_ABNORMALITY");
-        flags.push(`[CALCIUM ABNORMALITY] แคลเซียมผิดปกติ (${ca} mg/dL; ปกติ 8.5–10.5) อาจทำให้เกิดอาการสับสนหรือซึม`);
-      }
-
-      if (categories.length === 0) categories.push("METABOLIC_NORMAL");
-      return { categories, flags };
+      return window.ClinicalEngine.evaluateReversibleAxis(labs, acbTotalScore);
     }
 
     function evaluateBiomarkerAxis(labs = {}, algorithmicCognitiveAxis) {
-      const flags = [];
-      const ptauVal = labs.plasma_ptau217_pg_mL;
-      const ptauStatus = labs.ptau217_status;
-      const abetaVal = labs.abeta_42_40_ratio;
-      const abetaStatus = labs.abeta_ratio_status;
-      const egfr = labs.egfr_mL_min;
-
-      const hasPtau = (ptauVal !== undefined && ptauVal !== null) || (ptauStatus && ptauStatus !== "");
-      const hasAbeta = (abetaVal !== undefined && abetaVal !== null) || (abetaStatus && abetaStatus !== "");
-
-      if (!hasPtau && !hasAbeta) {
-        return {
-          category: "UNASSESSED",
-          ptau217Status: "UNASSESSED",
-          abetaRatioStatus: "UNASSESSED",
-          flags: []
-        };
-      }
-
-      // Resolve p-tau217 status independently
-      let resolvedPtau = "UNASSESSED";
-      if (ptauStatus && ptauStatus !== "") {
-        resolvedPtau = ptauStatus;
-      } else if (ptauVal !== undefined && ptauVal !== null) {
-        if (ptauVal >= 0.40) resolvedPtau = "POSITIVE";
-        else if (ptauVal >= 0.25) resolvedPtau = "BORDERLINE";
-        else resolvedPtau = "NEGATIVE";
-      }
-
-      // Resolve Aβ42/40 ratio independently
-      let resolvedAbeta = "UNASSESSED";
-      if (abetaStatus && abetaStatus !== "") {
-        resolvedAbeta = abetaStatus;
-      } else if (abetaVal !== undefined && abetaVal !== null) {
-        if (abetaVal < 0.090) resolvedAbeta = "ABNORMAL_AMYLOID_POSITIVE";
-        else resolvedAbeta = "NORMAL_AMYLOID_NEGATIVE";
-      }
-
-      // Renal confounder check
-      if (egfr !== undefined && egfr !== null && egfr < 60) {
-        flags.push(`[RENAL CONFOUNDER WARNING] ผู้ป่วยมี eGFR = ${egfr} mL/min/1.73m² (< 60) ภาวะไตบกพร่องอาจส่งผลให้ค่า Plasma p-tau สูงขึ้นแบบผลบวกลวง`);
-      }
-
-      // Alzheimer's Association Guideline: Blood biomarker NOT indicated if asymptomatic based on ALGORITHMIC tier
-      if (algorithmicCognitiveAxis === "COGNITIVE_NORMAL") {
-        flags.push("[BIOMARKER USAGE ADVISORY] ตามแนวทางสมาคมโรคอัลไซเมอร์ (Alzheimer's Association): ตัวชี้วัดในเลือด (Blood-Based Biomarkers) ไม่แนะนำให้ใช้คัดกรองเดี่ยวในผู้ที่ไม่มีอาการบกพร่องทางการรู้คิด (Asymptomatic Individuals) เพื่อป้องกันผลบวกลวง");
-        return {
-          category: "NOT_INDICATED_ASYMPTOMATIC",
-          ptau217Status: resolvedPtau,
-          abetaRatioStatus: resolvedAbeta,
-          flags
-        };
-      }
-
-      // Determine composite biomarker category
-      let category = "UNASSESSED";
-      if (resolvedPtau === "POSITIVE" || resolvedAbeta === "ABNORMAL_AMYLOID_POSITIVE") {
-        category = "AD_BIOMARKER_POSITIVE";
-        if (resolvedPtau === "POSITIVE" && resolvedAbeta === "ABNORMAL_AMYLOID_POSITIVE") {
-          flags.push(`[AD BIOMARKER CONCORDANT POSITIVE] ทั้ง Plasma p-tau217 (${ptauVal ?? "Positive"}) และ Aβ42/40 (${abetaVal ?? "Abnormal"}) ให้ผลบวกสอดคล้องกัน สนับสนุนพยาธิสภาพอัลไซเมอร์อย่างมีนัยสำคัญ`);
-        } else if (resolvedPtau === "POSITIVE") {
-          flags.push(`[AD BIOMARKER POSITIVE] Plasma p-tau217 เป็นบวก (${ptauVal ?? "Positive"}) สนับสนุนพยาธิสภาพ Tau/Amyloid ในผู้มีอาการรู้คิดบกพร่อง`);
-        } else {
-          flags.push(`[AD BIOMARKER POSITIVE (AMYLOID)] อัตราส่วน Aβ42/40 ผิดปกติ (${abetaVal} < 0.090) สนับสนุนการสะสม Amyloid Plaque ในสมอง (โดย p-tau217: ${resolvedPtau})`);
-        }
-      } else if (resolvedPtau === "BORDERLINE") {
-        category = "AD_BIOMARKER_INTERMEDIATE";
-        flags.push(`[AD BIOMARKER INTERMEDIATE ZONE] Plasma p-tau217 อยู่ในเกณฑ์ก้ำกึ่ง (${ptauVal ?? "Borderline"}) แนะนำตรวจยืนยันด้วย CSF Biomarkers หรือ Amyloid-PET`);
-      } else if (resolvedPtau === "NEGATIVE" && resolvedAbeta === "NORMAL_AMYLOID_NEGATIVE") {
-        category = "AD_BIOMARKER_NEGATIVE";
-        flags.push("[AD BIOMARKER NEGATIVE] ผลตรวจทั้ง Plasma p-tau217 และ Aβ42/40 อยู่ในเกณฑ์ปกติ");
-      } else if (resolvedPtau === "NEGATIVE" && resolvedAbeta === "UNASSESSED") {
-        category = "AD_BIOMARKER_NEGATIVE";
-        flags.push("[AD BIOMARKER NEGATIVE] ผลตรวจ Plasma p-tau217 เป็นลบ");
-      } else if (resolvedAbeta === "NORMAL_AMYLOID_NEGATIVE" && resolvedPtau === "UNASSESSED") {
-        category = "AD_BIOMARKER_NEGATIVE";
-        flags.push("[AD BIOMARKER NEGATIVE] ผลตรวจ Aβ42/40 ratio อยู่ในเกณฑ์ปกติ (ไม่ได้ตรวจ p-tau217)");
-      }
-
-      flags.push("[BIOMARKER TRIAGE ADVISORY] ผลบวกของ Biomarker ในเลือดเป็นเพียงการคัดกรองแยกกลุ่มเสี่ยง (Enrichment Tool) การยืนยันก่อนเริ่มยาชะลอโรค (DMT เช่น Amyloid mAb) ต้องได้รับการยืนยันด้วย Amyloid-PET หรือ CSF Biomarkers เสมอ");
-
-      return { category, ptau217Status: resolvedPtau, abetaRatioStatus: resolvedAbeta, flags };
+      return window.ClinicalEngine.evaluateBiomarkerAxis(labs, algorithmicCognitiveAxis);
     }
 
     function calculateLongitudinalDelta(input, currentCompositeIndex, prev) {
@@ -5609,278 +5369,175 @@
       };
     }
 
+    /**
+     * Delegates core 4-axis clinical stratification to Single-Source-of-Truth ClinicalEngine (dist/clinical-engine.js)
+     * while preserving UI-compatible tier labels (MCI_SUSPECTED, DEMENTIA_SUSPECTED), triage hierarchy, and _meta.
+     */
     function stratifyCognitiveRisk(input) {
-      const missingDomainsTh = [];
-      const clinicalFlags = [];
-      const actionChecklistTh = [];
+      const Engine = window.ClinicalEngine;
+      const isNonLiterate = !!(input.isNonLiteratePathway || input.nonLiterateAlternativePathway || input.preTestValidity?.isNonLiteratePathway);
 
-      // 1. Pre-Test Validity Check (incorporating 4AT Delirium)
-      const validity = evaluatePreTestValidity(input.preTestValidity, input.fourAT);
-      if (!validity.validityPassed) {
+      // Normalize 4AT format from appState.fourAT ({ alertness, amt4Score, attentionScore, acuteFluctuating })
+      let normalizedFourAt = input.fourAT || input.preTestValidity?.fourAT;
+      if (normalizedFourAt && normalizedFourAt.totalScore === undefined) {
+        normalizedFourAt = Engine.calculate4ATDelirium(
+          normalizedFourAt.alertness ?? 0,
+          normalizedFourAt.amt4Score ?? 0,
+          normalizedFourAt.attentionScore ?? 0,
+          normalizedFourAt.acuteFluctuating ?? 0
+        );
+      }
+
+      const normalizedPreTest = input.preTestValidity
+        ? {
+            ...input.preTestValidity,
+            deliriumSuspected: !!(input.preTestValidity.deliriumSuspected || normalizedFourAt?.isDeliriumSuspected),
+            fourAT: normalizedFourAt,
+            isNonLiteratePathway: isNonLiterate,
+          }
+        : normalizedFourAt?.isDeliriumSuspected
+          ? {
+              deliriumSuspected: true,
+              fourAT: normalizedFourAt,
+              severeVisualImpairment: false,
+              severeHearingImpairment: false,
+              acuteSedativeOrIntoxication: false,
+              acuteSeverePainOrMedicalIllness: false,
+              isNonLiteratePathway: isNonLiterate,
+              validityPassed: false,
+              exclusionReasonsTh: [],
+            }
+          : undefined;
+
+      const engineInput = {
+        ...input,
+        isNonLiteratePathway: isNonLiterate,
+        preTestValidity: normalizedPreTest,
+        fourAT: normalizedFourAt,
+        ad8UnsureCount: input.ad8UnsureCount ?? 0,
+      };
+
+      const core = Engine.stratifyCognitiveRisk(engineInput);
+
+      const mapUiAxis = (axis) => {
+        if (axis === "COGNITIVE_SCREEN_POSITIVE_PROBABLE_DEMENTIA") return "DEMENTIA_SUSPECTED";
+        if (
+          axis === "COGNITIVE_SCREEN_POSITIVE_MCI_SUSPECTED" ||
+          axis === "COGNITIVE_SCREEN_POSITIVE_NEEDS_IADL_WORKUP"
+        ) {
+          return "MCI_SUSPECTED";
+        }
+        return axis;
+      };
+
+      const uiAlgAxis = mapUiAxis(core.axes.algorithmicCognitiveAxis);
+      const uiEffAxis = mapUiAxis(core.axes.cognitiveAxis);
+      const clinicalFlags = [...(core.clinicalFlags || [])];
+      const actionChecklistTh = [...(core.actionChecklistTh || [])];
+
+      if (!core.isComplete) {
+        const missingMapped = (core.missingDomainsTh || []).map((m) =>
+          m.includes("บอกชื่อสัตว์") ? `${m} (Animal Naming)` : m
+        );
         return {
-          algorithmVersion: ALGORITHM_VERSION,
-          isComplete: false,
-          missingDomainsTh: validity.exclusionReasonsTh,
-          screeningCompositeIndex: 0,
+          ...core,
+          missingDomainsTh: missingMapped,
           axes: {
-            algorithmicCognitiveAxis: "INCOMPLETE_DATA",
-            cognitiveAxis: "INCOMPLETE_DATA",
-            reversibleAxis: ["UNASSESSED"],
-            biomarkerAxis: "UNASSESSED",
-            affectiveAxis: "UNASSESSED"
+            ...core.axes,
+            algorithmicCognitiveAxis: uiAlgAxis,
+            cognitiveAxis: uiEffAxis,
           },
-          clinicalFlags: validity.exclusionReasonsTh.map(r => `[PRE-TEST CONTRAINDICATION] ${r}`),
-          primaryRecommendationTh: "ไม่สามารถประเมินผลได้ เนื่องจากผู้ป่วยมีข้อห้ามหรืออุปสรรคก่อนการทดสอบ (เช่น ภาวะเพ้อเฉียบพลัน Delirium ปัญหาการมองเห็น/ได้ยิน หรือได้รับยากล่อมประสาท)",
-          actionChecklistTh: [
-            "หยุดการทดสอบทางคลินิกชั่วคราว",
-            "ส่งต่อแพทย์เพื่อตรวจวินิจฉัยและรักษาสาเหตุเฉียบพลัน (Delirium, การติดเชื้อ, อาการปวด)",
-            "นัดประเมินใหม่อีกครั้งเมื่อผู้ป่วยมีระดับความรู้สึกตัวปกติและอาการทางกายคงที่"
-          ]
+          clinicalFlags: clinicalFlags.map((f) =>
+            f.includes("4AT") ? `${f} (Active Delirium / 4AT Score >= 4)` : f
+          ),
         };
       }
 
-      // 2. Incomplete Assessment Check (Null Input Protection)
-      const isNonLiterate = !!(input.nonLiterateAlternativePathway || input.preTestValidity?.isNonLiteratePathway);
-      if (input.ad8Score === null) missingDomainsTh.push("แบบประเมินญาติ AD8 (ยังไม่ได้ตอบ)");
-      if (input.delayedRecallScore === null) missingDomainsTh.push("Mini-Cog Delayed Recall (ยังไม่ได้ทดสอบ)");
-      if (!isNonLiterate && input.cdtResult === null) missingDomainsTh.push("Clock Drawing Test 11:10 (ยังไม่ได้วาด)");
-      if (isNonLiterate && (input.animalNamingCount === null || input.animalNamingCount === undefined || isNaN(input.animalNamingCount))) {
-        missingDomainsTh.push("Animal Naming 1 นาที (สำหรับผู้ไม่รู้หนังสือ: ยังไม่ได้กรอกคะแนนตัวเลข)");
+      // Add UI context flags preserved for in-browser clinical governance checks
+      if (isNonLiterate && typeof input.animalNamingCount === "number") {
+        const animalCutoff = Engine.getAnimalNamingThreshold(input.yearsOfEducation);
+        const isImpaired = input.animalNamingCount < animalCutoff;
+        clinicalFlags.push(
+          `[NON-LITERATE PATHWAY ACTIVE] ประเมินผ่าน Animal Naming (${input.animalNamingCount} ตัว, เกณฑ์มาตรฐานคนไทย >= ${animalCutoff} ตัว/นาที: ${isImpaired ? `บกพร่อง < ${animalCutoff}` : `ปกติ >= ${animalCutoff}`})`
+        );
       }
 
-      if (missingDomainsTh.length > 0) {
-        return {
-          algorithmVersion: ALGORITHM_VERSION,
-          isComplete: false,
-          missingDomainsTh,
-          screeningCompositeIndex: 0,
-          axes: {
-            algorithmicCognitiveAxis: "INCOMPLETE_DATA",
-            cognitiveAxis: "INCOMPLETE_DATA",
-            reversibleAxis: ["UNASSESSED"],
-            biomarkerAxis: "UNASSESSED",
-            affectiveAxis: "UNASSESSED"
-          },
-          clinicalFlags: [
-            `[INCOMPLETE DATA] ข้อมูลการประเมินไม่ครบถ้วน: ขาด ${missingDomainsTh.join(", ")}`,
-            "ระบบจะไม่คำนวณระดับความเสี่ยงเพื่อความปลอดภัยของผู้ป่วยและป้องกันผลลบลวง (False Negative)"
-          ],
-          primaryRecommendationTh: `ข้อมูลการประเมินยังไม่สมบูรณ์ (ขาด: ${missingDomainsTh.join(", ")}) กรุณาทำแบบทดสอบให้ครบถ้วนก่อนออกผลคัดกรอง`,
-          actionChecklistTh: ["กลับไปทำแบบทดสอบในโมดูลที่ยังค้างอยู่ให้ครบถ้วน"]
-        };
-      }
-
-      // 3. Cognitive Evaluation
-      const ad8Score = Math.max(0, Math.min(8, input.ad8Score));
+      const ad8Score = Math.max(0, Math.min(8, input.ad8Score ?? 0));
       const isAd8Positive = ad8Score >= 2;
-      let isCognitiveScreenPositive = false;
-      let miniCog = null;
-
-      if (!isNonLiterate) {
-        miniCog = evaluateMiniCog(input.delayedRecallScore, input.cdtResult, input.cuedRecognitionScore);
-        isCognitiveScreenPositive = miniCog.isPositive || isAd8Positive;
-      } else {
-        const animalCount = input.animalNamingCount;
-        // Thai Normative Reference: Animal Naming (Category Verbal Fluency 1 min) cutoff < 10 animals in Thai older adults with <= 6 years education or non-literate indicates semantic/executive impairment (Hemrungrojn et al., Senanarong et al.)
-        const isAnimalImpaired = animalCount < 10;
-        const isRecallImpaired = input.delayedRecallScore < 2;
-        isCognitiveScreenPositive = isAnimalImpaired || isRecallImpaired || isAd8Positive;
-        clinicalFlags.push(`[NON-LITERATE PATHWAY ACTIVE] ประเมินผ่าน Animal Naming (${animalCount} ตัว, เกณฑ์มาตรฐานคนไทย >= 10 ตัว/นาที: ${isAnimalImpaired ? "บกพร่อง < 10" : "ปกติ >= 10"}) ร่วมกับ Word Recall (${input.delayedRecallScore}/3) และ AD8 (${ad8Score}/8)`);
-      }
-
-      // 4. Axis 1: Objective Algorithmic Cognitive Performance
-      const isIadlImpaired = input.briefIADL?.isFunctionalDeclinePresent ?? false;
       const isIadlAssessed = input.briefIADL !== undefined && input.briefIADL !== null;
-
-      let algorithmicCognitiveAxis = "COGNITIVE_NORMAL";
-      if (isCognitiveScreenPositive) {
-        if (isIadlAssessed && isIadlImpaired) {
-          algorithmicCognitiveAxis = "DEMENTIA_SUSPECTED";
-          clinicalFlags.push(`[Cognitive Impairment with Functional Decline] ผลคัดกรองการรู้คิดผิดปกติ ร่วมกับกิจวัตรประจำวันบกพร่อง (IADL Impaired ${input.briefIADL?.totalImpairedCount}/4) สงสัยภาวะสมองเสื่อม`);
-          actionChecklistTh.push("ส่งพบแพทย์ระบบประสาทเพื่อตรวจประเมินทางประสาทจิตวิทยาละเอียด (TMSE หรือ Thai MoCA)");
-        } else if (isIadlAssessed && !isIadlImpaired) {
-          // IADL Intact (0/4 impaired): Patient maintains complex functional independence
-          if (isAd8Positive) {
-            clinicalFlags.push(`[INFORMANT REPORT VS FUNCTIONAL INDEPENDENCE DISCREPANCY] ญาติรายงานความจำถดถอย (AD8 = ${ad8Score}/8) แต่กิจวัตรประจำวันขั้นซับซ้อนยังทำได้ปกติครบถ้วน (IADL บกพร่อง 0/4 ข้อ) — ความขัดแย้งนี้ชี้ว่าผู้รับการประเมินยังสามารถดำเนินชีวิตอิสระได้ดี สอดคล้องกับระยะ Mild Cognitive Impairment (MCI) มากกว่าภาวะสมองเสื่อม (Dementia) แนะนำแพทย์สัมภาษณ์ญาติเพิ่มเติม`);
-          }
-          if (input.delayedRecallScore === 0) {
-            algorithmicCognitiveAxis = "MCI_SUSPECTED";
-            clinicalFlags.push(`[High Memory Impairment with Preserved Function] จำคำศัพท์ไม่ได้ (0/3 คำ) แต่กิจวัตรประจำวัน IADL ปกติ จัดอยู่ในกลุ่ม Amnestic MCI (เสี่ยงเปลี่ยนเป็น Alzheimer's Dementia สูง)`);
-            actionChecklistTh.push("ส่งตรวจละเอียดทางประสาทจิตวิทยา และพิจารณาตรวจ Biomarker หรือภาพถ่ายสมอง");
-          } else {
-            algorithmicCognitiveAxis = "MCI_SUSPECTED";
-            clinicalFlags.push(`[MCI Suspected] พบความบกพร่องทางการรู้คิดแต่กิจวัตรประจำวันยังเป็นอิสระ (IADL Intact: 0/4) สอดคล้องกับเกณฑ์ MCI`);
-            actionChecklistTh.push("นัดตรวจติดตามสมรรถภาพสมองซ้ำภายใน 3–6 เดือน พร้อมควบคุมปัจจัยเสี่ยงหลอดเลือด");
-          }
-        } else if (input.delayedRecallScore === 0 && isAd8Positive) {
-          algorithmicCognitiveAxis = "DEMENTIA_SUSPECTED";
-          clinicalFlags.push(`[High Cognitive Concern] จำคำศัพท์ไม่ได้เลย (0/3 คำ) ร่วมกับ AD8 ผิดปกติ (${ad8Score}/8) สงสัยภาวะสมองเสื่อม`);
-          actionChecklistTh.push("ส่งพบแพทย์ระบบประสาทเพื่อตรวจประเมินละเอียด");
-        } else {
-          algorithmicCognitiveAxis = "MCI_SUSPECTED";
-          clinicalFlags.push(`[Cognitive Screen Positive] พบสัญญาณเตือนการรู้คิดบกพร่อง (Recall ${input.delayedRecallScore}/3, AD8 ${ad8Score}/8)`);
-          actionChecklistTh.push("นัดตรวจติดตามและประเมินทางคลินิกเพิ่มเติม");
-        }
-      } else {
-        algorithmicCognitiveAxis = "COGNITIVE_NORMAL";
-        clinicalFlags.push("[Cognitive Performance Normal] ผลการทดสอบการรู้คิดและแบบสอบถามญาติ AD8 อยู่ในเกณฑ์ปกติ");
-        actionChecklistTh.push("ส่งเสริมสุขภาพสมอง (MIND Diet, ออกกำลังกาย) และนัดคัดกรองซ้ำประจำปี");
+      const isIadlImpaired = input.briefIADL?.isFunctionalDeclinePresent ?? false;
+      if (uiAlgAxis !== "COGNITIVE_NORMAL" && isIadlAssessed && !isIadlImpaired && isAd8Positive) {
+        clinicalFlags.push(
+          `[INFORMANT REPORT VS FUNCTIONAL INDEPENDENCE DISCREPANCY] ญาติรายงานความจำถดถอย (AD8 = ${ad8Score}/8) แต่กิจวัตรประจำวันขั้นซับซ้อนยังทำได้ปกติครบถ้วน (IADL บกพร่อง 0/4 ข้อ)`
+        );
       }
 
-      // Preserve algorithmic tier and apply Clinician Override if present
-      let effectiveCognitiveAxis = algorithmicCognitiveAxis;
-      if (input.clinicianOverride?.isOverridden && input.clinicianOverride.overriddenCognitiveAxis) {
-        effectiveCognitiveAxis = input.clinicianOverride.overriddenCognitiveAxis;
-        clinicalFlags.push(`[CLINICIAN OVERRIDE] แพทย์ได้ปรับเปลี่ยนแกนการรู้คิดจาก ${algorithmicCognitiveAxis} เป็น ${effectiveCognitiveAxis} (เหตุผล: ${input.clinicianOverride.clinicalRationale || "ดุลยพินิจของแพทย์ผู้ตรวจ"})`);
-      }
-
-      // 5. Axis 2: Reversible & Drug-Induced Axis
-      const acbEval = evaluateAnticholinergicBurden(input.anticholinergicBurden?.selectedMedicationIds);
-      const reversibleEval = evaluateReversibleAxis(input.labs || {}, acbEval.acbTotalScore);
-      clinicalFlags.push(...reversibleEval.flags);
-      if (reversibleEval.categories.includes("HIGH_ACB_BURDEN")) {
-        actionChecklistTh.push("ส่งปรึกษาเภสัชกรคลินิกเพื่อทำ Medication Reconciliation และวางแผน Deprescribing ยากลุ่มเสี่ยง");
-      }
-      if (reversibleEval.categories.some(c => c === "OVERT_HYPOTHYROIDISM" || c === "CENTRAL_HYPOTHYROIDISM_SUSPECTED" || c === "VITAMIN_B12_DEFICIENCY" || c === "SEVERE_HYPONATREMIA" || c === "SEVERE_HYPOGLYCEMIA" || c === "SEVERE_RENAL_FAILURE_UREMIC_RISK")) {
-        actionChecklistTh.push("ส่งพบอายุรแพทย์เพื่อรักษาแก้ไขความผิดปกติของผลเลือด (ไทรอยด์ / วิตามิน B12 / เกลือแร่ / น้ำตาล / ไต) เป็นลำดับแรก");
-      }
-
-      // 6. Axis 3: Alzheimer's Specific Biomarker Axis (Gated STRICTLY on algorithmicCognitiveAxis)
-      const biomarkerEval = evaluateBiomarkerAxis(input.labs || {}, algorithmicCognitiveAxis);
-      clinicalFlags.push(...biomarkerEval.flags);
-      if (biomarkerEval.category === "AD_BIOMARKER_POSITIVE") {
-        actionChecklistTh.push("พิจารณาส่ง Brain MRI/CT เพื่อประเมินภาวะสมองฝ่อ (Medial Temporal Lobe Atrophy) และวางแผนส่งต่อคลินิกความจำ");
-      }
-
-      // 7. Axis 4: Affective / Depressive Axis
-      let affectiveAxis = "UNASSESSED";
-      if (input.depression2Q && (input.depression2Q.q1_depressed_mood !== null || input.depression2Q.q2_anhedonia !== null)) {
-        const q1 = !!input.depression2Q.q1_depressed_mood;
-        const q2 = !!input.depression2Q.q2_anhedonia;
-        if (q1 || q2) {
-          affectiveAxis = "PSEUDODEMENTIA_RISK_2Q_POSITIVE";
-          clinicalFlags.unshift("[PSEUDODEMENTIA WARNING] ผลคัดกรอง 2Q เป็นบวก (เสี่ยงภาวะซึมเศร้า) แพทย์ควรประเมินด้วย TGDS-15 หรือ 9Q เพื่อแยกภาวะสมองเสื่อมเทียม");
-          actionChecklistTh.unshift("ทำแบบประเมินภาวะซึมเศร้าในผู้สูงอายุไทย (TGDS-15 หรือ 9Q) ก่อนสรุปผลการวินิจฉัยสมองเสื่อม");
-        } else {
-          affectiveAxis = "2Q_NEGATIVE";
-        }
-      }
-
-      // 8. Internal Composite Ranking Index (0–100 heuristic ranking index, NOT a probability)
-      let compositeScore = 0;
-      if (effectiveCognitiveAxis === "DEMENTIA_SUSPECTED") compositeScore += 45;
-      else if (effectiveCognitiveAxis === "MCI_SUSPECTED") compositeScore += 25;
-
-      if (ad8Score >= 2) compositeScore += Math.min(20, ad8Score * 2.5);
-      if (input.delayedRecallScore === 0) compositeScore += 20;
-      else if (input.delayedRecallScore === 1) compositeScore += 12;
-
-      if (biomarkerEval.category === "AD_BIOMARKER_POSITIVE") compositeScore += 15;
-      else if (biomarkerEval.category === "AD_BIOMARKER_INTERMEDIATE") compositeScore += 8;
-
-      const screeningCompositeIndex = Math.min(100, Math.round(compositeScore));
-
-      // 9. Experimental Telemetry (Separated from Primary Risk)
-      const experimentalVm = evaluateVisualMotorTaskExperimental(
+      const miniCog = !isNonLiterate
+        ? evaluateMiniCog(input.delayedRecallScore, input.cdtResult, input.cuedRecognitionScore)
+        : null;
+      const vmt = evaluateVisualMotorTaskExperimental(
         input.visualMotorTimeMs,
         input.visualMotorErrors,
         input.age,
         input.yearsOfEducation,
         input.baselineTouchLatencyMs
       );
+      const acbEval = evaluateAnticholinergicBurden(input.anticholinergicBurden?.selectedMedicationIds);
       const speechEval = evaluateSpeechBiomarkers(input.speechBiomarkers);
-      const motorTremorIsolated = !!(input.cdtTelemetry?.motorTremorDetected);
-      if (motorTremorIsolated) {
-        clinicalFlags.push("[MOTOR TREMOR ISOLATED] ตรวจพบการสั่นของมือ (Motor Tremor) ระบบได้กรองความสั่นออกจากเกณฑ์การรู้คิดแล้ว");
-      }
 
-      // 10. Longitudinal Delta (with acute drop detection)
-      let longitudinalDelta;
-      if (input.previousSession) {
-        longitudinalDelta = calculateLongitudinalDelta(input, screeningCompositeIndex, input.previousSession);
-        clinicalFlags.push(`[LONGITUDINAL TRACKING] ${longitudinalDelta.summaryTh}`);
-        if (longitudinalDelta.trajectoryStatus === "ACUTE_PRECIPITOUS_DECLINE") {
-          clinicalFlags.unshift("[EMERGENCY RED FLAG] พบภาวะสมรรถภาพการรู้คิดถดถอยอย่างเฉียบพลันและรวดเร็ว (Acute Precipitous Drop) ในระยะเวลาสั้น สงสัยภาวะ Delirium, Acute Stroke หรือ Metabolic Encephalopathy");
-          actionChecklistTh.unshift("🚨 ส่งพบแพทย์ระบบประสาทหรืออายุรแพทย์ฉุกเฉินทันที เพื่อตรวจหาสาเหตุเฉียบพลัน (CT/MRI Brain, Sepsis, Metabolic Workup)");
-        } else if (longitudinalDelta.trajectoryStatus === "RAPID_DECLINE") {
-          actionChecklistTh.unshift("พบอัตราการถดถอยอย่างรวดเร็ว (Rapid Decline) แนะนำส่งพบแพทย์ระบบประสาทเพื่อตรวจประเมินด่วน");
-        }
-      }
-
-      // Primary Recommendation Synthesis & Triage Hierarchy Confounder Management
-      const isDepressionConfounder = (affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE") || !!input.depression_risk_flag;
-      const isHighAcbConfounder = (acbEval.acbTotalScore >= 3) || acbEval.high_acb_risk_flag;
-      const hasReversibleMetabolic = reversibleEval.categories.some(c => 
-        c === "OVERT_HYPOTHYROIDISM" || c === "CENTRAL_HYPOTHYROIDISM_SUSPECTED" || 
-        c === "VITAMIN_B12_DEFICIENCY" || c === "SEVERE_HYPOGLYCEMIA" || c === "SEVERE_HYPONATREMIA" ||
-        c === "SEVERE_RENAL_FAILURE_UREMIC_RISK"
+      const isDepressionConfounder =
+        core.axes.affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE" || !!input.depression_risk_flag;
+      const isHighAcbConfounder =
+        acbEval.acbTotalScore >= 3 ||
+        acbEval.high_acb_risk_flag ||
+        core.axes.reversibleAxis.includes("HIGH_ACB_BURDEN");
+      const hasReversibleMetabolic = core.axes.reversibleAxis.some(
+        (c) =>
+          c === "OVERT_HYPOTHYROIDISM" ||
+          c === "CENTRAL_HYPOTHYROIDISM_SUSPECTED" ||
+          c === "HYPERTHYROIDISM_THYROTOXICOSIS" ||
+          c === "VITAMIN_B12_DEFICIENCY" ||
+          c === "FOLATE_DEFICIENCY" ||
+          c === "SEVERE_HYPOGLYCEMIA" ||
+          c === "SEVERE_HYPONATREMIA" ||
+          c === "HYPERCALCEMIA" ||
+          c === "HYPOCALCEMIA" ||
+          c === "SEVERE_RENAL_FAILURE_UREMIC_RISK"
       );
-      const isReversibleConfounderPresent = (isDepressionConfounder || isHighAcbConfounder || hasReversibleMetabolic) && isCognitiveScreenPositive;
+      const isCognitiveScreenPositive = uiAlgAxis !== "COGNITIVE_NORMAL";
+      const isReversibleConfounderPresent =
+        (isDepressionConfounder || isHighAcbConfounder || hasReversibleMetabolic) && isCognitiveScreenPositive;
 
-      let primaryRecommendationTh = "";
-      let clinicalTriageClassification = effectiveCognitiveAxis;
-
-      if (longitudinalDelta?.trajectoryStatus === "ACUTE_PRECIPITOUS_DECLINE") {
-        primaryRecommendationTh = "🚨 พบการถดถอยอย่างเฉียบพลันและรวดเร็วในระยะเวลาสั้น สงสัยภาวะเพ้อเฉียบพลัน (Delirium), โรคหลอดเลือดสมอง หรือความผิดปกติทางกายเฉียบพลัน แนะนำส่งพบแพทย์ฉุกเฉินทันที";
+      let clinicalTriageClassification = uiEffAxis;
+      let primaryRecommendationTh = core.primaryRecommendationTh;
+      if (core.longitudinalDelta?.trajectoryStatus === "ACUTE_PRECIPITOUS_DECLINE") {
         clinicalTriageClassification = "EMERGENCY_ACUTE_DECLINE";
       } else if (isReversibleConfounderPresent && !input.clinicianOverride?.isOverridden) {
         clinicalTriageClassification = "REVERSIBLE_COGNITIVE_IMPAIRMENT_SUSPECTED";
-        clinicalFlags.unshift("[TRIAGE HIERARCHY: REVERSIBLE CAUSE ACTIVE] ตรวจพบปัจจัยรบกวนที่รักษาแก้ไขได้ (2Q+ ซึมเศร้า / ภาระยา ACB >= 3 / ผลเลือดผิดปกติ) ร่วมกับคะแนนการรู้คิดที่ลดลง — จัดเป็นกลุ่ม Reversible Cognitive Impairment Suspected เพื่อป้องกันการส่งต่อผิดแผนก (Misrouting)");
-        
-        const reasons = [];
-        if (isDepressionConfounder) reasons.push("ภาวะซึมเศร้า (2Q+)");
-        if (isHighAcbConfounder) reasons.push(`ภาระยาต้านโคลิเนอร์จิกสูง (ACB = ${acbEval.acbTotalScore})`);
-        if (hasReversibleMetabolic) reasons.push("ผลเลือดเมตาบอลิกผิดปกติ");
-        
-        primaryRecommendationTh = `⚠️ สงสัยภาวะการรู้คิดบกพร่องจากสาเหตุที่รักษาแก้ไขได้ (Reversible Cognitive Impairment Suspected): ตรวจพบ ${reasons.join(" ร่วมกับ ")} ซึ่งอาจทำให้สมาธิและความจำลดลงชั่วคราว จึงไม่ควรด่วนสรุปว่าเป็นโรคอัลไซเมอร์หรือสมองเสื่อมถาวร แนะนำส่งพบแพทย์เพื่อประเมินภาวะซึมเศร้า (TGDS-15) และปรึกษาเภสัชกรคลินิกเพื่อทำ Medication Reconciliation ปรับลดยาก่อน แล้วนัดประเมินการรู้คิดซ้ำใน 4–8 สัปดาห์`;
-        
-        actionChecklistTh.unshift("นัดหมายตรวจประเมินสมรรถภาพการรู้คิดซ้ำหลังจากปรับลดยาหรือรักษาภาวะซึมเศร้า/ผลเลือดแล้วในอีก 4–8 สัปดาห์");
-        if (isHighAcbConfounder) actionChecklistTh.unshift("ส่งปรึกษาเภสัชกรคลินิกเพื่อทำ Medication Reconciliation และวางแผน Deprescribing ยากลุ่มเสี่ยง (ACB >= 3)");
-        if (isDepressionConfounder) actionChecklistTh.unshift("ทำแบบประเมินภาวะซึมเศร้าในผู้สูงอายุไทย (TGDS-15 หรือ 9Q) เพื่อประเมินแยกภาวะ Pseudodementia");
-      } else if (reversibleEval.categories.includes("HIGH_ACB_BURDEN") || reversibleEval.categories.some(c => c === "OVERT_HYPOTHYROIDISM" || c === "CENTRAL_HYPOTHYROIDISM_SUSPECTED" || c === "VITAMIN_B12_DEFICIENCY" || c === "SEVERE_HYPOGLYCEMIA")) {
-        primaryRecommendationTh = "ตรวจพบสาเหตุที่รักษาแก้ไขได้หรือภาระยาต้านโคลิเนอร์จิกสูง แนะนำให้รักษาภาวะเมตาบอลิกและทบทวนปรับลดยาเป็นลำดับแรก แล้วประเมินการรู้คิดซ้ำ";
-      } else if (biomarkerEval.category === "AD_BIOMARKER_POSITIVE" && effectiveCognitiveAxis !== "COGNITIVE_NORMAL") {
-        primaryRecommendationTh = "ผลตรวจการรู้คิดบกพร่องร่วมกับผลบวกของตัวชี้วัดโรคอัลไซเมอร์ แนะนำส่งต่อแพทย์ระบบประสาทหรือคลินิกความจำเพื่อประเมินจำเพาะ";
-      } else if (effectiveCognitiveAxis === "DEMENTIA_SUSPECTED") {
-        primaryRecommendationTh = "ความเสี่ยงสูงต่อภาวะสมองเสื่อม แนะนำส่งปรึกษาแพทย์ระบบประสาทเพื่อตรวจประเมินประสาทจิตวิทยาเต็มรูปแบบ (TMSE/MoCA)";
-      } else if (effectiveCognitiveAxis === "MCI_SUSPECTED") {
-        primaryRecommendationTh = "ความเสี่ยงปานกลาง (สงสัยภาวะการรู้คิดบกพร่องเล็กน้อย) แนะนำควบคุมปัจจัยเสี่ยงหลอดเลือด ฝึกบริหารสมอง และตรวจติดตามใน 3–6 เดือน";
-      } else {
-        primaryRecommendationTh = "สมรรถภาพการรู้คิดอยู่ในเกณฑ์ปกติ ส่งเสริมสุขภาพสมองและคัดกรองซ้ำประจำปี";
-      }
-
-      if (affectiveAxis === "PSEUDODEMENTIA_RISK_2Q_POSITIVE") {
-        primaryRecommendationTh += " [สำคัญ: ผลคัดกรองซึมเศร้าเป็นบวก — ต้องประเมินแยกภาวะ Pseudodementia ด้วย TGDS-15 หรือ 9Q]";
+        clinicalFlags.unshift(
+          "[TRIAGE HIERARCHY: REVERSIBLE CAUSE ACTIVE] ตรวจพบปัจจัยรบกวนที่รักษาแก้ไขได้ (2Q+ ซึมเศร้า / ภาระยา ACB >= 3 / ผลเลือดผิดปกติ) ร่วมกับคะแนนการรู้คิดที่ลดลง"
+        );
       }
 
       return {
-        algorithmVersion: ALGORITHM_VERSION,
-        isComplete: true,
-        missingDomainsTh: [],
-        screeningCompositeIndex,
+        ...core,
         triageClassification: clinicalTriageClassification,
         isReversibleConfounderPresent,
         axes: {
-          algorithmicCognitiveAxis,
-          cognitiveAxis: effectiveCognitiveAxis,
-          reversibleAxis: reversibleEval.categories,
-          biomarkerAxis: biomarkerEval.category,
-          affectiveAxis
-        },
-        biomarkerDetails: {
-          ptau217Status: biomarkerEval.ptau217Status,
-          abetaRatioStatus: biomarkerEval.abetaRatioStatus
+          ...core.axes,
+          algorithmicCognitiveAxis: uiAlgAxis,
+          cognitiveAxis: uiEffAxis,
         },
         clinicalFlags,
         primaryRecommendationTh,
         actionChecklistTh: Array.from(new Set(actionChecklistTh)),
-        experimentalTelemetry: {
-          visualMotor: experimentalVm,
-          speechMci: speechEval,
-          motorTremorIsolated
+        _meta: {
+          miniCog,
+          vmt,
+          acbEval,
+          speechEval,
+          motorTremorDetected: !!(input.cdtTelemetry?.motorTremorDetected || core.experimentalTelemetry?.motorTremorIsolated),
         },
-        longitudinalDelta,
-        _meta: { miniCog, vmt: experimentalVm, acbEval, speechEval, motorTremorDetected: motorTremorIsolated }
       };
     }
 
@@ -6958,14 +6615,14 @@
       labLdl: { field: "ldl_mg_dL", loinc: "2089-1", name: "Cholesterol in LDL [Mass/volume] in Serum or Plasma", unit: "mg/dL" },
       labHdl: { field: "hdl_mg_dL", loinc: "2085-9", name: "Cholesterol in HDL [Mass/volume] in Serum or Plasma", unit: "mg/dL" },
       labCreatinine: { field: "serum_creatinine_mg_dL", loinc: "2160-0", name: "Creatinine [Mass/volume] in Serum or Plasma", unit: "mg/dL" },
-      labEgfr: { field: "egfr_mL_min", loinc: "62238-1", name: "Glomerular filtration rate/1.73 sq M.predicted [CKD-EPI]", unit: "mL/min/1.73m2" },
+      labEgfr: { field: "egfr_mL_min", loinc: "98979-8", name: "Glomerular filtration rate/1.73 sq M.predicted [CKD-EPI 2021]", unit: "mL/min/1.73m2" },
       labHemoglobin: { field: "hemoglobin_g_dL", loinc: "718-7", name: "Hemoglobin [Mass/volume] in Blood", unit: "g/dL" },
       labAlt: { field: "alt_U_L", loinc: "1742-6", name: "Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma", unit: "U/L" },
       labAst: { field: "ast_U_L", loinc: "1920-8", name: "Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma", unit: "U/L" },
       labFolate: { field: "folate_ng_mL", loinc: "2284-8", name: "Folate [Mass/volume] in Serum or Plasma", unit: "ng/mL" },
-      labApoe: { field: "apoe_genotype", loinc: "41762-6", name: "APOE gene allele genotype", unit: "" },
-      labPtauVal: { field: "plasma_ptau217_pg_mL", loinc: "104352-0", name: "Phosphorylated tau-217 [Mass/volume] in Plasma", unit: "pg/mL" },
-      labAbetaRatio: { field: "abeta_42_40_ratio", loinc: "94660-8", name: "Beta-amyloid 42/Beta-amyloid 40 ratio in Plasma", unit: "{ratio}" }
+      labApoe: { field: "apoe_genotype", loinc: "42315-2", name: "APOE gene targeted mutation analysis in Blood or Tissue", unit: "" },
+      labPtauVal: { field: "plasma_ptau217_pg_mL", loinc: "104663-0", name: "Tau protein.phosphorylated 217 [Mass/volume] in Plasma", unit: "pg/mL" },
+      labAbetaRatio: { field: "abeta_42_40_ratio", loinc: "106941-8", name: "Beta-amyloid 42/Beta-amyloid 40 ratio [Mass/Mass] in Plasma", unit: "{ratio}" }
     };
 
     function renderLoincBadges() {
@@ -6983,183 +6640,19 @@
     }
 
     function buildFhirR4Bundle(input, output) {
-      const ts = input.assessedAtIso;
-      const pseudoToken = appState.pseudonymToken || "PSN-ANON";
-      const pid = "patient-" + pseudoToken;
-      const subject = { reference: `urn:uuid:${pid}` };
-      const entries = [{
-        fullUrl: `urn:uuid:${pid}`,
-        resource: {
-          resourceType: "Patient",
-          id: pid,
-          identifier: [{ system: "urn:cog-screen:pseudonym-token", value: pseudoToken }],
-          name: [{ text: `Pseudonymized Subject (${pseudoToken})` }]
-        }
-      }];
-
-      const obs = (id, code, display, extra) => ({
-        fullUrl: `urn:uuid:${id}`,
-        resource: Object.assign({
-          resourceType: "Observation", id, status: "final",
-          code: { coding: [{ system: "http://loinc.org", code, display }] },
-          subject, effectiveDateTime: ts
-        }, extra)
-      });
-
-      // 4-Axis Parallel Observations
-      if (output.axes) {
-        entries.push(obs("obs-axis-cognitive", "72170-4", "Cognitive Performance Axis", {
-          valueString: output.axes.cognitiveAxis
-        }));
-        entries.push(obs("obs-axis-reversible", "LP268153-6", "Reversible & Drug-Induced Axis", {
-          valueString: (output.axes.reversibleAxis || []).join(", ")
-        }));
-        entries.push(obs("obs-axis-biomarker", "104352-0", "Alzheimer's Specific Biomarker Axis", {
-          valueString: output.axes.biomarkerAxis
-        }));
-        entries.push(obs("obs-axis-affective", "55758-7", "Affective / Depressive Axis", {
-          valueString: output.axes.affectiveAxis
-        }));
+      if (window.ClinicalEngine && typeof window.ClinicalEngine.buildFhirR4Bundle === "function") {
+        const pseudoToken = appState.pseudonymToken || "PSN-ANON";
+        const enrichedInput = Object.assign({}, input, {
+          sessionId: input.sessionId || appState.sessionId,
+          labs: input.labs ? window.ClinicalEngine.normalizeLabResults(input.labs) : undefined
+        });
+        return window.ClinicalEngine.buildFhirR4Bundle(enrichedInput, output, {
+          patientId: "patient-" + pseudoToken,
+          pseudonymToken: pseudoToken,
+          timestampIso: input.assessedAtIso
+        });
       }
-
-      entries.push(obs("obs-2q", "55758-7", "2Q Depression Screening Gatekeeper", {
-        valueBoolean: !!output.depression_risk_flag,
-        component: [
-          { code: { coding: [{ system: "http://loinc.org", code: "44255-8" }] }, valueBoolean: !!(input.depression2Q && input.depression2Q.q1_depressed_mood) },
-          { code: { coding: [{ system: "http://loinc.org", code: "44250-9" }] }, valueBoolean: !!(input.depression2Q && input.depression2Q.q2_anhedonia) }
-        ]
-      }));
-
-      const acbScore = input.anticholinergicBurden ? input.anticholinergicBurden.acbTotalScore : 0;
-      entries.push(obs("obs-acb", "LP268153-6", "Anticholinergic Cognitive Burden (ACB) Total Score", {
-        valueQuantity: { value: acbScore, unit: "{score}" },
-        component: [{ code: { text: "high_acb_risk_flag" }, valueBoolean: acbScore >= 3 }]
-      }));
-
-      if (input.speechBiomarkers) {
-        entries.push(obs("obs-speech", "LP419518-8", "Acoustic & Linguistic Speech Biomarkers (MCI Screen - Exploratory)", {
-          valueBoolean: !!input.speechBiomarkers.speech_mci_biomarker_flag,
-          component: [
-            { code: { text: "pauseToSpeechRatio" }, valueQuantity: { value: input.speechBiomarkers.pauseToSpeechRatio, unit: "{ratio}" } },
-            { code: { text: "phoneticLatencyMs" }, valueInteger: input.speechBiomarkers.phoneticLatencyMs },
-            { code: { text: "semanticRepetitionCount" }, valueInteger: input.speechBiomarkers.semanticRepetitionCount }
-          ]
-        }));
-      }
-
-      if (input.ad8Score !== null) {
-        entries.push(obs("obs-ad8", "72172-0", "AD8 Dementia Screening Questionnaire Total Score", {
-          valueQuantity: { value: input.ad8Score, unit: "{score}" },
-          code: {
-            coding: [
-              { system: "http://loinc.org", code: "72172-0", display: "AD8 Dementia Screening Questionnaire Total Score" },
-              { system: "http://loinc.org", code: "71485-7", display: "AD8 Total Score" }
-            ]
-          }
-        }));
-      }
-      if (input.delayedRecallScore !== null) {
-        entries.push(obs("obs-recall", "72170-4", "Mini-Cog Word Recall Score (Free Recall)", { valueQuantity: { value: input.delayedRecallScore, unit: "{score}" } }));
-      }
-      if (output._meta?.miniCog && output._meta.miniCog.totalScore !== null && output._meta.miniCog.totalScore !== undefined) {
-        entries.push(obs("obs-minicog-total", "72133-2", "Mini-Cog Total Score", {
-          valueQuantity: { value: output._meta.miniCog.totalScore, unit: "{score}" },
-          component: [
-            { code: { coding: [{ system: "http://loinc.org", code: "72170-4", display: "Word Recall" }] }, valueQuantity: { value: input.delayedRecallScore, unit: "{score}" } },
-            { code: { coding: [{ system: "http://loinc.org", code: "72171-2", display: "Clock Drawing" }] }, valueString: input.cdtResult }
-          ]
-        }));
-      }
-      if (input.cdtResult !== null) {
-        const cdtComp = [
-          { code: { text: "motor_tremor_flag" }, valueBoolean: !!input.cdtMotorTremorDetected }
-        ];
-        if (input.cdtTelemetry) {
-          if (input.cdtTelemetry.initiationLatencyMs !== null && input.cdtTelemetry.initiationLatencyMs !== undefined) {
-            cdtComp.push({ code: { text: "initiationLatencyMs" }, valueInteger: input.cdtTelemetry.initiationLatencyMs });
-          }
-          if (input.cdtTelemetry.penLiftsCount !== undefined) {
-            cdtComp.push({ code: { text: "penLiftsCount" }, valueInteger: input.cdtTelemetry.penLiftsCount });
-          }
-          if (input.cdtTelemetry.undoCount !== undefined) {
-            cdtComp.push({ code: { text: "undoCount" }, valueInteger: input.cdtTelemetry.undoCount });
-          }
-          if (input.cdtTelemetry.strokeVelocityPxPerSec !== undefined) {
-            cdtComp.push({ code: { text: "strokeVelocityPxPerSec" }, valueQuantity: { value: input.cdtTelemetry.strokeVelocityPxPerSec, unit: "px/s" } });
-          }
-        }
-        entries.push(obs("obs-cdt", "72171-2", `Clock Drawing Test (${appState.targetClockTime || "11:10"})`, {
-          valueString: input.cdtResult,
-          component: cdtComp
-        }));
-      }
-      if (input.visualMotorTimeMs !== null) {
-        entries.push(obs("obs-vmt", "72106-8", "Modified Thai Trail Making (Experimental Telemetry)", {
-          valueQuantity: { value: input.visualMotorTimeMs, unit: "ms", system: "http://unitsofmeasure.org", code: "ms" },
-          component: [
-            { code: { text: "errorCount" }, valueInteger: input.visualMotorErrors || 0 },
-            { code: { text: "baselineTouchLatencyMs" }, valueInteger: input.baselineTouchLatencyMs || 0 }
-          ]
-        }));
-      }
-
-      const labs = input.labs || {};
-      Object.values(LOINC_DATA_MAPPING).forEach(m => {
-        const v = labs[m.field];
-        if (v === undefined || v === null) return;
-        entries.push(obs(`obs-lab-${m.field}`, m.loinc, m.name,
-          typeof v === "number"
-            ? { valueQuantity: { value: v, unit: m.unit, system: "http://unitsofmeasure.org", code: m.unit } }
-            : { valueString: String(v) }));
-      });
-
-      const risk = {
-        resourceType: "RiskAssessment",
-        id: "risk-cognitive-triage",
-        status: "final",
-        subject,
-        occurrenceDateTime: ts,
-        identifier: [{ system: "urn:cog-screen:session", value: appState.sessionId }],
-        prediction: [{
-          outcome: { text: output.axes ? output.axes.cognitiveAxis : "INCOMPLETE_DATA" },
-          extension: [{
-            url: "http://example.org/fhir/StructureDefinition/screening-composite-index",
-            valueInteger: output.screeningCompositeIndex || 0
-          }],
-          rationale: output.primaryRecommendationTh || "ประเมินตามอัลกอริทึมพหุโมดูล"
-        }],
-        note: (output.clinicalFlags || []).map(f => ({ text: f })).concat([
-          { text: "Regulatory & SaMD Notice: ระบบนี้เป็นเครื่องมือคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์" }
-        ])
-      };
-
-      if (input.clinicianOverride?.signedAtIso) {
-        risk.performer = [{
-          identifier: { system: "urn:thailand:medical-license", value: input.clinicianOverride.physicianLicenseNumber },
-          display: input.clinicianOverride.clinicianName
-        }];
-        if (input.clinicianOverride.isOverridden) {
-          risk.note.push({
-            text: `[CLINICIAN OVERRIDE] ปรับเป็น ${input.clinicianOverride.overriddenCognitiveAxis} (เหตุผล: ${input.clinicianOverride.clinicalRationale})`
-          });
-        }
-      }
-
-      if (output.previous_session_id) {
-        risk.basis = [{ identifier: { system: "urn:cog-screen:session", value: output.previous_session_id }, display: "previous_session_id" }];
-      }
-      if (output.longitudinalDelta) {
-        risk.extension = [{
-          url: "http://example.org/fhir/StructureDefinition/longitudinal-delta-decline",
-          extension: [
-            { url: "daysElapsed", valueInteger: output.longitudinalDelta.daysElapsed },
-            { url: "annualizedDeclineRateCompositeIndex", valueDecimal: output.longitudinalDelta.annualizedDeclineRateCompositeIndex },
-            { url: "trajectoryStatus", valueString: output.longitudinalDelta.trajectoryStatus }
-          ]
-        }];
-      }
-      entries.push({ fullUrl: "urn:uuid:risk-cognitive-triage", resource: risk });
-      return { resourceType: "Bundle", type: "collection", timestamp: ts, entry: entries };
+      throw new Error("ClinicalEngine bundle (dist/clinical-engine.js) is required to build FHIR R4 Bundle.");
     }
 
     function exportFhirBundle() {
@@ -8061,21 +7554,30 @@
       renderAd8Questions();
     }
 
-    function fillAllAd8(value) {
-      appState.ad8Responses = appState.ad8Responses.map(() => value);
+    function resetAd8AndIadl() {
+      appState.ad8Responses = appState.ad8Responses.map(() => null);
+      appState.briefIadlResponses = appState.briefIadlResponses.map(() => null);
       renderAd8Questions();
+      renderBriefIadl();
+      showToast("🔄 ล้างคำตอบ AD8 และ IADL เป็นค่าเริ่มต้น (ยังไม่ระบุ) แล้ว — ป้องกันการข้ามแบบคัดกรองโดยไม่ตั้งใจ", "info");
     }
 
     function getAd8TotalScore() {
       return appState.ad8Responses.reduce((sum, ans) => sum + (ans === "YES" ? 1 : 0), 0);
     }
 
+    function getAd8UnsureCount() {
+      return appState.ad8Responses.filter(ans => ans === "NA").length;
+    }
+
     function updateAd8ScoreBadge() {
       const score = getAd8TotalScore();
+      const unsureCount = getAd8UnsureCount();
       const badge = document.getElementById("ad8LiveScoreBadge");
       if (badge) {
-        badge.textContent = `${score} / 8 (${score >= 2 ? "ความเสี่ยงสูง >= 2" : "ปกติ < 2"})`;
-        badge.style.color = score >= 2 ? "var(--status-high-border)" : "var(--status-low-border)";
+        const baseText = `${score} / 8 (${score >= 2 ? "ความเสี่ยงสูง >= 2" : "ปกติ < 2"})`;
+        badge.textContent = unsureCount > 0 ? `${baseText} (${unsureCount} ข้อไม่แน่ใจ — โปรดตรวจสอบ)` : baseText;
+        badge.style.color = (score >= 2 || unsureCount >= 3) ? "var(--status-high-border)" : "var(--status-low-border)";
       }
     }
 
@@ -9304,14 +8806,22 @@
           }
           clearAllLabInputs();
           let importedCount = 0;
+          const LEGACY_LOINC_ALIASES = {
+            labEgfr: ["62238-1"],
+            labApoe: ["41762-6"],
+            labPtauVal: ["104352-0"],
+            labAbetaRatio: ["94660-8"]
+          };
           bundle.entry.forEach(item => {
             const res = item && item.resource;
             if (!res || res.resourceType !== "Observation") return;
-            const code = res.code && res.code.coding && res.code.coding[0] && res.code.coding[0].code;
+            const codings = (res.code && Array.isArray(res.code.coding)) ? res.code.coding : [];
             const valNum = res.valueQuantity && res.valueQuantity.value;
             const valStr = res.valueString;
             Object.entries(LOINC_DATA_MAPPING).forEach(([inputId, meta]) => {
-              if (meta.loinc === code) {
+              const aliases = LEGACY_LOINC_ALIASES[inputId] || [];
+              const matched = codings.some(c => c && (c.code === meta.loinc || aliases.includes(c.code)));
+              if (matched) {
                 const el = document.getElementById(inputId);
                 if (el) {
                   el.value = valNum !== undefined ? valNum : (valStr || "");
@@ -9663,6 +9173,7 @@
       // Clinical Safety: if ANY AD8 question is null (unanswered), ad8Score is null
       const hasUnansweredAd8 = appState.ad8Responses.some(r => r === null);
       const ad8Score = hasUnansweredAd8 ? null : getAd8TotalScore();
+      const ad8UnsureCount = getAd8UnsureCount();
 
       const vmtTime = (appState.trailTelemetry && appState.trailTelemetry.completed)
         ? appState.trailTelemetry.totalCompletionTimeMs
@@ -9695,6 +9206,7 @@
         briefIADL,
         preTestValidity: { ...appState.preTestValidity, isNonLiteratePathway: !!appState.nonLiterateAlternativePathway },
         ad8Score,
+        ad8UnsureCount,
         delayedRecallScore: appState.delayedRecallScore,
         cuedRecognitionScore: appState.cuedRecognitionScore,
         cdtResult: appState.cdtResult,
@@ -9845,7 +9357,7 @@
           cogNoteEl.textContent = input.clinicianOverride?.isOverridden
             ? `[แพทย์ปรับเปลี่ยนจาก ${algoTier} ➔ ${cogAxis}]: ${input.clinicianOverride.clinicalRationale || "ตามดุลยพินิจของแพทย์"}`
             : (input.nonLiterateAlternativePathway
-                ? `Animal Naming: ${input.animalNamingCount ?? "-"} ตัว/นาที (เกณฑ์ >= 10) • AD8: ${input.ad8Score}/8`
+                ? `Animal Naming: ${input.animalNamingCount ?? "-"} ตัว/นาที (เกณฑ์ ${(input.yearsOfEducation ?? 0) <= 0 ? ">= 9" : ">= 10"}) • AD8: ${input.ad8Score}/8`
                 : `Mini-Cog: ${_meta?.miniCog?.totalScore ?? "-"}/5 คะแนน • AD8: ${input.ad8Score}/8 คะแนน`);
         }
 
@@ -10738,20 +10250,20 @@
         if (metaInfo) metaInfo.textContent = "Schema B De-identified Clinical Vector (ETL & ML Ready) • Zero PII";
       } else if (tabIndex === 3) {
         const loincDictionary = {
-          "terminologyStandard": "Logical Observation Identifiers Names and Codes (LOINC v2.74)",
-          "hospitalInteroperabilityScope": "Project-Alzheimer Multimodal Screening & Lab Interoperability",
+          "terminologyStandard": "Logical Observation Identifiers Names and Codes (LOINC) + Local CodeSystem",
+          "hospitalInteroperabilityScope": "Project-Alzheimer Multimodal Screening & Lab Interoperability (27 Parameters)",
           "loincMappingTable": [
-            { "loincCode": "72172-0", "displayName": "AD8 Dementia Screening Total Score", "category": "Informant Survey", "scale": "Ordinal (0-8)", "clinicalCutoff": ">= 2 Impaired" },
-            { "loincCode": "72133-2", "displayName": "Mini-Cog Cognitive Screen Total Score", "category": "Cognitive Screening", "scale": "Ordinal (0-5)", "clinicalCutoff": "<= 2 High Risk" },
-            { "loincCode": "55758-7", "displayName": "Patient Health Questionnaire 2 (PHQ-2 / 2Q Depression)", "category": "Affective Gatekeeper", "scale": "Ordinal (0-6)", "clinicalCutoff": ">= 1 Screen Positive" },
-            { "loincCode": "104352-0", "displayName": "Phosphorylated Tau 217 [Mass/volume] in Blood", "category": "Specific AD Biomarker", "unit": "pg/mL", "clinicalCutoff": ">= 0.40 pg/mL Positive" },
-            { "loincCode": "94660-8", "displayName": "Beta-amyloid 42/Beta-amyloid 40 ratio in Plasma", "category": "Amyloid Plaque Pathology", "unit": "ratio", "clinicalCutoff": "< 0.090 Abnormal" },
-            { "loincCode": "2132-9", "displayName": "Cobalamin (Vitamin B12) [Mass/volume] in Serum or Plasma", "category": "Reversible Metabolic", "unit": "pg/mL", "clinicalCutoff": "< 200 pg/mL Deficient" },
-            { "loincCode": "3016-3", "displayName": "Thyrotropin (TSH) [Units/volume] in Serum or Plasma", "category": "Reversible Metabolic", "unit": "uIU/mL", "clinicalCutoff": "> 4.50 uIU/mL Hypothyroid" },
-            { "loincCode": "2951-2", "displayName": "Sodium [Moles/volume] in Serum or Plasma", "category": "Electrolyte Imbalance", "unit": "mEq/L", "clinicalCutoff": "< 135 mEq/L Hyponatremia" },
-            { "loincCode": "4548-4", "displayName": "Hemoglobin A1c/Hemoglobin.total in Blood", "category": "Vascular Risk Factor", "unit": "%", "clinicalCutoff": ">= 6.5% Diabetes" },
-            { "loincCode": "62238-1", "displayName": "Glomerular Filtration Rate (eGFR) by CKD-EPI", "category": "Renal Function", "unit": "mL/min/1.73m2", "clinicalCutoff": "< 60 Moderate Impairment" },
-            { "loincCode": "41762-6", "displayName": "APOE gene allele genotype", "category": "Genetic Risk Factor", "values": ["e2/e2", "e3/e3", "e3/e4", "e4/e4"] }
+            { "loincCode": "71722-3", "mappingType": "EXACT_LOINC", "displayName": "AD8 Dementia Screening Interview Total Score", "category": "Informant Survey", "scale": "Ordinal (0-8)", "clinicalCutoff": ">= 2 Impaired" },
+            { "loincCode": "72233-0", "mappingType": "EXACT_LOINC", "displayName": "Mini-Cog Total Score [Mini-Cog]", "category": "Cognitive Screening", "scale": "Ordinal (0-5)", "clinicalCutoff": "<= 2 High Risk" },
+            { "loincCode": "55758-7", "mappingType": "CLOSEST_MATCH", "displayName": "Patient Health Questionnaire 2 (PHQ-2 / 2Q Depression Proxy)", "category": "Affective Gatekeeper", "scale": "Ordinal (0-6)", "clinicalCutoff": ">= 1 Screen Positive" },
+            { "loincCode": "104663-0", "mappingType": "EXACT_LOINC", "displayName": "Tau protein.phosphorylated 217 [Mass/volume] in Plasma", "category": "Specific AD Biomarker", "unit": "pg/mL", "clinicalCutoff": ">= 0.40 pg/mL Positive" },
+            { "loincCode": "106941-8", "mappingType": "EXACT_LOINC", "displayName": "Beta-amyloid 42/Beta-amyloid 40 ratio [Mass/Mass] in Plasma", "category": "Amyloid Plaque Pathology", "unit": "{ratio}", "clinicalCutoff": "< 0.090 Abnormal" },
+            { "loincCode": "2132-9", "mappingType": "EXACT_LOINC", "displayName": "Cobalamin (Vitamin B12) [Mass/volume] in Serum or Plasma", "category": "Reversible Metabolic", "unit": "pg/mL", "clinicalCutoff": "< 200 pg/mL Deficient" },
+            { "loincCode": "3016-3", "mappingType": "EXACT_LOINC", "displayName": "Thyrotropin (TSH) [Units/volume] in Serum or Plasma", "category": "Reversible Metabolic", "unit": "uIU/mL", "clinicalCutoff": "> 4.50 uIU/mL Hypothyroid" },
+            { "loincCode": "2951-2", "mappingType": "EXACT_LOINC", "displayName": "Sodium [Moles/volume] in Serum or Plasma", "category": "Electrolyte Imbalance", "unit": "mEq/L", "clinicalCutoff": "< 135 mEq/L Hyponatremia" },
+            { "loincCode": "4548-4", "mappingType": "EXACT_LOINC", "displayName": "Hemoglobin A1c/Hemoglobin.total in Blood", "category": "Vascular Risk Factor", "unit": "%", "clinicalCutoff": ">= 6.5% Diabetes" },
+            { "loincCode": "98979-8", "mappingType": "EXACT_LOINC", "displayName": "Glomerular Filtration Rate (eGFR) by CKD-EPI 2021 Cr", "category": "Renal Function", "unit": "mL/min/1.73m2", "clinicalCutoff": "< 60 Moderate Impairment" },
+            { "loincCode": "42315-2", "mappingType": "EXACT_LOINC", "displayName": "APOE gene targeted mutation analysis in Blood or Tissue", "category": "Genetic Risk Factor", "values": ["e2/e2", "e3/e3", "e3/e4", "e4/e4"] }
           ]
         };
         if (codeBox) codeBox.textContent = JSON.stringify(loincDictionary, null, 2);
@@ -11007,7 +10519,7 @@
         authoredOn: timestampIso,
         supportingInfo: [{
           resourceType: "DiagnosticReport",
-          code: { coding: [{ system: "http://loinc.org", code: "72106-8", display: "Cognitive Screening Multi-Axis Report" }] },
+          code: { coding: [{ system: "https://natchlimar-droid.github.io/Project-Alzheimer/fhir/CodeSystem/thai-cognitive-triage", code: "thai-cognitive-triage-report", display: "Thai Cognitive Screening Multi-Axis Report" }] },
           status: "final",
           conclusion: lastAssessmentPayload?.primaryRecommendationTh || "Complete Cognitive Screening"
         }],
@@ -11444,6 +10956,10 @@
       window.addEventListener("offline", updateNetworkStatusUI);
       updateThailandLiveClock();
       setInterval(updateThailandLiveClock, 1000);
+
+      if ("serviceWorker" in navigator && (location.protocol === "http:" || location.protocol === "https:")) {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      }
     });
   
     /* ========================================================================

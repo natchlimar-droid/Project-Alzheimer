@@ -3,7 +3,7 @@ node_modules/
 package-lock.json
 
 # Build Outputs & Temporary Files
-dist/
+# dist/ is tracked for zero-build GitHub Pages deployment (dist/clinical-engine.{js,mjs})
 build/
 *.tmp
 *.log

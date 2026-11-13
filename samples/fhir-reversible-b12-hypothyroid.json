@@ -129,8 +129,8 @@
           "coding": [
             {
               "system": "http://loinc.org",
-              "code": "62238-1",
-              "display": "Glomerular filtration rate/1.73 sq M.predicted [CKD-EPI]"
+              "code": "98979-8",
+              "display": "Glomerular filtration rate/1.73 sq M.predicted [CKD-EPI 2021]"
             }
           ]
         },

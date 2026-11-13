@@ -1,10 +1,10 @@
-import {
+import type {
   AssessmentInput,
   AuditActionType,
   AuditLogEntry,
   PIIIdentityRecord,
   RiskOutput,
-} from "../types/clinical";
+} from "../types/clinical.ts";
 
 /**
  * Computes a cryptographic SHA-256 hex digest using Web Crypto API (or Node crypto if available).

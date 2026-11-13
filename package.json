@@ -5,7 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test-runner.mjs",
+    "build": "node scripts/build-engine.mjs",
+    "test": "node --test test-runner.mjs",
+    "validate:fhir": "node scripts/validate-fhir.mjs",
+    "ci": "node scripts/build-engine.mjs --check && node --test test-runner.mjs && node scripts/validate-fhir.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

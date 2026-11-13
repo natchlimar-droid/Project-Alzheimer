@@ -8,16 +8,17 @@ import {
   evaluateSpeechBiomarkers,
   evaluateVisualMotorTaskExperimental,
   stratifyCognitiveRisk,
-} from "./riskStratification";
-import { AssessmentInput, PreviousSessionSnapshot } from "../types/clinical";
-import { LOINC_DATA_MAPPING, ACB_MEDICATIONS } from "../data/clinicalContent";
-import { analyzeClockDrawingStrokes, Point2D } from "./cdtAnalyzer";
-import { buildFhirR4Bundle, parseFhirBundleToLabResults } from "../services/fhirService";
+} from "./riskStratification.ts";
+import type { AssessmentInput, PreviousSessionSnapshot } from "../types/clinical.ts";
+import { LOINC_DATA_MAPPING, ACB_MEDICATIONS } from "../data/clinicalContent.ts";
+import { analyzeClockDrawingStrokes } from "./cdtAnalyzer.ts";
+import type { Point2D } from "./cdtAnalyzer.ts";
+import { buildFhirR4Bundle, parseFhirBundleToLabResults } from "../services/fhirService.ts";
 import {
   buildPseudonymizedStorageSchemas,
   createAuditLogEntry,
   generatePseudonymToken,
-} from "../services/privacyAuditService";
+} from "../services/privacyAuditService.ts";
 
 /**
  * Self-contained Clinical Verification Test Suite for Multimodal Multi-Axis Engine
@@ -308,15 +309,15 @@ export function runClinicalEngineTests(): { passed: number; failed: number; logs
     "Privacy & Telemetry: Unrecorded speech returns null instead of fake hardcoded numbers"
   );
 
-  // Test 13: FHIR R4 Bundle Validation (Official LOINC 104352-0 for p-tau217 & Routine Labs)
+  // Test 13: FHIR R4 Bundle Validation (Verified Official LOINC 104663-0 for p-tau217 & Routine Labs)
   const fhirTestOut = stratifyCognitiveRisk(fullLabCase);
   const bundle = buildFhirR4Bundle(fullLabCase, fhirTestOut, { patientId: "P-2026-TEST" });
   assert(
-    LOINC_DATA_MAPPING.plasma_ptau217_pg_mL.loincCode === "104352-0" &&
+    LOINC_DATA_MAPPING.plasma_ptau217_pg_mL.loincCode === "104663-0" &&
     Array.isArray(bundle.entry) &&
     bundle.entry.some((e: any) => e.resource?.code?.coding?.[0]?.code === "1558-6") && // Glucose
     bundle.entry.some((e: any) => e.resource?.code?.coding?.[0]?.code === "718-7"), // Hemoglobin
-    "Standardization: FHIR R4 Bundle exports LOINC 104352-0 for p-tau217 and LOINC codes for all geriatric labs"
+    "Standardization: FHIR R4 Bundle exports LOINC 104663-0 for p-tau217 and LOINC codes for all geriatric labs"
   );
 
   return { passed, failed, logs };

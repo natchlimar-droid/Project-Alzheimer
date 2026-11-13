@@ -33,8 +33,8 @@
         "code": {
           "coding": [
             {
-              "system": "http://loinc.org",
-              "code": "LP268153-6",
+              "system": "https://natchlimar-droid.github.io/Project-Alzheimer/fhir/CodeSystem/thai-cognitive-triage",
+              "code": "acb-total-score",
               "display": "Anticholinergic Cognitive Burden (ACB) Total Score"
             }
           ]
@@ -70,8 +70,8 @@
         "code": {
           "coding": [
             {
-              "system": "http://loinc.org",
-              "code": "LP419518-8",
+              "system": "https://natchlimar-droid.github.io/Project-Alzheimer/fhir/CodeSystem/thai-cognitive-triage",
+              "code": "speech-biomarker-exploratory",
               "display": "Acoustic & Linguistic Speech Biomarkers (MCI Screen)"
             }
           ]

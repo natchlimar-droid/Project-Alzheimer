@@ -70,6 +70,7 @@ export type ReversibleAxisCategory =
   | "HIGH_ACB_BURDEN"
   | "OVERT_HYPOTHYROIDISM"
   | "SUBCLINICAL_THYROID_WATCH"
+  | "SUBCLINICAL_HYPERTHYROIDISM_WATCH"
   | "CENTRAL_HYPOTHYROIDISM_SUSPECTED"
   | "HYPERTHYROIDISM_THYROTOXICOSIS"
   | "VITAMIN_B12_DEFICIENCY"
@@ -105,6 +106,8 @@ export type AffectiveAxisCategory =
   | "2Q_NEGATIVE"
   | "UNASSESSED";
 
+export type LoincMappingType = "EXACT_LOINC" | "CLOSEST_MATCH" | "LOCAL_CODESYSTEM";
+
 export interface LoincCodeDefinition {
   fieldKey: keyof LabResults | string;
   loincCode: string;
@@ -112,6 +115,9 @@ export interface LoincCodeDefinition {
   labelTh: string;
   unit: string;
   referenceRange: string;
+  mappingType: LoincMappingType;
+  codeSystem: string;
+  legacyAliasCodes?: string[];
   category:
   | "REVERSIBLE_METABOLIC"
   | "VASCULAR_METABOLIC"
@@ -126,6 +132,7 @@ export interface LabResults {
   free_t4_ng_dL?: number | null; // LOINC: 3024-7
   vitamin_b12_pg_mL?: number | null; // LOINC: 2132-9
   serum_folate_ng_mL?: number | null; // LOINC: 2284-8
+  folate_ng_mL?: number | null; // Alias for serum_folate_ng_mL
   sodium_mEq_L?: number | null; // LOINC: 2951-2
   calcium_mg_dL?: number | null; // LOINC: 17861-6
 
@@ -134,17 +141,20 @@ export interface LabResults {
   hba1c_percent?: number | null; // LOINC: 4548-4
   hemoglobin_g_dL?: number | null; // LOINC: 718-7
   creatinine_mg_dL?: number | null; // LOINC: 2160-0
-  egfr_mL_min?: number | null; // LOINC: 62238-1
+  serum_creatinine_mg_dL?: number | null; // Alias for creatinine_mg_dL
+  egfr_mL_min?: number | null; // LOINC: 98979-8 (legacy 62238-1)
   alt_u_L?: number | null; // LOINC: 1742-6
+  alt_U_L?: number | null; // Alias for alt_u_L
   ast_u_L?: number | null; // LOINC: 1920-8
+  ast_U_L?: number | null; // Alias for ast_u_L
   ldl_mg_dL?: number | null; // LOINC: 2089-1
   hdl_mg_dL?: number | null; // LOINC: 2085-9
 
   // 3. Genetic & Disease-Specific Biomarkers (Intended for Symptomatic Evaluation)
-  apoe_genotype?: APOEGenotype; // LOINC: 41762-6
-  plasma_ptau217_pg_mL?: number | null; // LOINC: 104352-0
+  apoe_genotype?: APOEGenotype; // LOINC: 42315-2 (legacy 41762-6)
+  plasma_ptau217_pg_mL?: number | null; // LOINC: 104663-0 (legacy 104352-0)
   ptau217_status?: Ptau217Status;
-  abeta_42_40_ratio?: number | null; // LOINC: 94660-8
+  abeta_42_40_ratio?: number | null; // LOINC: 106941-8 (legacy 94660-8)
   abeta_ratio_status?: AbetaRatioStatus;
   plasma_assay_manufacturer?: string; // e.g., "ALZpath", "Fujirebio Lumipulse", "C2N PrecivityAD"
   ptau_positive_cutoff?: number;
@@ -296,6 +306,14 @@ export type AuditActionType =
   | "CONFIRM_PHYSICIAN_SIGN_OFF"
   | "REVOKE_SPEECH_CONSENT";
 
+export interface PIIIdentityRecord {
+  pseudonymToken: string;
+  fullName: string;
+  nationalIdMasked: string;
+  phoneMasked: string;
+  createdAtIso: string;
+}
+
 export interface AuditLogEntry {
   logId: string;
   timestampIso: string;
@@ -328,6 +346,7 @@ export interface AssessmentInput {
   age: number | null;
   yearsOfEducation: number | null;
   ad8Score: number | null; // 0 - 8 (or null if skipped)
+  ad8UnsureCount?: number | null; // Count of AD8 items marked UNSURE/skipped
   delayedRecallScore: number | null; // 0 - 3 (from Free Recall!)
   cdtResult: CDTResult | null; // NORMAL | ABNORMAL (or null if skipped)
   recallMode: "FREE_RECALL" | "RECOGNITION";
@@ -337,7 +356,7 @@ export interface AssessmentInput {
   preTestValidity?: PreTestValidityGate;
   fourAT?: FourATDeliriumAssessment;
   isNonLiteratePathway?: boolean;
-  animalNamingCount?: number | null; // Non-literate verbal fluency (<10 impaired)
+  animalNamingCount?: number | null; // Non-literate verbal fluency (<9 if 0 yrs edu; <10 if 1-6+ yrs)
   briefIADL?: BriefIADLAssessment; // Functional assessment for MCI vs Dementia
 
   // Experimental Visual-Motor metric
@@ -372,6 +391,7 @@ export interface AssessmentInput {
  */
 export interface RiskOutput {
   algorithmVersion: string;
+  pseudonymToken?: string;
   isComplete: boolean;
   missingDomainsTh: string[];
 

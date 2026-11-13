@@ -12,7 +12,7 @@ flowchart TD
     Gatekeeper2Q -->|"ตอบ 'มี' >= 1 ข้อ"| FlagDep["บันทึก depression_risk_flag = true\nแจ้งเตือนแพทย์เรื่อง Pseudodementia & แนะนำตรวจ 9Q"]
     Gatekeeper2Q -->|"ตอบ 'ไม่มี' ทั้ง 2 ข้อ"| FlagNoDep["depression_risk_flag = false"]
 
-    FlagDep --> ACBCheck["คัดกรองรายการยาประจำ (ACB Scale: LOINC LP268153-6)"]
+    FlagDep --> ACBCheck["คัดกรองรายการยาประจำ (ACB Scale: Local CodeSystem acb-total-score)"]
     FlagNoDep --> ACBCheck
     ACBCheck --> Mod1["โมดูลที่ 1: แบบประเมินญาติ AD8 (0-8 คะแนน)"]
 
@@ -70,8 +70,8 @@ $$\text{Annualized }\Delta\text{-Decline Rate (\%/year)} = \left(\frac{\Delta\te
 
 สามารถใช้ไฟล์ในโฟลเดอร์ [`samples/`](../samples/) เพื่อทดสอบปุ่ม **"📂 นำเข้าไฟล์ FHIR R4 Bundle (.json)"** ในโมดูลที่ 4 ได้ทันที:
 - [`samples/fhir-reversible-b12-hypothyroid.json`](../samples/fhir-reversible-b12-hypothyroid.json) — ตัวอย่างผลแล็บ FHIR R4 ของผู้ป่วยที่มีภาวะพร่องวิตามิน B12 (`135 pg/mL`, LOINC `2132-9`) และภาวะพร่องฮอร์โมนไทรอยด์ (`TSH = 8.6 uIU/mL`, LOINC `3016-3`; `Free T4 = 0.68 ng/dL`, LOINC `3024-7`)
-- [`samples/fhir-alzheimers-ptau217-positive.json`](../samples/fhir-alzheimers-ptau217-positive.json) — ตัวอย่างผลแล็บ FHIR R4 ของผู้ป่วยที่มีผลบวกจำเพาะต่อโรคอัลไซเมอร์ (`Plasma p-tau217 = 0.74 pg/mL`, LOINC `LP438664-7`; `Aβ42/40 Ratio = 0.048`, LOINC `94660-8`; `APOE = e4/e4`, LOINC `41762-6`)
-- [`samples/fhir-acb-speech-tremor.json`](../samples/fhir-acb-speech-tremor.json) — ตัวอย่างผลประเมิน FHIR R4 ของผู้ป่วยที่มีภาระยาต้านโคลิเนอร์จิกสูง (`ACB Total Score = 6`, LOINC `LP268153-6`), เมทริกซ์เสียงเสี่ยงต่อ MCI (`speech_mci_biomarker_flag = true`, LOINC `LP419518-8`), และการตรวจพบมือสั่นแบบแยกแยะมิติ (`motor_tremor_flag = true` ร่วมกับ CDT ปกติ) พร้อมระบุรหัสนิรนามตามมาตรฐาน HIPAA/PDPA (`PSN-E821-4F2A90C1-B739`)
+- [`samples/fhir-alzheimers-ptau217-positive.json`](../samples/fhir-alzheimers-ptau217-positive.json) — ตัวอย่างผลแล็บ FHIR R4 ของผู้ป่วยที่มีผลบวกจำเพาะต่อโรคอัลไซเมอร์ (`Plasma p-tau217 = 0.74 pg/mL`, LOINC `104663-0`; `Aβ42/40 Ratio = 0.048`, LOINC `106941-8`; `APOE = e4/e4`, LOINC `42315-2`)
+- [`samples/fhir-acb-speech-tremor.json`](../samples/fhir-acb-speech-tremor.json) — ตัวอย่างผลประเมิน FHIR R4 ของผู้ป่วยที่มีภาระยาต้านโคลิเนอร์จิกสูง (`ACB Total Score = 6`, Project CodeSystem `acb-total-score`), เมทริกซ์เสียงเสี่ยงต่อ MCI (`speech_mci_biomarker_flag = true`, Project CodeSystem `speech-biomarker-exploratory`), และการตรวจพบมือสั่นแบบแยกแยะมิติ (`motor_tremor_flag = true` ร่วมกับ CDT ปกติ) พร้อมระบุรหัสนิรนามตามแนวทาง HIPAA/PDPA Privacy-by-Design (`PSN-E821-4F2A90C1-B739`)
 
 ---
 

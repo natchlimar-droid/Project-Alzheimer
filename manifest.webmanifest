@@ -1,0 +1,10 @@
+{
+  "name": "Thai Cognitive Triage CDSS (อัลไซเมอร์และภาวะรู้คิดบกพร่อง)",
+  "short_name": "ThaiCogTriage",
+  "description": "Multimodal Cognitive Screening & Biomarker-Informed Clinical Decision Support Prototype (HL7 FHIR R4 / LOINC-Mapped)",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#003380",
+  "lang": "th"
+}

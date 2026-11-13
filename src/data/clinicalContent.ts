@@ -1,11 +1,11 @@
-import {
+import type {
   ACBMedicationItem,
   FourATDeliriumAssessment,
   BriefIADLAssessment,
   LabResults,
   LoincCodeDefinition,
   PreviousSessionSnapshot,
-} from "../types/clinical";
+} from "../types/clinical.ts";
 
 /**
  * Pre-Test Validity Checklist Items
@@ -533,8 +533,17 @@ export const MINICOG_WORD_SETS: WordSet[] = [
   },
 ];
 
+export const SAMD_DISCLAIMER_TH =
+  "ระบบนี้เป็นเครื่องมือคัดกรองและสนับสนุนการตัดสินใจทางคลินิกเบื้องต้นเชิงแนวคิด (Clinical Decision Support Prototype) ไม่ใช่การวินิจฉัยโรคทางการแพทย์ ผลการประเมินต้องได้รับการยืนยันโดยแพทย์ผู้เชี่ยวชาญ";
+
+export const FHIR_LOCAL_CODE_SYSTEM =
+  "https://natchlimar-droid.github.io/Project-Alzheimer/fhir/CodeSystem/thai-cognitive-triage";
+
 /**
- * Standardized International LOINC Code Mapping (All Observation Codes, No Part Codes)
+ * Standardized International LOINC & Local FHIR CodeSystem Mapping
+ * Audited against loinc.org:
+ * - ZERO LOINC Part (LP*) codes used in Observation.code
+ * - Each entry classifies mappingType as EXACT_LOINC, CLOSEST_MATCH, or LOCAL_CODESYSTEM
  */
 export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
   // 1. Reversible Metabolic
@@ -544,7 +553,9 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     loincName: "Thyrotropin [Units/volume] in Serum or Plasma",
     labelTh: "TSH (ฮอร์โมนกระตุ้นต่อมไทรอยด์)",
     unit: "uIU/mL",
-    referenceRange: "0.4 - 4.5 uIU/mL (ผู้สูงอายุอาจยอมรับได้ถึง 6.0 uIU/mL)",
+    referenceRange: "0.35 - 4.5 uIU/mL (ผู้สูงอายุอาจยอมรับได้ถึง 6.0 uIU/mL)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "REVERSIBLE_METABOLIC",
   },
   labFreeT4: {
@@ -554,6 +565,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "Free T4 (ฮอร์โมนไทรอยด์อิสระ)",
     unit: "ng/dL",
     referenceRange: "0.8 - 1.8 ng/dL",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "REVERSIBLE_METABOLIC",
   },
   labB12: {
@@ -563,6 +576,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "Vitamin B12 (โคบาลามิน)",
     unit: "pg/mL",
     referenceRange: "ขาด: < 200 pg/mL | ก้ำกึ่ง: 200 - 300 pg/mL | ปกติ: > 300 pg/mL",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "REVERSIBLE_METABOLIC",
   },
   labFolate: {
@@ -572,6 +587,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "Serum Folate (กรดโฟลิกในเลือด)",
     unit: "ng/mL",
     referenceRange: "ขาด: < 3.0 ng/mL | ก้ำกึ่ง: 3.0 - 4.0 ng/mL | ปกติ: > 4.0 ng/mL",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "REVERSIBLE_METABOLIC",
   },
   labSodium: {
@@ -581,6 +598,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "Sodium (เกลือแร่โซเดียมในเลือด)",
     unit: "mEq/L",
     referenceRange: "ปกติ: 135 - 145 mEq/L (ต่ำเล็กน้อย: 130-134; รุนแรง: < 130)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "REVERSIBLE_METABOLIC",
   },
   labCalcium: {
@@ -590,6 +609,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "Calcium (แคลเซียมในเลือด)",
     unit: "mg/dL",
     referenceRange: "ปกติ: 8.5 - 10.5 mg/dL",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "REVERSIBLE_METABOLIC",
   },
 
@@ -601,15 +622,20 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "HbA1c (น้ำตาลสะสมในเลือด)",
     unit: "%",
     referenceRange: "< 5.7% ปกติ | 5.7-6.4% ก่อนเบาหวาน | >= 6.5% เบาหวาน",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "VASCULAR_METABOLIC",
   },
   labFastingGlucose: {
     fieldKey: "fasting_glucose_mg_dL",
     loincCode: "1558-6",
-    loincName: "Fasting glucose [Mass/volume] in Blood",
+    loincName: "Fasting glucose [Mass/volume] in Serum or Plasma",
     labelTh: "Fasting Blood Sugar (น้ำตาลในเลือดหลังอดอาหาร)",
     unit: "mg/dL",
     referenceRange: "70 - 99 mg/dL (ต่ำรุนแรง: < 54; ต่ำ: < 70; สูงมาก: > 300)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
+    legacyAliasCodes: ["2345-7"],
     category: "VASCULAR_METABOLIC",
   },
   labLdl: {
@@ -619,6 +645,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "LDL-C (ไขมันคอเลสเตอรอลชนิดไม่ดี)",
     unit: "mg/dL",
     referenceRange: "< 100 mg/dL (เป้าหมาย)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "VASCULAR_METABOLIC",
   },
   labHdl: {
@@ -628,6 +656,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "HDL-C (ไขมันคอเลสเตอรอลชนิดดี)",
     unit: "mg/dL",
     referenceRange: "> 40 mg/dL (ชาย), > 50 mg/dL (หญิง)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "VASCULAR_METABOLIC",
   },
   labCreatinine: {
@@ -637,15 +667,20 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "Serum Creatinine (ค่าการทำงานของไต)",
     unit: "mg/dL",
     referenceRange: "0.6 - 1.2 mg/dL (ไตเสื่อมปานกลาง: 2.0-2.9; ไตวายรุนแรง: >= 3.0)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "ROUTINE_GERIATRIC",
   },
   labEgfr: {
     fieldKey: "egfr_mL_min",
-    loincCode: "62238-1",
-    loincName: "Glomerular filtration rate/1.73 sq M.predicted [CKD-EPI]",
+    loincCode: "98979-8",
+    loincName: "Glomerular filtration rate/1.73 sq M.predicted [Volume Rate/Area] in Serum, Plasma or Blood by Creatinine-based formula (CKD-EPI 2021)",
     labelTh: "eGFR (อัตราการกรองของเสียของไต)",
     unit: "mL/min/1.73m2",
     referenceRange: ">= 60 mL/min/1.73m² (ไตเสื่อมทำให้ p-tau ในเลือดคั่งหลอกได้)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
+    legacyAliasCodes: ["62238-1"],
     category: "VASCULAR_METABOLIC",
   },
   labHemoglobin: {
@@ -655,6 +690,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "Hemoglobin (ความเข้มข้นของเลือด / ภาวะซีด)",
     unit: "g/dL",
     referenceRange: "12.0 - 16.0 g/dL (ซีดรุนแรง: < 8.0; ซีดเล็กน้อย-ปานกลาง: 8.0-10.9)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "ROUTINE_GERIATRIC",
   },
   labAlt: {
@@ -664,6 +701,8 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "ALT (เอนไซม์การทำงานของตับ)",
     unit: "U/L",
     referenceRange: "7 - 56 U/L (ตับอักเสบสูง: > 120; ตับวายรุนแรง: > 250)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "ROUTINE_GERIATRIC",
   },
   labAst: {
@@ -673,36 +712,148 @@ export const LOINC_DATA_MAPPING: Record<string, LoincCodeDefinition> = {
     labelTh: "AST (เอนไซม์การทำงานของตับ)",
     unit: "U/L",
     referenceRange: "10 - 40 U/L (ตับอักเสบสูง: > 120; ตับวายรุนแรง: > 250)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
     category: "ROUTINE_GERIATRIC",
   },
 
   // 3. Genetic & Alzheimer Specific Biomarkers
   labApoe: {
     fieldKey: "apoe_genotype",
-    loincCode: "41762-6",
-    loincName: "APOE gene allele genotype",
+    loincCode: "42315-2",
+    loincName: "APOE gene alleles e2 and e3 and e4 [Identifier] in Blood or Tissue by Molecular genetics method",
     labelTh: "APOE Genotype (ยีนความเสี่ยงอัลไซเมอร์)",
     unit: "",
     referenceRange: "e2/e2, e2/e3, e2/e4, e3/e3, e3/e4, e4/e4",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
+    legacyAliasCodes: ["41762-6"],
     category: "ALZHEIMER_GENETIC",
   },
   labPtauVal: {
     fieldKey: "plasma_ptau217_pg_mL",
-    loincCode: "104352-0", // Validated official Observation code
-    loincName: "Phosphorylated tau 217 [Mass/volume] in Plasma",
+    loincCode: "104663-0",
+    loincName: "Tau protein.phosphorylated 217 [Mass/volume] in Serum or Plasma by Immunoassay",
     labelTh: "Plasma p-tau217 (โปรตีนจำเพาะต่อโรคอัลไซเมอร์)",
     unit: "pg/mL",
     referenceRange: "ขึ้นกับแพลตฟอร์มผู้ผลิตชุดตรวจ (แนะนำ Two-Cutoff Approach เช่น <0.25 ลบ, 0.25-0.39 ก้ำกึ่ง, >=0.40 บวก)",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
+    legacyAliasCodes: ["104352-0"],
     category: "ALZHEIMER_GENETIC",
   },
   labAbetaRatio: {
     fieldKey: "abeta_42_40_ratio",
-    loincCode: "94660-8",
-    loincName: "Beta-amyloid 42/Beta-amyloid 40 ratio in Plasma",
+    loincCode: "106941-8",
+    loincName: "Amyloid beta 42 peptide/Amyloid beta 40 peptide [Mass Ratio] in Plasma by LC/MS/MS",
     labelTh: "Aβ 42/40 Ratio (สัดส่วนโปรตีนอะไมลอยด์เบต้า)",
     unit: "{ratio}",
     referenceRange: "ปกติ >= 0.090 | อะไมลอยด์บวก (เสี่ยงสูง): < 0.090",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
+    legacyAliasCodes: ["94660-8"],
     category: "ALZHEIMER_GENETIC",
+  },
+
+  // 4. Clinical Instruments & Local CodeSystem Mappings
+  scoreAd8: {
+    fieldKey: "ad8_score",
+    loincCode: "71722-3",
+    loincName: "Total score [AD8]",
+    labelTh: "แบบประเมิน AD8 (คะแนนรวม 0-8)",
+    unit: "{score}",
+    referenceRange: "0 - 1 ปกติ | >= 2 มีภาวะบกพร่องทางการรับรู้",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
+    category: "CLINICAL_SCORE",
+  },
+  scoreMiniCogTotal: {
+    fieldKey: "mini_cog_total",
+    loincCode: "72233-0",
+    loincName: "Total score [Mini-Cog]",
+    labelTh: "Mini-Cog Total Score (0-5)",
+    unit: "{score}",
+    referenceRange: ">= 3 ปกติ | < 3 เสี่ยงภาวะสมองเสื่อม",
+    mappingType: "EXACT_LOINC",
+    codeSystem: "http://loinc.org",
+    category: "CLINICAL_SCORE",
+  },
+  scoreDepression2Q: {
+    fieldKey: "depression_2q",
+    loincCode: "55758-7",
+    loincName: "Patient Health Questionnaire 2 item (PHQ-2) total score [Reported]",
+    labelTh: "แบบคัดกรองโรคซึมเศร้า 2Q (Closest Match: PHQ-2)",
+    unit: "{score}",
+    referenceRange: "Negative (0) | Positive (>= 1 ข้อเสี่ยงซึมเศร้า)",
+    mappingType: "CLOSEST_MATCH",
+    codeSystem: "http://loinc.org",
+    category: "CLINICAL_SCORE",
+  },
+  scoreBriefIadl: {
+    fieldKey: "brief_iadl_score",
+    loincCode: "83180-0",
+    loincName: "Self-care activities - functional ability panel",
+    labelTh: "Brief 4-Item Thai IADL (Closest Match Panel)",
+    unit: "{score}",
+    referenceRange: "0 ปกติ | >= 1 สูญเสียความสามารถเชิงปฏิบัติ",
+    mappingType: "CLOSEST_MATCH",
+    codeSystem: "http://loinc.org",
+    category: "CLINICAL_SCORE",
+  },
+  scoreTrailMaking: {
+    fieldKey: "trail_making_test",
+    loincCode: "62778-6",
+    loincName: "PhenX - trail making test protocol",
+    labelTh: "Thai Visual-Motor Trail Making (1-ก-2-ข-3-ค-4-ง)",
+    unit: "ms",
+    referenceRange: "ปรับเกณฑ์ตามอายุและการศึกษา + Device Latency Calibration",
+    mappingType: "CLOSEST_MATCH",
+    codeSystem: "http://loinc.org",
+    category: "CLINICAL_SCORE",
+  },
+  scoreFourAtDelirium: {
+    fieldKey: "delirium_4at_score",
+    loincCode: "delirium-4at-total",
+    loincName: "4AT Rapid Clinical Test for Delirium Total Score",
+    labelTh: "4AT Delirium Screen Score (0-12)",
+    unit: "{score}",
+    referenceRange: "0 ปกติ | 1-3 เฝ้าระวัง | >= 4 สงสัย Delirium",
+    mappingType: "LOCAL_CODESYSTEM",
+    codeSystem: FHIR_LOCAL_CODE_SYSTEM,
+    category: "CLINICAL_SCORE",
+  },
+  scoreAnimalNaming: {
+    fieldKey: "animal_naming_60s",
+    loincCode: "semantic-fluency-animals-60s",
+    loincName: "Category Verbal Fluency - Animals Named in 60 Seconds",
+    labelTh: "การบอกชื่อสัตว์ใน 60 วินาที (Non-Literate Pathway)",
+    unit: "{count}/min",
+    referenceRange: "ไม่ได้เรียนหนังสือ >= 9 ตัว | ประถมศึกษาขึ้นไป >= 10 ตัว",
+    mappingType: "LOCAL_CODESYSTEM",
+    codeSystem: FHIR_LOCAL_CODE_SYSTEM,
+    category: "CLINICAL_SCORE",
+  },
+  scoreAcbBurden: {
+    fieldKey: "acb_score",
+    loincCode: "acb-total-score",
+    loincName: "Anticholinergic Cognitive Burden (ACB) Scale Total Score",
+    labelTh: "คะแนนภาระยาต้านโคลิเนอร์จิก (ACB Score)",
+    unit: "{score}",
+    referenceRange: "0-2 ต่ำ | >= 3 เสี่ยงสูงต่อสมองสับสนจากยา",
+    mappingType: "LOCAL_CODESYSTEM",
+    codeSystem: FHIR_LOCAL_CODE_SYSTEM,
+    category: "CLINICAL_SCORE",
+  },
+  scoreSpeechBiomarker: {
+    fieldKey: "speech_biomarker",
+    loincCode: "speech-PauseToWord-ratio",
+    loincName: "Acoustic Speech Biomarker - Pause-to-Speech Ratio",
+    labelTh: "ดัชนีวิเคราะห์การเว้นจังหวะเสียงพูด (Exploratory Telemetry)",
+    unit: "{ratio}",
+    referenceRange: "เกณฑ์วิจัย < 0.35 (Experimental Only)",
+    mappingType: "LOCAL_CODESYSTEM",
+    codeSystem: FHIR_LOCAL_CODE_SYSTEM,
+    category: "CLINICAL_SCORE",
   },
 };
 

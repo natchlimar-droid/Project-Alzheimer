@@ -1,4 +1,4 @@
-import { CDTResult, ClockDrawingTelemetry } from "../types/clinical";
+import type { CDTResult, ClockDrawingTelemetry } from "../types/clinical.ts";
 
 export interface Point2D {
   x: number;

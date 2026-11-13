@@ -1,6 +1,6 @@
-import { ACB_MEDICATIONS } from "../data/clinicalContent";
-import {
-  ALGORITHM_VERSION,
+import { ACB_MEDICATIONS, calculate4ATDelirium, evaluateBriefIADL } from "../data/clinicalContent.ts";
+import { ALGORITHM_VERSION } from "../types/clinical.ts";
+import type {
   AssessmentInput,
   AbetaRatioStatus,
   BiomarkerAxisCategory,
@@ -17,7 +17,37 @@ import {
   RiskOutput,
   SpeechBiomarkerTelemetry,
   VisualMotorTelemetry,
-} from "../types/clinical";
+} from "../types/clinical.ts";
+
+export { calculate4ATDelirium, evaluateBriefIADL };
+
+/**
+ * Normalizes field-name aliases (e.g., alt_U_L -> alt_u_L, folate_ng_mL -> serum_folate_ng_mL,
+ * serum_creatinine_mg_dL -> creatinine_mg_dL) so UI, FHIR imports, and SDK callers never diverge.
+ */
+export function normalizeLabResults(labs?: Partial<LabResults> | null): LabResults {
+  if (!labs) return {};
+  return {
+    ...labs,
+    serum_folate_ng_mL: labs.serum_folate_ng_mL ?? labs.folate_ng_mL ?? undefined,
+    creatinine_mg_dL: labs.creatinine_mg_dL ?? labs.serum_creatinine_mg_dL ?? undefined,
+    alt_u_L: labs.alt_u_L ?? labs.alt_U_L ?? undefined,
+    ast_u_L: labs.ast_u_L ?? labs.ast_U_L ?? undefined,
+  };
+}
+
+/**
+ * Education-adjusted 60-second Animal Naming semantic fluency cutoff.
+ * Derived from Thai community-dwelling older adult normative data (e.g., Muangpaisan et al.):
+ * - 0 years of formal education (non-literate): < 9 animals/min considered impaired
+ * - >= 1 year of formal education (or unspecified): < 10 animals/min considered impaired
+ */
+export function getAnimalNamingThreshold(yearsOfEducation?: number | null): number {
+  if (yearsOfEducation !== undefined && yearsOfEducation !== null && yearsOfEducation <= 0) {
+    return 9;
+  }
+  return 10;
+}
 
 /**
  * Validated Clinical Threshold Constants
@@ -351,16 +381,17 @@ export function evaluateSpeechBiomarkers(
 
 /**
  * Reversible / Metabolic Axis Evaluation
- * Evaluates Thyroid (Overt, Subclinical, Central, Thyrotoxicosis), B12, Folate,
- * Glucose (Hypoglycemia, Hyperglycemia), Sodium, Calcium, Anemia, Renal & Hepatic dysfunction.
+ * Evaluates Thyroid (Overt, Subclinical Hypo/Hyper, Central, Thyrotoxicosis), B12, Folate,
+ * Glucose (Hypoglycemia, Hyperglycemia), Sodium, Calcium, Anemia, Renal (Cr or standalone eGFR) & Hepatic dysfunction.
  */
 export function evaluateReversibleAxis(
-  labs: LabResults = {},
+  rawLabs: LabResults = {},
   acbTotalScore: number = 0
 ): {
   categories: ReversibleAxisCategory[];
   flags: string[];
 } {
+  const labs = normalizeLabResults(rawLabs);
   const categories: ReversibleAxisCategory[] = [];
   const flags: string[] = [];
 
@@ -370,22 +401,24 @@ export function evaluateReversibleAxis(
     flags.push(`[HIGH ACB BURDEN] ภาระยาต้านโคลิเนอร์จิกสูง (ACB Score = ${acbTotalScore}) เสี่ยงต่อสมองตื้อจากยา แนะนำ Deprescribing`);
   }
 
-  // Check if ANY lab was entered
+  const isNum = (v: unknown): v is number => typeof v === "number" && !Number.isNaN(v);
+
+  // Check if ANY numeric lab was entered
   const hasAnyLab =
-    labs.tsh_uIU_mL !== undefined ||
-    labs.free_t4_ng_dL !== undefined ||
-    labs.vitamin_b12_pg_mL !== undefined ||
-    labs.serum_folate_ng_mL !== undefined ||
-    labs.sodium_mEq_L !== undefined ||
-    labs.calcium_mg_dL !== undefined ||
-    labs.fasting_glucose_mg_dL !== undefined ||
-    labs.hba1c_percent !== undefined ||
-    labs.hemoglobin_g_dL !== undefined ||
-    labs.creatinine_mg_dL !== undefined ||
-    labs.egfr_mL_min !== undefined ||
-    labs.alt_u_L !== undefined ||
-    labs.ast_u_L !== undefined ||
-    labs.ldl_mg_dL !== undefined;
+    isNum(labs.tsh_uIU_mL) ||
+    isNum(labs.free_t4_ng_dL) ||
+    isNum(labs.vitamin_b12_pg_mL) ||
+    isNum(labs.serum_folate_ng_mL) ||
+    isNum(labs.sodium_mEq_L) ||
+    isNum(labs.calcium_mg_dL) ||
+    isNum(labs.fasting_glucose_mg_dL) ||
+    isNum(labs.hba1c_percent) ||
+    isNum(labs.hemoglobin_g_dL) ||
+    isNum(labs.creatinine_mg_dL) ||
+    isNum(labs.egfr_mL_min) ||
+    isNum(labs.alt_u_L) ||
+    isNum(labs.ast_u_L) ||
+    isNum(labs.ldl_mg_dL);
 
   if (!hasAnyLab) {
     if (categories.length === 0) categories.push("UNASSESSED");
@@ -394,7 +427,7 @@ export function evaluateReversibleAxis(
 
   // 1. Fasting Glucose (Hypoglycemia & Severe Hyperglycemia)
   const glu = labs.fasting_glucose_mg_dL;
-  if (glu !== undefined && glu !== null) {
+  if (isNum(glu)) {
     if (glu < CLINICAL_THRESHOLDS.GLUCOSE_SEVERE_LOW) {
       categories.push("SEVERE_HYPOGLYCEMIA");
       flags.push(`[SEVERE HYPOGLYCEMIA] น้ำตาลในเลือดต่ำรุนแรง (${glu} mg/dL < 54) ภาวะฉุกเฉินทำให้เซลล์สมองขาดพลังงาน เกิดอาการสับสน เพ้อ และหมดสติ ต้องให้กลูโคสด่วน`);
@@ -409,7 +442,7 @@ export function evaluateReversibleAxis(
 
   // 2. Hemoglobin (Severe Anemia vs Watch)
   const hb = labs.hemoglobin_g_dL;
-  if (hb !== undefined && hb !== null) {
+  if (isNum(hb)) {
     if (hb < CLINICAL_THRESHOLDS.HEMOGLOBIN_SEVERE_ANEMIA) {
       categories.push("SEVERE_ANEMIA");
       flags.push(`[SEVERE ANEMIA] ภาวะซีดรุนแรง (Hemoglobin = ${hb} g/dL < 8.0) สมองขาดออกซิเจน ทำให้ง่วงซึม ความจำและสมาธิลดลงชัดเจน ต้องตรวจหาสาเหตุเลือดออกหรือขาดสารอาหาร`);
@@ -419,22 +452,22 @@ export function evaluateReversibleAxis(
     }
   }
 
-  // 3. Renal Impairment & Uremic Encephalopathy Risk
+  // 3. Renal Impairment & Uremic Encephalopathy Risk (Cr and standalone eGFR)
   const cr = labs.creatinine_mg_dL;
   const egfr = labs.egfr_mL_min;
-  if (cr !== undefined && cr !== null) {
-    if (cr >= CLINICAL_THRESHOLDS.CREATININE_SEVERE || (egfr !== undefined && egfr !== null && egfr < CLINICAL_THRESHOLDS.EGFR_SEVERE_RENAL)) {
+  if (isNum(cr) || isNum(egfr)) {
+    if ((isNum(cr) && cr >= CLINICAL_THRESHOLDS.CREATININE_SEVERE) || (isNum(egfr) && egfr < CLINICAL_THRESHOLDS.EGFR_SEVERE_RENAL)) {
       categories.push("SEVERE_RENAL_FAILURE_UREMIC_RISK");
-      flags.push(`[SEVERE RENAL FAILURE] ไตวายรุนแรง (Creatinine = ${cr} mg/dL, eGFR = ${egfr ?? "ไม่ได้คำนวณ"}) เสี่ยงต่อภาวะของเสียคั่งในสมอง (Uremic Encephalopathy) ทำให้สับสน เพ้อ และความจำเสื่อม`);
-    } else if (cr >= CLINICAL_THRESHOLDS.CREATININE_MODERATE || (egfr !== undefined && egfr !== null && egfr < CLINICAL_THRESHOLDS.EGFR_MODERATE_RENAL)) {
+      flags.push(`[SEVERE RENAL FAILURE] ไตวายรุนแรง (Creatinine = ${cr ?? "ไม่ได้ระบุ"} mg/dL, eGFR = ${egfr ?? "ไม่ได้คำนวณ"} mL/min) เสี่ยงต่อภาวะของเสียคั่งในสมอง (Uremic Encephalopathy) ทำให้สับสน เพ้อ และความจำเสื่อม`);
+    } else if ((isNum(cr) && cr > 1.3) || (isNum(egfr) && egfr < CLINICAL_THRESHOLDS.EGFR_RENAL_IMPAIRMENT)) {
       categories.push("RENAL_IMPAIRMENT");
-      flags.push(`[RENAL IMPAIRMENT] ไตบกพร่องปานกลาง (Creatinine = ${cr} mg/dL, eGFR = ${egfr ?? "ไม่ได้คำนวณ"}) ต้องปรับขนาดยาและระวังของเสียสะสม`);
+      flags.push(`[RENAL IMPAIRMENT] ไตบกพร่อง (Creatinine = ${cr ?? "ไม่ได้ระบุ"} mg/dL, eGFR = ${egfr ?? "ไม่ได้คำนวณ"} mL/min) ต้องปรับขนาดยาที่ขับทางไตและระวังผล p-tau คั่งหลอก`);
     }
   }
 
   // 4. Serum Folate Deficiency
   const fol = labs.serum_folate_ng_mL;
-  if (fol !== undefined && fol !== null) {
+  if (isNum(fol)) {
     if (fol < CLINICAL_THRESHOLDS.FOLATE_DEFICIENT) {
       categories.push("FOLATE_DEFICIENCY");
       flags.push(`[FOLATE DEFICIENCY] ภาวะขาดกรดโฟลิก (${fol} ng/mL < 3.0) เป็นสาเหตุของความจำเสื่อมและโลหิตจางที่รักษาหายได้ แนะนำเสริม Folic Acid`);
@@ -447,36 +480,50 @@ export function evaluateReversibleAxis(
   // 5. Hepatic Dysfunction (ALT / AST)
   const alt = labs.alt_u_L;
   const ast = labs.ast_u_L;
-  const maxTransaminase = Math.max(alt ?? 0, ast ?? 0);
+  const maxTransaminase = Math.max(isNum(alt) ? alt : 0, isNum(ast) ? ast : 0);
   if (maxTransaminase > 0) {
     if (maxTransaminase >= CLINICAL_THRESHOLDS.ALT_SEVERE) {
       categories.push("SEVERE_HEPATIC_DYSFUNCTION");
       flags.push(`[SEVERE HEPATIC DYSFUNCTION] ตับอักเสบรุนแรง (ALT = ${alt ?? "-"}, AST = ${ast ?? "-"} U/L >= 250) เสี่ยงต่อภาวะตับวายและ Hepatic Encephalopathy ทำให้สับสนซึม`);
     } else if (maxTransaminase >= CLINICAL_THRESHOLDS.ALT_IMPAIRMENT) {
       categories.push("HEPATIC_IMPAIRMENT_WATCH");
-      flags.push(`[HEPATIC IMPAIRMENT WATCH] ตับอักเสบปานกลาง (ALT = ${alt ?? "-"}, AST = ${ast ?? "-"} U/L > 120) ควรตรวจหาสาเหตุ`);
+      flags.push(`[HEPATIC IMPAIRMENT WATCH] ตับอักเสบปานกลาง (ALT = ${alt ?? "-"}, AST = ${ast ?? "-"} U/L >= 120) ควรตรวจหาสาเหตุ`);
     }
   }
 
-  // 6. Thyroid Evaluation (Overt, Subclinical, Central, Thyrotoxicosis)
+  // 6. Thyroid Evaluation (Overt, Subclinical Hypo/Hyper, Central, Thyrotoxicosis)
   const tsh = labs.tsh_uIU_mL;
   const ft4 = labs.free_t4_ng_dL;
-  if (tsh !== undefined && tsh !== null) {
-    const isFt4Low = ft4 !== undefined && ft4 !== null && ft4 < CLINICAL_THRESHOLDS.FREE_T4_NORMAL_LOW;
+  const hasTsh = isNum(tsh);
+  const hasFt4 = isNum(ft4);
+  if (hasTsh || hasFt4) {
+    const isFt4Low = hasFt4 && ft4 < CLINICAL_THRESHOLDS.FREE_T4_NORMAL_LOW;
+    const isFt4High = hasFt4 && ft4 > CLINICAL_THRESHOLDS.FREE_T4_NORMAL_HIGH;
 
-    // Central Hypothyroidism: Low FT4 with normal or low TSH
-    if (isFt4Low && tsh <= CLINICAL_THRESHOLDS.TSH_NORMAL_HIGH && tsh >= 0.1) {
+    // Rule A — Central Hypothyroidism: Low FT4 (< 0.8) with non-elevated/suppressed/unassessed TSH (including TSH < 0.1!)
+    if (isFt4Low && (!hasTsh || tsh <= CLINICAL_THRESHOLDS.TSH_NORMAL_HIGH)) {
       categories.push("CENTRAL_HYPOTHYROIDISM_SUSPECTED");
-      flags.push(`[CENTRAL HYPOTHYROIDISM SUSPECTED] FT4 ต่ำ (${ft4} ng/dL < 0.8) ร่วมกับ TSH ปกติ/ต่ำ (${tsh} uIU/mL) สงสัยภาวะพร่องฮอร์โมนไทรอยด์จากต่อมใต้สมอง (Central/Secondary Hypothyroidism) แนะนำส่งตรวจต่อมไร้ท่อและ MRI Pituitary`);
-    } else if (tsh > CLINICAL_THRESHOLDS.TSH_SUBCLINICAL_MAX || (tsh > CLINICAL_THRESHOLDS.TSH_NORMAL_HIGH && isFt4Low)) {
+      flags.push(`[CENTRAL HYPOTHYROIDISM SUSPECTED] FT4 ต่ำ (${ft4} ng/dL < 0.8) ร่วมกับ TSH ไม่สูง (${hasTsh ? tsh : "ไม่ได้ตรวจ"} uIU/mL) สงสัยภาวะพร่องฮอร์โมนไทรอยด์จากต่อมใต้สมอง (Central/Secondary Hypothyroidism) แนะนำส่งตรวจต่อมไร้ท่อและ MRI Pituitary`);
+    } else if (hasTsh && (tsh > CLINICAL_THRESHOLDS.TSH_SUBCLINICAL_MAX || (tsh > CLINICAL_THRESHOLDS.TSH_NORMAL_HIGH && isFt4Low))) {
+      // Rule B1 — Overt Primary Hypothyroidism
       categories.push("OVERT_HYPOTHYROIDISM");
       flags.push(`[OVERT HYPOTHYROIDISM] ภาวะฮอร์โมนไทรอยด์ต่ำชัดเจน (TSH = ${tsh} uIU/mL, FT4 = ${ft4 ?? "ไม่ได้ตรวจ"}) เป็นสาเหตุของความจำถดถอยที่รักษาได้`);
-    } else if (tsh > CLINICAL_THRESHOLDS.TSH_NORMAL_HIGH) {
+    } else if (hasTsh && tsh > CLINICAL_THRESHOLDS.TSH_NORMAL_HIGH) {
+      // Rule B2 — Subclinical Hypothyroidism Watch
       categories.push("SUBCLINICAL_THYROID_WATCH");
       flags.push(`[SUBCLINICAL THYROID WATCH] TSH สูงระดับก้ำกึ่ง (${tsh} uIU/mL; ช่วง 4.5–10) โดย FT4 ปกติ แนะนำตรวจติดตามซ้ำใน 2–3 เดือนก่อนเริ่มยาไทรอยด์`);
-    } else if (tsh < CLINICAL_THRESHOLDS.TSH_NORMAL_LOW) {
+    } else if (hasTsh && tsh < CLINICAL_THRESHOLDS.TSH_NORMAL_LOW) {
+      // Rule C — Low TSH: Require elevated FT4 (> 1.8) for overt thyrotoxicosis; otherwise Subclinical Hyperthyroidism Watch
+      if (isFt4High) {
+        categories.push("HYPERTHYROIDISM_THYROTOXICOSIS");
+        flags.push(`[OVERT HYPERTHYROIDISM / THYROTOXICOSIS] TSH ต่ำ (${tsh} uIU/mL < 0.35) ร่วมกับ FT4 สูง (${ft4} ng/dL > 1.8) บ่งชี้ภาวะไทรอยด์เป็นพิษ เสี่ยงใจสั่น วิตกกังวล และสับสน (Apathetic Thyrotoxicosis)`);
+      } else {
+        categories.push("SUBCLINICAL_HYPERTHYROIDISM_WATCH");
+        flags.push(`[SUBCLINICAL HYPERTHYROIDISM / LOW TSH WATCH] TSH ต่ำ (${tsh} uIU/mL < 0.35) โดย FT4 ปกติหรือยังไม่ได้ตรวจ (${ft4 ?? "ไม่ได้ตรวจ"} ng/dL) แนะนำตรวจยืนยัน Free T4 และ Free T3 เพื่อแยกภาวะ Subclinical Hyperthyroidism / Apathetic Thyrotoxicosis`);
+      }
+    } else if (isFt4High) {
       categories.push("HYPERTHYROIDISM_THYROTOXICOSIS");
-      flags.push(`[THYROTOXICOSIS / HYPERTHYROIDISM] TSH ต่ำผิดปกติ (${tsh} uIU/mL < 0.35) บ่งชี้ภาวะไทรอยด์เป็นพิษ อาจทำให้ใจสั่น วิตกกังวล และสับสนในผู้สูงอายุ (Apathetic Thyrotoxicosis)`);
+      flags.push(`[HYPERTHYROIDISM / ELEVATED FT4] FT4 สูง (${ft4} ng/dL > 1.8) แนะนำส่งตรวจประเมินต่อมไร้ท่อเพิ่มเติม`);
     }
   }
 
@@ -540,7 +587,7 @@ export function evaluateReversibleAxis(
  * Positive triage biomarker MUST be confirmed with Amyloid-PET or CSF before DMT initiation.
  */
 export function evaluateBiomarkerAxis(
-  labs: LabResults = {},
+  rawLabs: LabResults = {},
   algorithmicCognitiveAxis: CognitiveAxisCategory
 ): {
   category: BiomarkerAxisCategory;
@@ -549,6 +596,7 @@ export function evaluateBiomarkerAxis(
   flags: string[];
   confirmatoryAdvisoryTh: string;
 } {
+  const labs = normalizeLabResults(rawLabs);
   const flags: string[] = [];
 
   const ptauVal = labs.plasma_ptau217_pg_mL;
@@ -774,12 +822,21 @@ export function stratifyCognitiveRisk(input: AssessmentInput): RiskOutput {
 
   // 2. Incomplete Assessment Check (Prevent False Negatives from Null/Unanswered Modules)
   const isNonLiterate = !!(input.isNonLiteratePathway || input.preTestValidity?.isNonLiteratePathway);
+  const ad8UnsureCount = input.ad8UnsureCount ?? 0;
 
-  if (input.ad8Score === null) missingDomainsTh.push("แบบประเมินญาติ AD8 (ยังไม่ได้ตอบ)");
-  if (input.delayedRecallScore === null) missingDomainsTh.push("Mini-Cog Delayed Recall (ยังไม่ได้ทดสอบ)");
+  if (input.ad8Score === null || input.ad8Score === undefined) {
+    missingDomainsTh.push("แบบประเมินญาติ AD8 (ยังไม่ได้ตอบ)");
+  } else if (ad8UnsureCount >= 3) {
+    missingDomainsTh.push(`แบบประเมินญาติ AD8 (มีข้อที่ตอบ 'ไม่แน่ใจ' ${ad8UnsureCount} ข้อ >= 3 ข้อ ทำให้ข้อมูลจากผู้ใกล้ชิดไม่สมบูรณ์)`);
+  }
+  if (input.delayedRecallScore === null || input.delayedRecallScore === undefined) {
+    missingDomainsTh.push("Mini-Cog Delayed Recall (ยังไม่ได้ทดสอบ)");
+  }
 
   if (!isNonLiterate) {
-    if (input.cdtResult === null) missingDomainsTh.push("Clock Drawing Test 11:10 (ยังไม่ได้วาด)");
+    if (input.cdtResult === null || input.cdtResult === undefined) {
+      missingDomainsTh.push("Clock Drawing Test 11:10 (ยังไม่ได้วาด)");
+    }
   } else {
     // Non-literate pathway checks animal naming verbal fluency
     if (input.animalNamingCount === null || input.animalNamingCount === undefined) {
@@ -824,6 +881,9 @@ export function stratifyCognitiveRisk(input: AssessmentInput): RiskOutput {
   // 3. Mini-Cog & Informant AD8 Evaluation
   const ad8Score = Math.max(0, Math.min(8, input.ad8Score!));
   const isAd8Positive = ad8Score >= CLINICAL_THRESHOLDS.AD8_CUTOFF;
+  if (ad8UnsureCount >= 1) {
+    clinicalFlags.push(`[AD8 UNSURE WARNING] มีข้อที่ผู้ให้ข้อมูลตอบ 'ไม่แน่ใจ' จำนวน ${ad8UnsureCount} ข้อ — คะแนน AD8 (${ad8Score}/8) อาจต่ำกว่าความเป็นจริง`);
+  }
 
   let isCognitiveScreenPositive = false;
   let miniCogTotal = 0;
@@ -833,12 +893,24 @@ export function stratifyCognitiveRisk(input: AssessmentInput): RiskOutput {
     miniCogTotal = miniCog.totalScore ?? 0;
     isCognitiveScreenPositive = miniCog.isPositive || isAd8Positive;
   } else {
-    // Non-literate pathway: Verbal Recall < 2 or Animal Naming < 10 or AD8 >= 2
+    // Non-literate pathway: Mini-Cog-aligned composite (3-word Delayed Recall [0-3] + Animal Naming [0 or 2])
+    // with education-adjusted Thai normative cutoffs (< 9 for 0 yrs schooling, < 10 for >= 1 yr schooling)
+    const clampedRecall = Math.max(0, Math.min(3, Math.round(input.delayedRecallScore!)));
     const animalCount = input.animalNamingCount ?? 0;
-    const isAnimalNamingImpaired = animalCount < CLINICAL_THRESHOLDS.ANIMAL_NAMING_IMPAIRED;
-    const isRecallImpaired = input.delayedRecallScore! < 2;
-    isCognitiveScreenPositive = isRecallImpaired || isAnimalNamingImpaired || isAd8Positive;
-    clinicalFlags.push(`[NON-LITERATE PATHWAY USED] ใช้เกณฑ์การประเมินผู้ไม่รู้หนังสือ (บอกชื่อสัตว์ ${animalCount} ชนิดใน 1 นาที, จำคำ ${input.delayedRecallScore}/3, AD8 ${ad8Score}/8)`);
+    const animalCutoff = getAnimalNamingThreshold(input.yearsOfEducation);
+    const isAnimalNamingImpaired = animalCount < animalCutoff;
+    const animalPoints = isAnimalNamingImpaired ? 0 : 2;
+    const nonLiterateComposite = clampedRecall + animalPoints;
+    miniCogTotal = nonLiterateComposite;
+    isCognitiveScreenPositive = nonLiterateComposite < CLINICAL_THRESHOLDS.MINICOG_PASS_CUTOFF || isAnimalNamingImpaired || isAd8Positive;
+    clinicalFlags.push(
+      `[NON-LITERATE PATHWAY USED] ใช้เกณฑ์ปรับตามการศึกษา: บอกชื่อสัตว์ ${animalCount} ชนิด/นาที (เกณฑ์ปกติ >= ${animalCutoff}), จำคำ ${clampedRecall}/3, Composite ${nonLiterateComposite}/5, AD8 ${ad8Score}/8`
+    );
+    if ((clampedRecall === 1 || clampedRecall === 2) && !isAnimalNamingImpaired) {
+      clinicalFlags.push(
+        `[NON-LITERATE PATHWAY WATCH] จำคำศัพท์ได้บางส่วน (${clampedRecall}/3) แต่ Semantic Fluency ผ่านเกณฑ์ (${animalCount} >= ${animalCutoff}) แนะนำเฝ้าระวังและนัดตรวจติดตามความจำใน 6 เดือน`
+      );
+    }
   }
 
   // 4. Axis 1: Objective Algorithmic Cognitive Performance Tier

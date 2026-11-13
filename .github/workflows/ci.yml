@@ -1,0 +1,29 @@
+name: Clinical Engine & FHIR Validation CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (v24+ native TS type-stripping)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Verify TypeScript engine & browser bundle parity
+        run: node scripts/build-engine.mjs --check
+
+      - name: Run clinical & regression test suite (node --test)
+        run: node --test test-runner.mjs
+
+      - name: Validate HL7 FHIR R4 Bundle & LOINC terminology
+        run: node scripts/validate-fhir.mjs
