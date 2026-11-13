@@ -78,9 +78,11 @@ Used in the synthetic in-browser triage demo (`dashboard.html`) to visualize rel
 
 ---
 
-## HL7 FHIR R4 & LOINC Terminology (`27` Parameters)
+## HL7 FHIR R4 & LOINC Terminology (17 รายการตรวจหลัก / 27 พารามิเตอร์มาตรฐาน)
 
 Every exported resource avoids LOINC Part (`LP*`) codes and misassigned codes. Non-standardized composite scores use the project CodeSystem `https://natchlimar-droid.github.io/Project-Alzheimer/fhir/CodeSystem/thai-cognitive-triage`. Legacy codes are accepted strictly as read-only aliases during FHIR bundle import.
+
+The system encompasses **17 core clinical assessment & lab categories** structured into **27 standardized observation fields** (11 Cognitive/Functional + 16 Laboratory & Fluid Biomarker parameters: 20 Exact LOINC, 3 Closest Match, and 4 Project Concepts). Free Thyroxine (FT4) cutoff is standardized across the entire clinical engine and documentation at `0.8–1.8 ng/dL` (with central hypothyroidism triggered at `TSH <= 4.2 uIU/mL` and `FT4 < 0.8 ng/dL`).
 
 | Clinical Parameter / Field | Canonical `fieldKey` | Code | Mapping Type | Reference Cutoff / Unit |
 | :--- | :--- | :--- | :--- | :--- |

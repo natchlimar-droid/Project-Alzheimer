@@ -36,33 +36,44 @@ flowchart TD
 
 ---
 
-## 2. สมการการปรับเทียบความคุ้นเคยหน้าจอสัมผัส (Device Touch Calibration Formula)
+## 2. สูตรการปรับเทียบความคุ้นเคยหน้าจอสัมผัส (Device Touch Calibration)
 
 ผู้สูงอายุอาจไม่คุ้นเคยกับการใช้นิ้วแตะหน้าจอสัมผัส (Touchscreen Motor Unfamiliarity) ทำให้ใช้เวลาใน Visual-Motor Task นานขึ้นโดยไม่ได้เกิดจากภาวะ Executive Dysfunction ระบบจึงกำหนดให้ทำ **Practice Mode 3 จุด (`1 -> ก -> 2`)** ก่อนเริ่มจับเวลาจริง:
 
-1. วัดค่าความหน่วงเฉลี่ยต่อการแตะในโหมดฝึกหัด:
-   $$\text{baselineTouchLatencyMs} = \frac{t_{\text{ก} \leftarrow 1} + t_{2 \leftarrow \text{ก}}}{2}$$
-2. หาก $\text{baselineTouchLatencyMs} > 1,500\text{ ms}$ ระบบจะคำนวณค่าชดเชยเวลาสำหรับ 7 ช่วงการเคลื่อนที่ในแบบทดสอบจริง (เพดานสูงสุดไม่เกิน $18,000\text{ ms}$):
-   $$\text{calibrationAllowanceMs} = \min\Big(18000,\ \text{round}\big((\text{baselineTouchLatencyMs} - 1500) \times 7 \times 0.65\big)\Big)$$
-3. เวลาสุทธิที่ใช้ตัดสินความเสี่ยง (Calibrated Net Completion Time):
-   $$\text{calibratedNetTimeMs} = \max\big(1000,\ \text{visualMotorTimeMs} - \text{calibrationAllowanceMs}\big)$$
-4. เกณฑ์เวลามาตรฐานปรับตามอายุและระดับการศึกษา (`adjustedThresholdMs`):
-   $$\text{adjustedThresholdMs} = 45000 + \begin{cases} 12000 & \text{ถ้า } \text{yearsOfEducation} < 6 \\ 0 & \text{กรณีอื่น} \end{cases} + \begin{cases} 10000 & \text{ถ้า } \text{age} \ge 75 \\ 0 & \text{กรณีอื่น} \end{cases}$$
+1. **วัดค่าความหน่วงเฉลี่ยต่อการแตะในโหมดฝึกหัด:**
+   ```text
+   baselineTouchLatencyMs = (t_ก_from_1 + t_2_from_ก) / 2
+   ```
+2. **หาก `baselineTouchLatencyMs > 1500 ms` ระบบจะคำนวณค่าชดเชยเวลาสำหรับ 7 ช่วงการเคลื่อนที่ในแบบทดสอบจริง (เพดานสูงสุดไม่เกิน 18000 ms):**
+   ```text
+   calibrationAllowanceMs = min(18000, round((baselineTouchLatencyMs - 1500) * 7 * 0.65))
+   ```
+3. **เวลาสุทธิที่ใช้ตัดสินความเสี่ยง (Calibrated Net Completion Time):**
+   ```text
+   calibratedNetTimeMs = max(1000, visualMotorTimeMs - calibrationAllowanceMs)
+   ```
+4. **เกณฑ์เวลามาตรฐานปรับตามอายุและระดับการศึกษา (`adjustedThresholdMs`):**
+   ```text
+   adjustedThresholdMs = 45000 ms
+     + (12000 ms ถ้า yearsOfEducation < 6 ปี)
+     + (10000 ms ถ้า age >= 75 ปี)
+   ```
 
 ---
 
-## 3. สมการคำนวณอัตราความเปลี่ยนแปลงระยะยาว ($\Delta$-Decline Rate)
+## 3. สูตรคำนวณอัตราความเปลี่ยนแปลงระยะยาว (Δ-Decline Rate)
 
 เมื่อมีการระบุ `previous_session_id` พร้อมข้อมูลเซสชันก่อนหน้า ระบบจะคำนวณ:
 
-$$\Delta\text{RiskScore} = \text{RiskScore}_{\text{current}} - \text{RiskScore}_{\text{previous}}$$
+```text
+ΔRiskScore = RiskScore_current - RiskScore_previous
+Annualized Δ-Decline Rate (%/year) = (ΔRiskScore / max(1, daysElapsed)) * 365.25
+```
 
-$$\text{Annualized }\Delta\text{-Decline Rate (\%/year)} = \left(\frac{\Delta\text{RiskScore}}{\max(1, \text{daysElapsed})}\right) \times 365$$
-
-- **`RAPID_DECLINE`**: เมื่อ $\text{Annualized }\Delta\text{-Decline Rate} \ge +25\%/\text{ปี}$ หรือ $\Delta\text{RiskScore} \ge +20\%$ หรือ $\Delta\text{DelayedRecall} \le -2\text{ คำ}$ หรือ $\Delta\text{AD8} \ge +3\text{ คะแนน}$
-- **`PROGRESSIVE_DECLINE`**: เมื่อ $\Delta\text{RiskScore} \ge +8\%$ หรือ $\Delta\text{DelayedRecall} \le -1\text{ คำ}$ หรือ $\Delta\text{AD8} \ge +1\text{ คะแนน}$ หรือ $\Delta\text{VisualMotorTime} \ge +10,000\text{ ms}$
+- **`RAPID_DECLINE`**: เมื่อ `Annualized Δ-Decline Rate >= +25%/ปี` หรือ `ΔRiskScore >= +20%` หรือ `ΔDelayedRecall <= -2 คำ` หรือ `ΔAD8 >= +3 คะแนน`
+- **`PROGRESSIVE_DECLINE`**: เมื่อ `ΔRiskScore >= +8%` หรือ `ΔDelayedRecall <= -1 คำ` หรือ `ΔAD8 >= +1 คะแนน` หรือ `ΔVisualMotorTime >= +10000 ms`
 - **`STABLE`**: การเปลี่ยนแปลงอยู่ในช่วงความแปรปรวนปกติ
-- **`IMPROVED`**: เมื่อ $\Delta\text{RiskScore} \le -8\%$ หรือจำคำศัพท์ได้ดีขึ้น
+- **`IMPROVED`**: เมื่อ `ΔRiskScore <= -8%` หรือจำคำศัพท์ได้ดีขึ้น
 
 ---
 
@@ -85,8 +96,10 @@ $$\text{Annualized }\Delta\text{-Decline Rate (\%/year)} = \left(\frac{\Delta\te
 - **คะแนน 1 (Potential / Mild Activity / CNS Depressant):** ยานอนหลับ Benzodiazepines (Lorazepam, Diazepam), Z-drugs
 
 **เกณฑ์การตัดสินใจทางคลินิก (Clinical Rule):**
-$$\text{acbTotalScore} = \sum_{m \in \text{Selected}} \text{acbScore}(m)$$
-$$\text{high\_acb\_risk\_flag} = \text{true } \iff \text{acbTotalScore} \ge 3$$
+```text
+acbTotalScore = sum(acbScore of selected medications)
+high_acb_risk_flag = true (เมื่อ acbTotalScore >= 3)
+```
 
 เมื่อ `high_acb_risk_flag = true` ระบบจะกำหนดผลเป็น `REVERSIBLE_FLAG` พร้อมข้อเสนอแนะให้แพทย์และเภสัชกรคลินิกดำเนินการ **Deprescribing (การทบทวนและปรับลดยา)** ก่อนที่จะวินิจฉัยโรคสมองเสื่อมถาวร
 
@@ -98,9 +111,9 @@ $$\text{high\_acb\_risk\_flag} = \text{true } \iff \text{acbTotalScore} \ge 3$$
 
 | เมทริกซ์ (Metric) | คำจำกัดความทางเทคนิค | ค่าเกณฑ์ความผิดปกติ (Cutoff) | นัยสำคัญทางการแพทย์ (Clinical Interpretation) |
 | :--- | :--- | :--- | :--- |
-| **Pause-to-Speech Ratio** | $\frac{\text{Duration}_{\text{silence}}}{\text{Duration}_{\text{voiced}} + \text{Duration}_{\text{silence}}}$ | $> 0.45$ | ภาวะนึกคำศัพท์ลำบาก (Word-Finding Difficulty / Anomia) พบเด่นชัดในระยะต้นของ MCI |
-| **Phonetic Latency** | เวลาหน่วงจากสิ้นสุดคำสั่งจนถึง onset ของพยางค์แรก | $> 2,200\text{ ms}$ | ความเร็วในการประมวลผลและการเข้าถึงคลังคำศัพท์ช้าลง (Slowed Linguistic Processing Speed) |
-| **Semantic Repetition** | จำนวนคำศัพท์ที่ผู้ป่วยพูดซ้ำในหมวดหมู่เดียวกัน | $\ge 2\text{ ครั้ง}$ | การบกพร่องของ Working Memory และกระบวนการตรวจทานการตอบสนองตนเอง (Response Monitoring Deficit) |
+| **Pause-to-Speech Ratio** | `Duration_silence / (Duration_voiced + Duration_silence)` | `> 0.45` | ภาวะนึกคำศัพท์ลำบาก (Word-Finding Difficulty / Anomia) พบเด่นชัดในระยะต้นของ MCI |
+| **Phonetic Latency** | เวลาหน่วงจากสิ้นสุดคำสั่งจนถึง onset ของพยางค์แรก | `> 2200 ms` | ความเร็วในการประมวลผลและการเข้าถึงคลังคำศัพท์ช้าลง (Slowed Linguistic Processing Speed) |
+| **Semantic Repetition** | จำนวนคำศัพท์ที่ผู้ป่วยพูดซ้ำในหมวดหมู่เดียวกัน | `>= 2 ครั้ง` | การบกพร่องของ Working Memory และกระบวนการตรวจทานการตอบสนองตนเอง (Response Monitoring Deficit) |
 
 ---
 
@@ -109,15 +122,24 @@ $$\text{high\_acb\_risk\_flag} = \text{true } \iff \text{acbTotalScore} \ge 3$$
 ### 7.1 Kinematic Tremor Decomposition ใน Clock Drawing Test (CDT)
 ผู้ป่วยสูงอายุจำนวนมากมีภาวะมือสั่นจากความชรา (Senile Tremor) หรือโรคพาร์กินสัน (Parkinsonism) แต่ความจำและมิติสัมพันธ์ยังปกติ หากใช้อัลกอริทึมทั่วไปตรวจจับเฉพาะความเรียบของเส้น ผู้ป่วยกลุ่มนี้จะถูกหักคะแนนเป็น `ABNORMAL` แบบผลบวกลวง
 
-ระบบจึงใช้สมการแยกแยะความสั่น:
-1. คำนวณเส้น Smoothed Moving Average ($W = 5$ จุด):
-   $$\bar{x}_i = \frac{1}{2k+1}\sum_{j=-k}^k x_{i+j},\quad \bar{y}_i = \frac{1}{2k+1}\sum_{j=-k}^k y_{i+j}$$
-2. วัดขนาดความสั่นสะเทือนแบบ Root Mean Square (RMS Jitter):
-   $$\text{RMS}_{\text{jitter}} = \sqrt{\frac{1}{N}\sum_{i=1}^N \big((x_i - \bar{x}_i)^2 + (y_i - \bar{y}_i)^2\big)}$$
-3. วัดอัตราการเปลี่ยนทิศทางแบบสลับกลับไปมา (Direction Reversal Rate):
-   $$\text{reversalRate} = \frac{\sum_{i=2}^{N-1} \mathbb{I}\left((\vec{v}_i \cdot \vec{v}_{i-1}) < 0\right)}{N-2}$$
-4. เกณฑ์การตรวจจับ Motor Tremor:
-   $$\text{motorTremorDetected} = \text{true } \iff \big(\text{RMS}_{\text{jitter}} \ge 1.75\text{ px}\big) \land \big(\text{reversalRate} \ge 0.22\big)$$
+ระบบจึงใช้สูตรแยกแยะความสั่น:
+1. **คำนวณเส้น Smoothed Moving Average (`W = 5` จุด):**
+   ```text
+   x_smooth[i] = average(x[i-2 .. i+2])
+   y_smooth[i] = average(y[i-2 .. i+2])
+   ```
+2. **วัดขนาดความสั่นสะเทือนแบบ Root Mean Square (RMS Jitter):**
+   ```text
+   RMS_jitter = sqrt( (1/N) * sum((x[i] - x_smooth[i])^2 + (y[i] - y_smooth[i])^2) )
+   ```
+3. **วัดอัตราการเปลี่ยนทิศทางแบบสลับกลับไปมา (Direction Reversal Rate):**
+   ```text
+   reversalRate = count(dot_product(v[i], v[i-1]) < 0) / (N - 2)
+   ```
+4. **เกณฑ์การตรวจจับ Motor Tremor:**
+   ```text
+   motorTremorDetected = true (เมื่อ RMS_jitter >= 1.75 px และ reversalRate >= 0.22)
+   ```
 5. **การตัดสินผล:** ระบบนำเส้น Smoothed ไปวิเคราะห์โครงร่างวงกลมและการชี้เข็ม 11:10 น. หากตำแหน่งถูกต้อง ผลการประเมินจะคงเป็น `NORMAL` โดยบันทึก `motor_tremor_flag = true` เพื่อให้แพทย์ทราบอาการมือสั่นแยกต่างหากจากการรู้คิด
 
 ### 7.2 การป้องกัน Frustration Trigger ใน Visual-Motor Task
@@ -155,11 +177,12 @@ flowchart LR
 ### 8.2 ห่วงโซ่บันทึกการเข้าถึงข้อมูลที่ไม่สามารถแก้ไขย้อนหลังได้ (Immutable Audit Trail)
 ทุกครั้งที่มีการประเมินความเสี่ยง, นำเข้าผลแล็บจาก HIS/LIS, นำเข้า FHIR Bundle หรือส่งออกรายงาน ระบบจะสร้างบันทึก Audit Log ที่มี Hash Chain เชื่อมโยงกัน:
 
-$$\text{CanonicalString}_k = \text{previousHash}_{k-1} \,\|\, \text{timestampIso}_k \,\|\, \text{actorRole}_k \,\|\, \text{actionType}_k \,\|\, \text{sessionId}_k \,\|\, \text{pseudonymToken}_k \,\|\, \text{resourceSummary}_k$$
+```text
+CanonicalString_k = previousHash_(k-1) + timestampIso_k + actorRole_k + actionType_k + sessionId_k + pseudonymToken_k + resourceSummary_k
+integrityHash_k = SHA256_Hex(CanonicalString_k)
+```
 
-$$\text{integrityHash}_k = \text{HexHash}\left(\text{CanonicalString}_k\right)$$
-
-หากมีการแก้ไข ลบ หรือสลับลำดับบันทึกใดๆ ห่วงโซ่ `previousHash` $\rightarrow$ `integrityHash` จะขาดออกจากกันทันที ทำให้สามารถตรวจสอบความโปร่งใสและหลักฐานทางเวชระเบียน (Tamper-Evident EMR Auditability) ได้อย่างสมบูรณ์
+หากมีการแก้ไข ลบ หรือสลับลำดับบันทึกใดๆ ห่วงโซ่ `previousHash` -> `integrityHash` จะขาดออกจากกันทันที ทำให้สามารถตรวจสอบความโปร่งใสและหลักฐานทางเวชระเบียน (Tamper-Evident EMR Auditability) ได้อย่างสมบูรณ์
 
 ---
 

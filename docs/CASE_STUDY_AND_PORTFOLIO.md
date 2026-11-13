@@ -64,7 +64,7 @@
 
 > **Thai Cognitive Triage CDSS (`Project-Alzheimer`) — Healthcare CDSS & HL7 FHIR R4 Prototype**
 > - Designed and engineered a dual-persona cognitive screening CDSS prototype separating **Senior Patient Mode** (targets WCAG 2.1 Level AAA typography/touch sizing, telemetry hidden, non-literate verbal fluency pathway) from **Clinician Workstation Mode** (4-axis differential reporting, kinematic tremor smoothing, Clinician Override sign-off).
-> - Consolidated core medical triage logic and HL7 FHIR R4 serialization into a modular TypeScript engine (`src/*.ts`) compiled into zero-dependency browser artifacts (`dist/clinical-engine.{mjs,js}`), ensuring 100% logic parity across the web app and automated Node.js CI (`node --test`).
+> - Consolidated core medical triage logic and HL7 FHIR R4 serialization into a modular TypeScript engine (`src/*.ts`) compiled into a **Zero-Dependency runtime** for the primary screening application ([`index.html`](file:///g:/My%20Drive/Project%20Alzhimer/index.html)), while the secondary analytics dashboard ([`dashboard.html`](file:///g:/My%20Drive/Project%20Alzhimer/dashboard.html)) utilizes Chart.js via CDN for interactive visualization.
 > - Mapped **27 clinical & biomarker parameters** to verified **LOINC** codes (`20 Exact LOINC`, `3 Closest Match`) and a documented **Project FHIR CodeSystem** (`4 Local Concepts`, `0` invalid `LP*` Part codes), verified via automated FHIR R4 round-trip validation.
 > - Built `dashboard.html` with a **25-case synthetic registry** and an educational **in-browser Logistic Regression demo** displaying a normalized **100% XAI feature weight breakdown**.
 
