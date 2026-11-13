@@ -103,6 +103,11 @@
 
                 <!-- Right Controls: Sync Link & Quick Export -->
                 <div class="flex items-center gap-2 self-end md:self-auto flex-wrap">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-sky-800 bg-sky-50 border border-sky-200 rounded-lg cursor-default" title="เวลามาตรฐานประเทศไทย (ICT, UTC+7)">
+                        <span>🇹🇭</span>
+                        <span id="dashboard-thailand-clock">--:--:-- น.</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-200 text-sky-900 font-bold">ICT</span>
+                    </div>
                     <a href="https://github.com/natchlimar-droid/Project-Alzheimer" target="_blank" rel="noopener noreferrer"
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-900 border border-slate-700 rounded-lg transition shadow-sm">
                         <i data-lucide="github" class="w-3.5 h-3.5"></i>
@@ -1033,7 +1038,7 @@
                                 const cdtPts = s.cdtResult === 'NORMAL' ? 2 : 0;
                                 patients.unshift({
                                     id: s.session_id,
-                                    date: (s.assessedAtIso || new Date().toISOString()).split('T')[0],
+                                    date: getThailandDateString(s.assessedAtIso),
                                     age: s.age || 72,
                                     education: s.yearsOfEducation || 12,
                                     q2: 0,
@@ -1066,10 +1071,44 @@
             populateCalculatorDropdown();
             updateCalculator();
 
-            // Set default date in Add Modal
-            document.getElementById('add-date').value = new Date().toISOString().split('T')[0];
+            // Set default date in Add Modal using Thailand timezone (Asia/Bangkok)
+            document.getElementById('add-date').value = getThailandDateString();
+            updateDashboardThailandClock();
+            setInterval(updateDashboardThailandClock, 1000);
 
             lucide.createIcons();
+        }
+
+        function getThailandDateString(dateInput) {
+            try {
+                const d = dateInput ? new Date(dateInput) : new Date();
+                return new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'Asia/Bangkok',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }).format(d);
+            } catch(e) {
+                return new Date().toISOString().slice(0, 10);
+            }
+        }
+
+        function updateDashboardThailandClock() {
+            const el = document.getElementById('dashboard-thailand-clock');
+            if (el) {
+                try {
+                    const timeStr = new Intl.DateTimeFormat('th-TH', {
+                        timeZone: 'Asia/Bangkok',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    }).format(new Date());
+                    el.textContent = timeStr + ' น.';
+                } catch(e) {
+                    el.textContent = new Date().toLocaleTimeString('th-TH') + ' น.';
+                }
+            }
         }
 
         function recalculateAllPatientRisks() {
@@ -1564,7 +1603,7 @@
             const newId = `PSN-${Math.floor(2000 + Math.random() * 7999)}`;
             const newCase = {
                 id: newId,
-                date: new Date().toISOString().split('T')[0],
+                date: getThailandDateString(),
                 age: Number(document.getElementById('calc-age').value),
                 education: Number(document.getElementById('calc-edu').value),
                 q2: Number(document.getElementById('calc-2q').value),
@@ -1725,13 +1764,13 @@
             const headers = ["id", "date", "age", "education", "q2", "acb", "ad8", "minicog", "trailLatency", "fluency", "riskProb", "riskLevel", "notes"];
             const rows = patients.map(p => headers.map(h => `"${(p[h] ?? '').toString().replace(/"/g, '""')}"`).join(','));
             const csvContent = "\uFEFF" + [headers.join(','), ...rows].join('\n');
-            downloadBlob(csvContent, `Project-Alzheimer-Registry-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
+            downloadBlob(csvContent, `Project-Alzheimer-Registry-${getThailandDateString()}.csv`, 'text/csv;charset=utf-8;');
             showToast("ส่งออกรายงาน CSV เรียบร้อยแล้ว", "success");
         }
 
         function exportJSON() {
             const jsonContent = JSON.stringify(patients, null, 2);
-            downloadBlob(jsonContent, `Project-Alzheimer-Data-${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+            downloadBlob(jsonContent, `Project-Alzheimer-Data-${getThailandDateString()}.json`, 'application/json');
             showToast("ส่งออกไฟล์ JSON เรียบร้อยแล้ว", "success");
         }
 

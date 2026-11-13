@@ -2008,6 +2008,11 @@
           <span id="networkStatusText">🟢 ออนไลน์</span>
           <span id="syncQueueCountBadge" class="badge" style="background:#047857; color:#FFFFFF; padding:0.15rem 0.45rem; border-radius:10px; font-size:0.8rem; margin-left:0.25rem;">0 ค้างส่ง</span>
         </button>
+        <div class="btn" id="thailandLiveClockBadge" style="font-weight:700; border-color:#0284c7; background:#F0F9FF; color:#0369A1; display:inline-flex; align-items:center; gap:0.35rem; cursor:default;" title="เวลามาตรฐานประเทศไทย (ICT, UTC+7)">
+          <span style="font-size:1.05rem;">🇹🇭</span>
+          <span id="thailandLiveClockText">--:--:-- น.</span>
+          <span style="font-size:0.75rem; background:#0284c7; color:#FFF; padding:0.1rem 0.35rem; border-radius:4px; font-weight:800;">ICT (UTC+7)</span>
+        </div>
         <button type="button" class="btn" id="themeToggleBtn" onclick="toggleContrastTheme()"
           aria-label="สลับโหมดสีความคมชัดสูง">
           🌓 <span class="toolbar-text-desktop">โหมดสี: </span>พื้นสว่าง<span class="toolbar-text-desktop"> (WCAG AAA)</span>
@@ -4602,6 +4607,93 @@
   <script>
     "use strict";
 
+    /* =========================================================================
+       Thailand Standard Time (ICT / Asia/Bangkok, UTC+7) Formatting Utilities
+       ========================================================================= */
+    const THAILAND_TIMEZONE = "Asia/Bangkok";
+    const THAI_MONTHS_FULL = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
+    const THAI_MONTHS_SHORT = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ];
+
+    function getThailandDate(dateInput) {
+      if (!dateInput) return new Date();
+      const d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+      return isNaN(d.getTime()) ? new Date() : d;
+    }
+
+    function formatThailandTime(dateInput, includeSeconds = true) {
+      if (!dateInput) return "--:--:--";
+      try {
+        const d = getThailandDate(dateInput);
+        const options = {
+          timeZone: THAILAND_TIMEZONE,
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        };
+        if (includeSeconds) options.second = "2-digit";
+        return new Intl.DateTimeFormat("th-TH", options).format(d) + " น.";
+      } catch (e) {
+        return "--:--:--";
+      }
+    }
+
+    function formatThailandDate(dateInput, isShort = false) {
+      if (!dateInput) return "-";
+      try {
+        const d = getThailandDate(dateInput);
+        const formatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: THAILAND_TIMEZONE,
+          year: "numeric",
+          month: "numeric",
+          day: "numeric"
+        });
+        const parts = formatter.formatToParts(d);
+        let day = d.getDate(), month = d.getMonth() + 1, year = d.getFullYear();
+        for (const p of parts) {
+          if (p.type === "day") day = parseInt(p.value, 10);
+          if (p.type === "month") month = parseInt(p.value, 10);
+          if (p.type === "year") year = parseInt(p.value, 10);
+        }
+        const thaiYear = year + 543;
+        const monthName = isShort ? THAI_MONTHS_SHORT[month - 1] : THAI_MONTHS_FULL[month - 1];
+        return `${day} ${monthName} ${thaiYear}`;
+      } catch (e) {
+        return "-";
+      }
+    }
+
+    function formatThailandDateTime(dateInput, includeSeconds = false) {
+      if (!dateInput) return "-";
+      return `${formatThailandDate(dateInput, true)} ${formatThailandTime(dateInput, includeSeconds)}`;
+    }
+
+    function getThailandIsoDateString(dateInput) {
+      try {
+        const d = getThailandDate(dateInput);
+        return new Intl.DateTimeFormat("en-CA", {
+          timeZone: THAILAND_TIMEZONE,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }).format(d);
+      } catch (e) {
+        return new Date().toISOString().slice(0, 10);
+      }
+    }
+
+    function updateThailandLiveClock() {
+      const clockEl = document.getElementById("thailandLiveClockText");
+      if (clockEl) {
+        clockEl.textContent = formatThailandTime(new Date(), true);
+      }
+    }
+
     /* ------------------------------------------------------------------------
        1. Standardized Clinical Data & Word Sets (IP-Safe)
        ------------------------------------------------------------------------ */
@@ -6692,9 +6784,16 @@
     }
 
     function generateSessionId() {
-      const d = new Date();
-      const pad = n => String(n).padStart(2, "0");
-      return `SES-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+      const d = getThailandDate();
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: THAILAND_TIMEZONE,
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        hour12: false
+      });
+      const parts = {};
+      formatter.formatToParts(d).forEach(p => { parts[p.type] = p.value; });
+      return `SES-${parts.year || d.getFullYear()}${parts.month || "01"}${parts.day || "01"}-${parts.hour || "00"}${parts.minute || "00"}${parts.second || "00"}`;
     }
 
     function renderPreviousSessionOptions() {
@@ -7617,7 +7716,7 @@
         }
         const rows = logs.slice(0, 12).map(l => {
           if (!l) return "";
-          const ts = (l.timestampIso || "").slice(11, 19) || "--:--:--";
+          const ts = formatThailandTime(l.timestampIso, true);
           const action = l.actionType || "-";
           const token = l.pseudonymToken || "-";
           const summary = l.resourceSummary || "-";
@@ -7637,7 +7736,7 @@
           <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
             <thead>
               <tr style="border-bottom:2px solid var(--border-strong); text-align:left; background:var(--bg-surface);">
-                <th style="padding:0.45rem;">เวลา (UTC)</th>
+                <th style="padding:0.45rem;">เวลา (ICT ไทย)</th>
                 <th style="padding:0.45rem;">Action</th>
                 <th style="padding:0.45rem;">Pseudonym Token</th>
                 <th style="padding:0.45rem;">รายละเอียดการเข้าถึง/ส่งออก</th>
@@ -9963,9 +10062,7 @@
         if (dEdu) dEdu.textContent = input.yearsOfEducation;
         if (dToken) dToken.textContent = appState.pseudonymToken || "PSN-XXXX";
         if (dDate) {
-          const now = new Date();
-          const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-          dDate.textContent = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+          dDate.textContent = formatThailandDate(new Date(), true);
         }
 
         // 1. Calculate Triage Level & Priority (Green / Yellow / Red)
@@ -10298,9 +10395,7 @@
 
         const printDate = document.getElementById("printReportDateDisplay");
         if (printDate) {
-          const now = new Date();
-          const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-          printDate.textContent = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+          printDate.textContent = formatThailandDate(new Date(), false);
         }
 
         const pName = document.getElementById("printPatientNameCell");
@@ -10317,9 +10412,7 @@
 
         const pFooterTime = document.getElementById("printFooterTimestamp");
         if (pFooterTime) {
-          const now = new Date();
-          const pad = n => String(n).padStart(2, "0");
-          pFooterTime.textContent = `พิมพ์เมื่อ: ${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear() + 543} ${pad(now.getHours())}:${pad(now.getMinutes())} น.`;
+          pFooterTime.textContent = `พิมพ์เมื่อ: ${formatThailandDate(new Date(), false)} ${formatThailandTime(new Date(), true)}`;
         }
 
         const pDocName = document.getElementById("printSignOffDoctorName");
@@ -10329,9 +10422,7 @@
           if (pDocName) pDocName.textContent = `( ${appState.clinicianOverride.clinicianName || "นพ. ผู้ตรวจประเมิน"} )`;
           if (pDocLic) pDocLic.textContent = appState.clinicianOverride.physicianLicenseNumber || "ว.xxxxx";
           if (pDocDate) {
-            const d = new Date(appState.clinicianOverride.signedAtIso);
-            const pad = n => String(n).padStart(2, "0");
-            pDocDate.textContent = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear() + 543}`;
+            pDocDate.textContent = formatThailandDate(appState.clinicianOverride.signedAtIso, true);
           }
         }
 
@@ -10445,7 +10536,7 @@
 
       const statusEl = document.getElementById("clinicianSignOffStatus");
       if (statusEl) {
-        statusEl.textContent = `✅ บันทึกและลงนามรับรองผลแล้ว โดย ${appState.clinicianOverride.clinicianName} (${license}) เมื่อ ${new Date().toLocaleTimeString("th-TH")}`;
+        statusEl.textContent = `✅ บันทึกและลงนามรับรองผลแล้ว โดย ${appState.clinicianOverride.clinicianName} (${license}) เมื่อ ${formatThailandDateTime(new Date(), true)}`;
       }
 
       recordAuditLog("CLINICIAN_SIGN_OFF", `Clinician sign-off completed by ${license} (Override: ${overrideAxis || "None"})`);
@@ -11307,6 +11398,8 @@
       updateNetworkStatusUI();
       window.addEventListener("online", updateNetworkStatusUI);
       window.addEventListener("offline", updateNetworkStatusUI);
+      updateThailandLiveClock();
+      setInterval(updateThailandLiveClock, 1000);
     });
   
     /* ========================================================================
