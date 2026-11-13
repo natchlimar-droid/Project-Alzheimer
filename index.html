@@ -1312,6 +1312,198 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
+    /* ==========================================================================
+       Floating Quick Demo Bar & UX X-Ray Annotations (Portfolio Demo Dock)
+       ========================================================================== */
+    .floating-demo-dock {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      z-index: 99999;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid #334155;
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      color: #F8FAFC;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+      max-width: 360px;
+      transition: all 0.25s ease;
+      font-family: var(--font-family);
+    }
+    .floating-demo-dock.minimized {
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .floating-demo-dock.minimized .floating-dock-content {
+      display: none;
+    }
+    .floating-demo-dock.minimized .floating-dock-pill-btn {
+      display: inline-flex;
+    }
+    .floating-dock-pill-btn {
+      display: none;
+      align-items: center;
+      gap: 0.45rem;
+      background: linear-gradient(135deg, #1E293B, #0F172A);
+      color: #38BDF8;
+      border: 2px solid #38BDF8;
+      padding: 0.5rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      transition: all 0.2s ease;
+    }
+    .floating-dock-pill-btn:hover {
+      transform: translateY(-2px);
+      background: #0284C7;
+      color: #FFFFFF;
+    }
+    .floating-dock-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid #334155;
+    }
+    .floating-dock-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #38BDF8;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0;
+    }
+    .floating-dock-minimize-btn {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 0.1rem 0.35rem;
+      line-height: 1;
+      border-radius: 4px;
+    }
+    .floating-dock-minimize-btn:hover {
+      color: #FFFFFF;
+      background: #334155;
+    }
+    .floating-dock-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 0.65rem;
+    }
+    .floating-dock-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.45rem 0.65rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #1E293B;
+      color: #F1F5F9;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+    .floating-dock-btn:hover {
+      background: #334155;
+      border-color: #64748B;
+      transform: translateX(2px);
+    }
+    .floating-dock-btn.btn-dock-ad {
+      border-left: 4px solid #A855F7;
+    }
+    .floating-dock-btn.btn-dock-delirium {
+      border-left: 4px solid #EF4444;
+    }
+    .floating-dock-btn.btn-dock-acb {
+      border-left: 4px solid #F59E0B;
+    }
+    .floating-dock-xray-toggle {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      border: 1.5px dashed #38BDF8;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38BDF8;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+    .floating-dock-xray-toggle:hover {
+      background: rgba(56, 189, 248, 0.24);
+    }
+    .floating-dock-xray-toggle.active {
+      background: #0284C7;
+      color: #FFFFFF;
+      border-style: solid;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    }
+
+    /* UX X-Ray Pins & Callout Annotations */
+    .ux-xray-pin {
+      display: none;
+      align-items: center;
+      gap: 0.25rem;
+      background: #0284C7;
+      color: #FFFFFF !important;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 0.12rem 0.5rem;
+      border-radius: 9999px;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.45);
+      cursor: pointer;
+      user-select: none;
+      vertical-align: middle;
+      border: 1.5px solid #38BDF8;
+      animation: uxPinPulse 2.4s infinite ease-in-out;
+      margin-left: 0.4rem;
+      white-space: nowrap;
+    }
+    body.ux-xray-active .ux-xray-pin {
+      display: inline-flex !important;
+    }
+    body.ux-xray-active [data-ux-target] {
+      outline: 2px dashed #0284C7 !important;
+      outline-offset: 4px !important;
+    }
+    @keyframes uxPinPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 4px 14px rgba(56, 189, 248, 0.7); }
+    }
+    .ux-xray-banner-notify {
+      display: none;
+      background: #0369A1;
+      color: #F0F9FF;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.4rem 1rem;
+      text-align: center;
+      border-bottom: 2px solid #38BDF8;
+    }
+    body.ux-xray-active .ux-xray-banner-notify {
+      display: block !important;
+    }
+
     @media (max-width: 640px) {
       .samd-banner {
         padding: 0.35rem 0.65rem;
@@ -1643,6 +1835,7 @@
       <div class="samd-banner-text">
         <span class="samd-badge">SaMD DISCLAIMER</span>
         <span id="samdDisclaimerText">ระบบนี้เป็นเพียงเครื่องมือประเมินความเสี่ยงเบื้องต้น ไม่ใช่การวินิจฉัยโรคทางการแพทย์ และผลการประเมินต้องได้รับการยืนยันโดยแพทย์ระบบประสาทหรือแพทย์ผู้เชี่ยวชาญเท่านั้น</span>
+        <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('SAMD')" title="ดูเบื้องหลังการออกแบบจุดนี้">💡 UX: SaMD Disclaimer</button>
       </div>
       <button type="button" class="btn btn-tts samd-tts-btn"
         onclick="speakThai(document.getElementById('samdDisclaimerText').innerText, this)"
@@ -1676,11 +1869,19 @@
         <button type="button" class="btn" style="background:#475569; color:#FFF; font-weight:800; border-color:#64748B;" onclick="openSystemArchitectureModal()" title="ดูสถาปัตยกรรมระบบและแนวคิดการตัดสินใจ">
           📐 สถาปัตยกรรม
         </button>
+        <button type="button" class="btn" id="tourUxXrayBtn" style="background:#0284C7; color:#FFF; font-weight:800; border-color:#38BDF8; box-shadow:0 2px 6px rgba(2,132,199,0.4);" onclick="toggleUxXrayMode()" title="เปิด/ปิดการแสดงเบื้องหลังเหตุผลการออกแบบ (UX X-Ray Mode)">
+          💡 UX X-Ray
+        </button>
         <button type="button" class="tour-close-btn" onclick="dismissTourBanner()" title="ปิดแถบแนะนำสำหรับผู้เยี่ยมชม" aria-label="ปิดแถบแนะนำ">
           ✕
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- UX X-Ray Global Notification Banner (Appears when active) -->
+  <div class="ux-xray-banner-notify no-print" role="status">
+    🔍 <strong>เปิดโหมด UX X-Ray อยู่:</strong> คลิกที่ป้าย <span style="background:#0284C7; border:1px solid #38BDF8; padding:0.1rem 0.4rem; border-radius:10px; font-size:0.75rem; color:#FFF;">💡 UX:...</span> บนหน้าจอเพื่ออ่านเหตุผลเบื้องหลังการออกแบบและมาตรฐานความปลอดภัยทางการแพทย์
   </div>
 
 <header class="app-header">
@@ -1735,6 +1936,7 @@
     <div class="view-mode-bar-inner">
       <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
         <span style="font-weight:800; font-size:1.05rem; color:var(--text-primary);">โหมดการใช้งาน (View Mode):</span>
+        <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('DUAL_PERSONA')" title="ดูเบื้องหลังการออกแบบ Dual-Persona UX">💡 UX: Dual-Persona</button>
         <div class="mode-toggle-pill-group" role="radiogroup" aria-label="เลือกโหมดการแสดงผล">
           <button type="button" class="mode-toggle-btn" id="btnModeClinician" onclick="setViewMode('CLINICIAN')" role="radio" aria-checked="false">
             👨‍⚕️ โหมดแพทย์ / เจ้าหน้าที่ (Staff &amp; Clinician)
@@ -2148,10 +2350,13 @@
 
           <!-- Non-Literate Alternative Pathway Toggle -->
           <div style="margin-top:1.25rem; padding:1rem; border-radius:var(--radius-md); border:2px dashed var(--border-subtle); background:var(--bg-elevated);">
-            <label style="display:flex; align-items:center; gap:0.75rem; font-weight:800; font-size:1.1rem; cursor:pointer;">
-              <input type="checkbox" id="nonLiterateToggle" style="width:24px; height:24px;" onchange="toggleNonLiteratePathway(this.checked)" />
-              <span>♿ ผู้รับการประเมินไม่รู้หนังสือ / ไม่คล่องภาษาไทย (Non-Literate Alternative Pathway)</span>
-            </label>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+              <label style="display:flex; align-items:center; gap:0.75rem; font-weight:800; font-size:1.1rem; cursor:pointer;">
+                <input type="checkbox" id="nonLiterateToggle" style="width:24px; height:24px;" onchange="toggleNonLiteratePathway(this.checked)" />
+                <span>♿ ผู้รับการประเมินไม่รู้หนังสือ / ไม่คล่องภาษาไทย (Non-Literate Alternative Pathway)</span>
+              </label>
+              <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('NON_LITERATE')" title="ดูเบื้องหลังการออกแบบ Non-Literate Pathway">💡 UX: Educational Equity</button>
+            </div>
             <p style="margin:0.35rem 0 0 2rem; font-size:0.95rem; color:var(--text-secondary);">
               เปิดใช้เส้นทางประเมินทางเลือก: ข้ามการวาดนาฬิกาและแบบทดสอบ Visual-Motor โดยใช้ <strong>Animal Naming Verbal Fluency</strong> (บอกชื่อสัตว์ 1 นาที เกณฑ์ &lt; 10 ตัว) ร่วมกับ Word Recall และ AD8 แทน
             </p>
@@ -2171,7 +2376,10 @@
         <div class="card-box" id="preTestValidityCard" style="border-width:3px; border-color:var(--status-high-border);">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
             <div>
-              <h3 style="margin:0; font-size:1.3rem;">🛑 ด่านตรวจสอบความพร้อมก่อนเริ่มทดสอบ (Pre-Test Validity Gatekeeper)</h3>
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <h3 style="margin:0; font-size:1.3rem;">🛑 ด่านตรวจสอบความพร้อมก่อนเริ่มทดสอบ (Pre-Test Validity Gatekeeper)</h3>
+                <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('DELIRIUM_GATEKEEPER')" title="ดูเบื้องหลังการออกแบบ Delirium Gatekeeper">💡 UX: Delirium Gatekeeper</button>
+              </div>
               <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
                 คัดกรองข้อห้ามหรืออุปสรรคทางกายภาพที่ทำให้ผลการทดสอบการรู้คิดแปลผลไม่ได้ หากมีข้อใดข้อหนึ่ง <strong>ไม่ควรเริ่มทำแบบทดสอบ</strong>
               </p>
@@ -2211,7 +2419,10 @@
         <div class="card-box" id="gatekeeper2QCard" style="border-width:3px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
             <div>
-              <h3 style="margin:0; font-size:1.3rem;">🛡️ ด่านคัดกรองภาวะซึมเศร้า (2Q Depression Screening Gatekeeper) *</h3>
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <h3 style="margin:0; font-size:1.3rem;">🛡️ ด่านคัดกรองภาวะซึมเศร้า (2Q Depression Screening Gatekeeper) *</h3>
+                <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('DEPRESSION_2Q')" title="ดูเบื้องหลังการออกแบบ 2Q Pseudodementia Filter">💡 UX: Pseudodementia Filter</button>
+              </div>
               <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
                 ต้องตอบให้ครบทั้ง 2 ข้อก่อนเริ่มทำแบบทดสอบการรู้คิด เพื่อช่วยแพทย์แยกภาวะสมองเสื่อมเทียมจากโรคซึมเศร้า (Pseudodementia)
               </p>
@@ -2229,7 +2440,10 @@
         <div class="card-box" id="acbMedicationCard" style="border-width:3px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
             <div>
-              <h3 style="margin:0; font-size:1.3rem;">💊 การคัดกรองยากลุ่มเสี่ยงที่มีฤทธิ์ต้านโคลิเนอร์จิก (Anticholinergic Cognitive Burden — ACB Scale)</h3>
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <h3 style="margin:0; font-size:1.3rem;">💊 การคัดกรองยากลุ่มเสี่ยงที่มีฤทธิ์ต้านโคลิเนอร์จิก (Anticholinergic Cognitive Burden — ACB Scale)</h3>
+                <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('ACB_SCALE')" title="ดูเบื้องหลังการออกแบบ ACB Reversible Confounder">💡 UX: Reversible Confounder</button>
+              </div>
               <p style="margin:0.3rem 0 0 0; color:var(--text-secondary);">
                 ตรวจสอบรายการยาที่ผู้ป่วยรับประทานเป็นประจำ ซึ่งมีฤทธิ์ยับยั้งสารสื่อประสาท Acetylcholine และทำให้เกิดอาการสมองตื้อ สับสน หรือความจำถดถอยชั่วคราว (Drug-Induced Cognitive Impairment: เกณฑ์รวม <code>ACB &gt;= 3</code>)
               </p>
@@ -2518,7 +2732,7 @@
                 <li>จำนวนครั้งที่ยกปากกา/นิ้ว (`penLiftsCount`): <strong id="cdtPenLiftsText">0</strong> ครั้ง</li>
                 <li>ความเร็วเฉลี่ยในการลากเส้น (`strokeVelocity`): <strong id="cdtVelocityText">0</strong> px/s</li>
                 <li>ความลังเลเฉลี่ย (`hesitationIntervalsMs`): <strong id="cdtHesitationText">0</strong> ms</li>
-                <li>การกรองอาการมือสั่น (`motorTremorFilter`): <strong id="cdtTremorStatusText">ปกติ (ไม่พบความสั่นพริ้วผิดปกติ)</strong></li>
+                <li>การกรองอาการมือสั่น (`motorTremorFilter`): <strong id="cdtTremorStatusText">ปกติ (ไม่พบความสั่นพริ้วผิดปกติ)</strong> <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('TREMOR_FILTER')" title="ดูเบื้องหลังการออกแบบ Motor Tremor Filter">💡 UX: Tremor Filter</button></li>
                 <li>สถานะการบันทึกภาพ: <strong id="cdtExportStatusText">พร้อมบันทึก Base64 &amp; SVG</strong></li>
               </ul>
 
@@ -3541,7 +3755,10 @@
           <div class="card-box no-print" style="border-width:3px; border-color:var(--primary-bg); background:var(--bg-elevated); margin-bottom:1.25rem;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
               <div>
-                <h3 style="margin:0; font-size:1.3rem;">👨‍⚕️ บันทึกการทบทวนและลงนามโดยแพทย์ (Clinician Review &amp; Sign-Off)</h3>
+                <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                  <h3 style="margin:0; font-size:1.3rem;">👨‍⚕️ บันทึกการทบทวนและลงนามโดยแพทย์ (Clinician Review &amp; Sign-Off)</h3>
+                  <button type="button" class="ux-xray-pin" onclick="showUxXrayDetails('CLINICIAN_OVERRIDE')" title="ดูเบื้องหลังการออกแบบ Medico-Legal Accountability">💡 UX: Medico-Legal</button>
+                </div>
                 <p style="margin:0.25rem 0 0 0; color:var(--text-secondary);">
                   แพทย์ผู้ตรวจสามารถปรับเปลี่ยนผลการจัดกลุ่มการรู้คิดตามดุลยพินิจทางคลินิก (Clinician Decision Override) พร้อมบันทึกเหตุผลและเลขที่ใบอนุญาตประกอบวิชาชีพเวชกรรม
                 </p>
@@ -12038,7 +12255,265 @@
       showToast("รีเซ็ตแบบประเมินเรียบร้อยค่ะ", "info");
     }
 
+    /* ========================================================================
+       PORTFOLIO DEMO DOCK & UX X-RAY LOGIC
+       ======================================================================== */
+    let isUxXrayActive = false;
+
+    function toggleDemoDockMinimize() {
+      const dock = document.getElementById("floatingDemoDock");
+      if (dock) {
+        dock.classList.toggle("minimized");
+      }
+    }
+
+    function toggleUxXrayMode() {
+      isUxXrayActive = !isUxXrayActive;
+      document.body.classList.toggle("ux-xray-active", isUxXrayActive);
+
+      const tourBtn = document.getElementById("tourUxXrayBtn");
+      if (tourBtn) {
+        tourBtn.style.background = isUxXrayActive ? "#0284C7" : "#475569";
+        tourBtn.innerHTML = isUxXrayActive ? "💡 UX X-Ray: เปิด" : "💡 UX X-Ray";
+      }
+
+      const floatBtn = document.getElementById("floatingUxXrayBtn");
+      const statusText = document.getElementById("floatingUxXrayStatusText");
+      if (floatBtn) {
+        floatBtn.classList.toggle("active", isUxXrayActive);
+      }
+      if (statusText) {
+        statusText.textContent = isUxXrayActive ? "เปิดอยู่ 🟢" : "ปิด";
+      }
+
+      if (isUxXrayActive) {
+        showToast("🔍 เปิดโหมด UX X-Ray: แสดงป้ายอธิบายจุดตัดสินใจด้านการออกแบบและมาตรฐานความปลอดภัยทางการแพทย์", "info", 5000);
+      } else {
+        showToast("ปิดโหมด UX X-Ray เรียบร้อย", "info", 2500);
+      }
+      recordAuditLog("UX_XRAY_TOGGLED", `UX X-Ray mode set to: ${isUxXrayActive}`);
+    }
+
+    const UX_XRAY_KNOWLEDGE_BASE = {
+      SAMD: {
+        title: "SaMD Regulatory Disclaimer & Voice Readout",
+        badge: "มาตรฐาน SaMD & FDA / อย. ไทย (Software as a Medical Device)",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ในแอปพลิเคชันคัดกรองสุขภาพ หากไม่มีการเตือนที่ชัดเจน ผู้ใช้ทั่วไปหรือผู้ดูแลอาจเข้าใจผิดว่าระบบสามารถ <em>"วินิจฉัยโรคอัลไซเมอร์ได้อย่างเป็นทางการ"</em> ส่งผลให้เกิดความตระหนกตกใจหรือตัดสินใจทางการแพทย์โดยไม่ผ่านแพทย์ผู้เชี่ยวชาญ</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> ออกแบบแถบ SaMD Disclaimer ไว้ที่ส่วนบนสุดของระบบอย่างถาวร พร้อมปุ่มสังเคราะห์เสียงอ่านภาษาไทย (TTS) ขนาดกะทัดรัด (28px) เพื่อให้ผู้สูงอายุที่มีปัญหาทางสายตาหรือการอ่านสามารถฟังคำชี้แจงความเสี่ยงได้โดยไม่รบกวนสัดส่วนของหน้าจอ</p>`,
+        ref: "มาตรฐานอ้างอิง: IMDRF SaMD Categorization & Clinical Evaluation Guidelines, พระราชบัญญัติเครื่องมือแพทย์ พ.ศ. 2551 (อย. ไทย)"
+      },
+      DUAL_PERSONA: {
+        title: "Dual-Persona Architecture: Senior vs Clinician Mode",
+        badge: "Adaptive Role-Based Presentation (ขจัด Test Anxiety & White-Coat Effect)",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ผู้สูงอายุที่เข้าประเมินสมองมักเกิดภาวะความเครียดสูง (Test Anxiety) หากเห็นหน้าจอที่มีคำว่า <em>"สงสัยสมองเสื่อม"</em>, นาฬิกาจับเวลานับถอยหลังเป็นเสี้ยววินาที หรือกราฟค่าความหน่วง ซึ่งความเครียดนี้จะรบกวนสมองส่วนหน้า (Prefrontal Cortex) ทำให้ทำแบบทดสอบได้คะแนนต่ำกว่าความเป็นจริง (False Positive)</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> แยกสถาปัตยกรรมมุมมองออกเป็น 2 บทบาทชัดเจน:
+               <br>• <strong>Senior Patient Mode:</strong> หน้าจอสะอาด แสดงคำถามทีละข้อ ไร้ศัพท์เทคนิค ปุ่มกดขนาดใหญ่ 64px
+               <br>• <strong>Clinician Mode:</strong> เปิดเผยข้อมูล Telemetry ละเอียด (Stroke Velocity, Hesitation Latency), เมทริกซ์ 4 แกน, LIS Biomarkers และ EMR FHIR Payload ครบถ้วนสำหรับแพทย์</p>`,
+        ref: "มาตรฐานอ้างอิง: Norman's Human-Centered Design, APA Guidelines for Psychological Assessment in Older Adults"
+      },
+      DELIRIUM_GATEKEEPER: {
+        title: "4AT Delirium Gatekeeper: เบรกฉุกเฉินสกัดกั้นการส่งต่อผิดแผนก",
+        badge: "Emergency Safety Gatekeeper (4AT Cutoff >= 4)",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ภาวะเพ้อสับสนเฉียบพลัน (Delirium) เป็นภาวะฉุกเฉินทางการแพทย์ที่มีอัตราการเสียชีวิตสูง มักเกิดจากการติดเชื้อ (เช่น ทางเดินปัสสาวะ, ปอดอักเสบ) หรือเกลือแร่ผิดปกติ หากนำผู้ป่วยที่มีอาการเพ้อไปทำแบบทดสอบความจำ (AD8, Mini-Cog) ผู้ป่วยจะตอบไม่ได้และถูกระบุว่าเป็น 'โรคสมองเสื่อมระยะรุนแรง' ทันที ทำให้ผู้ป่วยได้รับการรักษาทางกายล่าช้าจนเป็นอันตรายถึงชีวิต (Misrouting)</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> ติดตั้งด่านตรวจ 4AT Delirium เป็น 'Gatekeeper' หากคะแนน 4AT >= 4 ระบบจะสั่ง <strong>ระงับการทดสอบสมรรถภาพสมองทันที (Clinical Halt)</strong> และแจ้งเตือนให้ส่งพบแพทย์ฉุกเฉินหรืออายุรแพทย์เพื่อรักษาสาเหตุเฉียบพลันก่อนเสมอ</p>`,
+        ref: "มาตรฐานอ้างอิง: Bellelli et al. (Age and Ageing 2014), NICE Guideline CG103 (Delirium: prevention, diagnosis and management)"
+      },
+      DEPRESSION_2Q: {
+        title: "2Q Depression Screening: ป้องกันการวินิจฉัยสมองเสื่อมเทียม (Pseudodementia)",
+        badge: "Affective Axis Screening Gatekeeper (LOINC 55758-7)",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ผู้สูงอายุที่ป่วยเป็นโรคซึมเศร้าจะมีอาการเบื่อหน่าย ไม่พยายามนึกคำตอบ และความจำชั่วคราวลดลง ซึ่งเรียกว่า 'ภาวะสมองเสื่อมเทียมจากโรคซึมเศร้า' (Depressive Pseudodementia) ซึ่งสามารถรักษาให้หายขาดได้ หากด่วนสรุปว่าเป็นอัลไซเมอร์ ผู้ป่วยจะเสียโอกาสในการรักษา</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> กำหนดให้แบบคัดกรอง 2Q (อารมณ์เศร้า + ความเบื่อหน่าย) เป็นด่านบังคับก่อนเริ่มทำแบบทดสอบ หาก 2Q เป็นบวก ระบบจะตั้งธงเตือนแพทย์ให้ประเมินด้วย TGDS-15 เพื่อแยกภาวะซึมเศร้าก่อนเสมอ</p>`,
+        ref: "มาตรฐานอ้างอิง: Kroenke et al. (Medical Care 2003), คู่มือการคัดกรองโรคซึมเศร้า กรมสุขภาพจิต กระทรวงสาธารณสุข"
+      },
+      NON_LITERATE: {
+        title: "Non-Literate Alternative Pathway: ความเสมอภาคทางสุขภาพ (Health Equity)",
+        badge: "Cross-Cultural & Educational Fairness",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> แบบทดสอบมาตรฐานสากล เช่น วาดหน้าปัดนาฬิกา (CDT) หรือ Trail Making (1->ก->2->ข) อาศัยทักษะการรู้หนังสือและการเขียนตัวเลข-พยัญชนะ ผู้สูงอายุไทยในชนบทจำนวนมากที่ไม่ได้เรียนหนังสือหรือเรียนไม่จบชั้นประถม จะทำข้อสอบเหล่านี้ไม่ได้แม้สมองจะยังแข็งแรงดี เกิดปัญหา False Positive สูงถึง 35-40%</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> ระบบมีสวิตช์ <em>Non-Literate Alternative Pathway</em> ซึ่งจะสลับจากการวาดรูปนาฬิกาไปใช้แบบทดสอบ <strong>Animal Naming (บอกชื่อสัตว์ใน 1 นาที เกณฑ์คนไทย < 10 ตัว)</strong> ร่วมกับการบอกคำศัพท์อิสระ (Word Recall) ซึ่งเป็นการทดสอบทางวาจาที่ไม่ขึ้นกับระดับการศึกษา</p>`,
+        ref: "มาตรฐานอ้างอิง: Senanarong et al. (J Med Assoc Thai), Hemrungrojn et al. (Normative Data of Montreal Cognitive Assessment Thai Version)"
+      },
+      TREMOR_FILTER: {
+        title: "Motor Tremor Filter: กรองอาการสั่นมือออกจากสมรรถภาพสมอง",
+        badge: "Neuromotor Signal Processing & Canvas Telemetry",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ผู้สูงอายุที่เป็นโรคพาร์กินสัน (Parkinson's Disease) หรืออาการมือสั่นไม่ทราบสาเหตุ (Essential Tremor) จะวาดวงกลมหรือเข็มนาฬิกาเป็นเส้นหยักพริ้ว หากให้คะแนนแบบรูปทรงเรขาคณิตทั่วไป ผู้ป่วยจะถูกตัดคะแนนด้านมิติสัมพันธ์ทั้งที่สมองส่วนความจำยังสมบูรณ์ดี</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> อัลกอริทึมบน HTML5 Canvas บันทึก Telemetry ความถี่และความเร็วในการลากเส้น (Micro-Oscillation Variance) เพื่อแยกสัญญาณอาการสั่นของกล้ามเนื้อ (Motor Tremor) ออกจากการกะระยะทางสายตา และติดป้ายเตือนแพทย์ว่าเส้นหยักเกิดจากมือสั่น ไม่ใช่ความจำบกพร่อง</p>`,
+        ref: "มาตรฐานอ้างอิง: Müller et al. (Movement Disorders), Digital Clock Drawing Test (dCDT) Engineering Specifications"
+      },
+      ACB_SCALE: {
+        title: "Anticholinergic Cognitive Burden (ACB): คัดกรองยาที่ทำให้สมองตื้อชั่วคราว",
+        badge: "Drug-Induced Cognitive Impairment & Deprescribing Hierarchy",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ยาแก้แพ้รุ่นเก่า (เช่น CPM), ยาช่วยนอนหลับ/คลายกังวล (Ativan, Xanax) หรือยาแก้ปวดประสาท (Amitriptyline) มีฤทธิ์ต้านสารสื่อประสาท Acetylcholine ในสมอง ทำให้ผู้สูงอายุมีความจำถดถอยและสับสนชั่วคราว ซึ่งเป็นสาเหตุที่รักษาแก้ไขได้ (Reversible Cause)</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> หากคะแนนรวม ACB >= 3 ระบบจะตั้งค่าเป็น <strong>Reversible Cognitive Impairment Suspected</strong> ในลำดับความสำคัญสูงสุด และแนะนำให้แพทย์ร่วมกับเภสัชกรคลินิกทำ Medication Reconciliation ปรับลดยาที่มีความเสี่ยงก่อนนัดประเมินซ้ำใน 4–8 สัปดาห์</p>`,
+        ref: "มาตรฐานอ้างอิง: Boustani et al. (Aging Health 2008), 2023 American Geriatrics Society (AGS) Beers Criteria"
+      },
+      CLINICIAN_OVERRIDE: {
+        title: "Dual-Tier Accountability: แพทย์เป็นผู้ตัดสินใจขั้นสุดท้าย (Human-in-the-Loop)",
+        badge: "Medico-Legal Responsibility & HL7 FHIR R4 Standard",
+        body: `<p><strong>ปัญหาที่พบ (The Problem):</strong> ในทางกฎหมายการแพทย์ ระบบปัญญาประดิษฐ์หรือซอฟต์แวร์ไม่สามารถรับผิดชอบผลการวินิจฉัยโรคได้ หากระบบส่งผลอัตโนมัติเข้าสู่ HIS/EMR โดยไม่มีแพทย์เซ็นรับรอง จะขัดต่อมาตรฐานเวชปฏิบัติและจริยธรรมทางการแพทย์</p>
+               <p><strong>การออกแบบแก้ปัญหา (Design Solution):</strong> ออกแบบสถาปัตยกรรมแบบสองชั้น (Dual-Tier): ผลการคำนวณของอัลกอริทึมจะถูกบันทึกเป็น <em>Algorithmic Cognitive Axis</em> แยกต่างหากจาก <em>Clinician Override</em> ซึ่งแพทย์สามารถปรับเปลี่ยนผลตามดุลยพินิจ พร้อมบันทึกเลขที่ใบอนุญาตประกอบวิชาชีพเวชกรรมและเวลาลงนามใน HL7 FHIR R4 Bundle อย่างสมบูรณ์</p>`,
+        ref: "มาตรฐานอ้างอิง: HL7 FHIR R4 DiagnosticReport / RiskAssessment Spec, แนวทางปฏิบัติการใช้ปัญญาประดิษฐ์ทางการแพทย์ แพทยสภา"
+      }
+    };
+
+    function showUxXrayDetails(pointKey) {
+      const data = UX_XRAY_KNOWLEDGE_BASE[pointKey];
+      if (!data) return;
+
+      const modal = document.getElementById("uxXrayModal");
+      const titleEl = document.getElementById("uxXrayModalTitle");
+      const badgeEl = document.getElementById("uxXrayModalBadge");
+      const bodyEl = document.getElementById("uxXrayModalBody");
+      const refEl = document.getElementById("uxXrayModalRef");
+
+      if (titleEl) titleEl.textContent = data.title;
+      if (badgeEl) badgeEl.textContent = data.badge;
+      if (bodyEl) bodyEl.innerHTML = data.body;
+      if (refEl) refEl.innerHTML = `📚 <strong>${data.ref}</strong>`;
+
+      if (modal && typeof modal.showModal === "function") {
+        modal.showModal();
+      } else {
+        alert(`${data.title}\n\n${data.badge}\n\n${data.body.replace(/<[^>]+>/g, '')}\n\n${data.ref}`);
+      }
+    }
+
+    function closeUxXrayModal() {
+      const modal = document.getElementById("uxXrayModal");
+      if (modal && typeof modal.close === "function") {
+        modal.close();
+      }
+    }
+
+    function loadQuickFloatingDemo(scenarioKey) {
+      if (scenarioKey === 'DELIRIUM_4AT') {
+        setViewMode('CLINICIAN', false);
+        goToStep(0);
+        switchStep0Tab(1);
+        if (!appState.fourAT) {
+          appState.fourAT = { alertness: null, amt4Score: null, attentionScore: null, acuteFluctuating: null, totalScore: null, deliriumSuspected: false, isDeliriumSuspected: false };
+        }
+        appState.fourAT.alertness = 4;
+        appState.fourAT.amt4Score = 2;
+        appState.fourAT.attentionScore = 1;
+        appState.fourAT.acuteFluctuating = 4;
+        appState.fourAT.totalScore = 11;
+        appState.fourAT.deliriumSuspected = true;
+        appState.fourAT.isDeliriumSuspected = true;
+        appState.preTestValidity.deliriumSuspected = true;
+
+        renderPreTestValidityItems();
+        const alertEl = document.getElementById("preTestValidityAlert");
+        if (alertEl) {
+          alertEl.style.display = "block";
+          alertEl.innerHTML = `🚨 <strong>ตรวจพบข้อห้ามก่อนการทดสอบ (Pre-Test Contraindication Active):</strong><br>คะแนน 4AT Delirium = 11/12 (สงสัยภาวะเพ้อเฉียบพลัน Delirium) — ระบบระงับการทดสอบสมรรถภาพสมองอัตโนมัติ เพื่อป้องกันการวินิจฉัยสมองเสื่อมผิดพลาด แนะนำส่งพบแพทย์ฉุกเฉินทันที`;
+        }
+        showToast("🛑 โหลดเคสภาวะสับสนเฉียบพลัน (4AT Delirium): ระบบระงับการทดสอบเพื่อความปลอดภัย", "warning", 6000);
+        const card = document.getElementById("preTestValidityCard");
+        if (card) {
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+          card.classList.add("gatekeeper-highlight-pulse");
+          setTimeout(() => card.classList.remove("gatekeeper-highlight-pulse"), 3500);
+        }
+        return;
+      }
+
+      if (scenarioKey === 'ALZHEIMERS') {
+        setViewMode('CLINICIAN', false);
+        loadFullClinicalScenario('ALZHEIMERS');
+        goToStep(4);
+        showToast("🟣 โหลดเคสอัลไซเมอร์ความเสี่ยงสูงมาก (p-tau217+ และ APOE4) พร้อมวิเคราะห์ผล 4 แกนทันที", "success", 5000);
+        const target = document.getElementById("step-4");
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
+      if (scenarioKey === 'ACB_BURDEN') {
+        setViewMode('CLINICIAN', false);
+        loadFullClinicalScenario('ACB_DRUG_SPEECH_TREMOR');
+        goToStep(4);
+        showToast("💊 โหลดเคสผลข้างเคียงจากยากลุ่ม ACB (ACB=6) + กรองมือสั่น: ชี้ชัดสาเหตุที่รักษาแก้ไขได้ (Reversible)", "warning", 5000);
+        const target = document.getElementById("step-4");
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+
   </script>
+
+  <!-- ========================================================================
+       Floating Demo Dock & UX X-Ray Control (Portfolio Evaluator Quick Access)
+       ======================================================================== -->
+  <aside id="floatingDemoDock" class="floating-demo-dock no-print" aria-label="แถบเครื่องมือสาธิตและ UX X-Ray">
+    <!-- Minimized Pill Button -->
+    <button type="button" class="floating-dock-pill-btn" onclick="toggleDemoDockMinimize()" aria-label="เปิดแถบเครื่องมือสาธิต">
+      <span>⚡ Quick Demo &amp; UX X-Ray</span>
+    </button>
+
+    <!-- Expanded Content -->
+    <div class="floating-dock-content">
+      <div class="floating-dock-header">
+        <h4 class="floating-dock-title">
+          <span>⚡ Quick Demo &amp; Triage</span>
+        </h4>
+        <button type="button" class="floating-dock-minimize-btn" onclick="toggleDemoDockMinimize()" title="ย่อแถบเครื่องมือ" aria-label="ย่อแถบเครื่องมือ">
+          —
+        </button>
+      </div>
+
+      <div style="font-size:0.78rem; color:#94A3B8; margin-bottom:0.5rem; line-height:1.35;">
+        โหลดเคสจำลองทางคลินิก 3 รูปแบบ เพื่อดูผลการประเมิน 4 แกนและรายงานพิมพ์ A4 ภายใน 10 วินาที:
+      </div>
+
+      <div class="floating-dock-grid">
+        <button type="button" class="floating-dock-btn btn-dock-ad" onclick="loadQuickFloatingDemo('ALZHEIMERS')" title="จำลองเคสอัลไซเมอร์ระยะแรก เสี่ยงสูงมาก (p-tau217+ และ APOE4)">
+          <div>
+            <div style="color:#C084FC;">🟣 อัลไซเมอร์เสี่ยงสูง (High AD)</div>
+            <div style="font-size:0.72rem; color:#94A3B8; font-weight:500;">p-tau217+, APOE ε4, Recall 0/3</div>
+          </div>
+          <span>➔</span>
+        </button>
+
+        <button type="button" class="floating-dock-btn btn-dock-delirium" onclick="loadQuickFloatingDemo('DELIRIUM_4AT')" title="จำลองเคสติดด่านตรวจ 4AT Delirium (คะแนน 11/12) สั่งระงับการตรวจความจำ">
+          <div>
+            <div style="color:#F87171;">🛑 สับสนเฉียบพลัน (4AT Delirium)</div>
+            <div style="font-size:0.72rem; color:#94A3B8; font-weight:500;">ด่านความปลอดภัยกักกัน Delirium</div>
+          </div>
+          <span>➔</span>
+        </button>
+
+        <button type="button" class="floating-dock-btn btn-dock-acb" onclick="loadQuickFloatingDemo('ACB_BURDEN')" title="จำลองเคสภาระยาต้านโคลิเนอร์จิกสูง (ACB=6) สาเหตุที่รักษาแก้ไขได้ (Reversible)">
+          <div>
+            <div style="color:#FBBF24;">💊 ผลข้างเคียงยา (ACB Score = 6)</div>
+            <div style="font-size:0.72rem; color:#94A3B8; font-weight:500;">CPM + Amitriptyline (Reversible Flag)</div>
+          </div>
+          <span>➔</span>
+        </button>
+      </div>
+
+      <button type="button" id="floatingUxXrayBtn" class="floating-dock-xray-toggle" onclick="toggleUxXrayMode()">
+        <span>💡 จุดตัดสินใจด้าน UX (UX X-Ray): <strong id="floatingUxXrayStatusText">ปิด</strong></span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- UX X-Ray Detail Modal Dialog -->
+  <dialog id="uxXrayModal" class="system-modal" style="max-width:620px; border-radius:16px; border:2px solid #0284C7; padding:0; background:var(--bg-card); color:var(--text-primary); box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+    <div style="background:linear-gradient(135deg, #0284C7, #0369A1); color:#FFFFFF; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.4rem;">💡</span>
+        <h3 id="uxXrayModalTitle" style="margin:0; font-size:1.2rem; font-weight:800; color:#FFFFFF;">UX Design Rationale</h3>
+      </div>
+      <button type="button" onclick="closeUxXrayModal()" style="background:transparent; border:none; color:#FFFFFF; font-size:1.4rem; cursor:pointer; font-weight:800; line-height:1;" aria-label="ปิดหน้าต่าง">✕</button>
+    </div>
+    <div style="padding:1.25rem 1.5rem;">
+      <div id="uxXrayModalBadge" style="display:inline-block; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:6px; background:var(--bg-elevated); margin-bottom:0.75rem; border:1px solid var(--border-subtle);"></div>
+      <div id="uxXrayModalBody" style="font-size:1rem; line-height:1.65; color:var(--text-primary);"></div>
+      <div id="uxXrayModalRef" style="margin-top:1.25rem; padding-top:0.75rem; border-top:1px solid var(--border-subtle); font-size:0.85rem; color:var(--text-secondary); font-weight:600;"></div>
+      <div style="margin-top:1.25rem; text-align:right;">
+        <button type="button" class="btn btn-primary" onclick="closeUxXrayModal()" style="min-height:42px; font-weight:700;">เข้าใจแล้ว (ปิดหน้าต่าง)</button>
+      </div>
+    </div>
+  </dialog>
 </body>
 
 </html>
