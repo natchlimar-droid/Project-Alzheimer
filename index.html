@@ -4,12 +4,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>ระบบคัดกรองความเสี่ยงภาวะสมองรู้คิดบกพร่องและอัลไซเมอร์เบื้องต้น (Multimodal Cognitive Screening & Biomarker
-    Triage)</title>
+  <title>ระบบคัดกรองความเสี่ยงภาวะสมองรู้คิดบกพร่องและอัลไซเมอร์เบื้องต้น (Multimodal Cognitive Screening &amp; Biomarker Triage)</title>
+
+  <!-- SEO & Open Graph / Social Sharing Meta Tags -->
+  <meta name="description" content="Dual-persona cognitive screening CDSS prototype with HL7 FHIR R4 export, 27 LOINC-mapped parameters, kinematics tremor filter, and Explainable AI triage." />
+  <meta name="keywords" content="clinical decision support, CDSS, alzheimer screening, geriatric assessment, HL7 FHIR, LOINC, explainable AI" />
+  <meta name="author" content="Natcha L." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://natchlimar-droid.github.io/Project-Alzheimer/" />
+  <meta property="og:title" content="Thai Cognitive Triage CDSS (Project-Alzheimer) — Clinical Decision Support Prototype" />
+  <meta property="og:description" content="Prototype Clinical Decision Support System (CDSS) for elderly cognitive screening, LOINC-mapped FHIR R4 export, CDT kinematics tremor filter, and Explainable AI triage." />
+  <meta property="og:image" content="https://natchlimar-droid.github.io/Project-Alzheimer/assets/staff-mode.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Thai Cognitive Triage CDSS (Project-Alzheimer)" />
+  <meta name="twitter:description" content="Dual-persona cognitive screening CDSS prototype with HL7 FHIR R4 export, 27 LOINC-mapped parameters, and Explainable AI triage." />
+  <meta name="twitter:image" content="https://natchlimar-droid.github.io/Project-Alzheimer/assets/staff-mode.png" />
+
+  <!-- Favicon (Inline SVG for zero external request) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+
   <!-- PWA Manifest & Single-Source-of-Truth Clinical Engine -->
   <link rel="manifest" href="manifest.webmanifest" />
   <script src="dist/clinical-engine.js"></script>
-  <!-- Google Fonts: Sarabun for optimal Thai readability (with system fallback) -->
+  <!-- Google Fonts: Sarabun for optimal Thai readability (with system font fallback stack) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -3540,6 +3557,9 @@
             <h3 style="font-size:1.4rem; margin:0 0 0.4rem 0; color:var(--text-primary);">
               👨‍⚕️ ส่วนข้อมูลวิเคราะห์เชิงลึกทางการแพทย์ (Clinician Diagnostic Hub)
             </h3>
+            <p style="color:var(--text-secondary); margin:0; font-size:1rem;">
+              สำหรับแพทย์ พยาบาลวิชาชีพ และนักเทคนิคการแพทย์: ข้อมูลผลแล็บ LIS, การจัดระดับ 4 แกน, ระบบส่งต่อ EMR, และบันทึก Audit Trail
+            </p>
           </div>
 
           <!-- Clinician Advanced Telemetry & Quadrant Analytics Card -->
@@ -3567,10 +3587,6 @@
                 <div style="font-size:0.82rem; color:var(--text-secondary); margin-top:0.2rem;">รหัสลำดับการส่งต่อตามเกณฑ์สากล</div>
               </div>
             </div>
-          </div>
-            <p style="color:var(--text-secondary); margin:0; font-size:1rem;">
-              สำหรับแพทย์ พยาบาลวิชาชีพ และนักเทคนิคการแพทย์: ข้อมูลผลแล็บ LIS, การจัดระดับ 4 แกน, ระบบส่งต่อ EMR, และบันทึก Audit Trail
-            </p>
           </div>
 
           <!-- Hero Risk Stratification Banner (Original) -->
@@ -4558,7 +4574,7 @@
               <li><strong>TypeScript 5.x / Modern ES2022:</strong> เขียน Logic แบบ Pure Deterministic Type-Safe</li>
               <li><strong>HTML5 Canvas 2D API:</strong> คำนวณ Kinematic Stroke Latency, Tremor RMS Filter (4-12 Hz), และ Perspective Auto-Crop</li>
               <li><strong>Web Speech API:</strong> ระบบอ่านออกเสียงคำแนะนำภาษาไทยสำหรับผู้สูงอายุ</li>
-              <li><strong>Zero-dependency (ไม่มี CDN) ในหน้าหลัก:</strong> รันแบบ Standalone Offline ปราศจาก External CDN Tracking ในหน้าคัดกรองหลัก</li>
+              <li><strong>Zero JS Runtime CDN Dependencies:</strong> หน้าคัดกรองหลักรันแบบ Standalone Offline ปราศจาก External JavaScript CDN/Library ภายนอก (พร้อม System Thai Font Stack สำรองเมื่อออฟไลน์)</li>
             </ul>
           </div>
 
@@ -7596,7 +7612,7 @@
             <button type="button" class="ad8-option-btn ${currentAns === 'NO' ? 'selected-no' : ''}" onclick="setAd8Answer(${idx}, 'NO')">
               ✅ ไม่ใช่ ไม่เปลี่ยนแปลง (0 คะแนน)
             </button>
-            <button type="button" class="ad8-option-btn ${currentAns === 'UNSURE' ? 'selected-unsure' : ''}" onclick="setAd8Answer(${idx}, 'UNSURE')">
+            <button type="button" class="ad8-option-btn ${(currentAns === 'UNSURE' || currentAns === 'NA') ? 'selected-unsure' : ''}" onclick="setAd8Answer(${idx}, 'NA')">
               ❓ ไม่แน่ใจ / ไม่ทราบ (0 คะแนน)
             </button>
           </div>
@@ -7608,7 +7624,8 @@
     }
 
     function setAd8Answer(index, value) {
-      appState.ad8Responses[index] = value;
+      const normalized = (value === "UNSURE" || value === "NA") ? "NA" : value;
+      appState.ad8Responses[index] = normalized;
       renderAd8Questions();
     }
 
@@ -7621,11 +7638,11 @@
     }
 
     function getAd8TotalScore() {
-      return appState.ad8Responses.reduce((sum, ans) => sum + (ans === "YES" ? 1 : 0), 0);
+      return (appState.ad8Responses || []).reduce((sum, ans) => sum + (ans === "YES" ? 1 : 0), 0);
     }
 
     function getAd8UnsureCount() {
-      return appState.ad8Responses.filter(ans => ans === "NA").length;
+      return (appState.ad8Responses || []).filter(ans => ans === "NA" || ans === "UNSURE").length;
     }
 
     function updateAd8ScoreBadge() {
@@ -10523,7 +10540,7 @@
 
     function buildCompleteFhirBundle() {
       if (!lastAssessmentPayload) renderRiskStratificationReport();
-      const inp = lastAssessmentPayload ? lastAssessmentPayload.input : collectAssessmentInput();
+      const inp = lastAssessmentPayload ? lastAssessmentPayload.input : buildAssessmentInput();
       const out = lastAssessmentPayload ? lastAssessmentPayload.output : stratifyCognitiveRisk(inp);
       return buildFhirR4Bundle(inp, out);
     }
@@ -10535,7 +10552,7 @@
       const endpointInput = document.getElementById("backendApiEndpointInput");
       const feedback = document.getElementById("referralStatusFeedback");
 
-      const hospitalName = hospitalSelect ? hospitalSelect.options[hospitalSelect.selectedIndex].text : "[จำลอง] โรงพยาบาลศูนย์ตติยภูมิ ก (Mock Tertiary Care Center A - Memory Clinic)";
+      const hospitalName = hospitalSelect ? hospitalSelect.options[hospitalSelect.selectedIndex].text : "[จำลอง] โรงพยาบาลตัวอย่าง A (Mock Hospital A - Memory Clinic)";
       const priority = prioritySelect ? prioritySelect.value : "routine";
       const endpoint = endpointInput ? endpointInput.value.trim() : "";
 
